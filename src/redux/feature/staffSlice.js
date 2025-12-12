@@ -2,14 +2,16 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { getApiData, getSecureApiData, securePostData } from "../../Services/api";
 
-// Async thunk to fetch user profile
+// Async thunk to fetch staff profile
 export const fetchUserProfile = createAsyncThunk(
-    "userProfile/fetch",
+    "staffProfile/fetch",
     async (searchText, { rejectWithValue }) => {
         try {
-            const response = await getSecureApiData(`pharmacy/${localStorage.getItem('userId')}`);
+            if(!localStorage.getItem('staffId')) return rejectWithValue(error.response?.data?.message || error.message);
+            const response = await getSecureApiData(`pharmacy/staff-data/${localStorage.getItem('staffId')}`);
+            console.log("hehe")
             if (response.success) {
-                return response.data;
+                return response.employee;
             }
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -17,12 +19,13 @@ export const fetchUserProfile = createAsyncThunk(
     }
 );
 export const fetchUserDetail = createAsyncThunk(
-    "userDetail/fetch",
+    "staffDetail/fetch",
     async (searchText, { rejectWithValue }) => {
         try {
-            const response = await getSecureApiData(`pharmacy/detail/${localStorage.getItem('userId')}`);
-            console.log(response)
+            if(!localStorage.getItem('staffId')) return rejectWithValue(error.response?.data?.message || error.message);
+            const response = await getSecureApiData(`pharmacy/staff-data/${localStorage.getItem('staffId')}`);
             if (response.success) {
+                console.log(response.employee)
                 return response;
             }
         } catch (error) {
@@ -30,17 +33,13 @@ export const fetchUserDetail = createAsyncThunk(
         }
     }
 );
-const userSlice = createSlice({
-    name: "userProfile",
+const staffSlice = createSlice({
+    name: "staffProfile",
     initialState: {
-        profiles: null,
-        pharPerson: null,
-        pharAddress: null,
-        pharImg: null,
-        rating: null,
-        avgRating: null,
-        pharLicense: null,
-        isRequest: null,
+        staffData: null,
+        employment: null,
+        professional: null,
+        empAccess: null,       
         loading: false,
         error: null,
         isOwner: localStorage.getItem('isOwner') === 'true' ?true:false, // <-- read from localStorage
@@ -73,14 +72,10 @@ const userSlice = createSlice({
             })
             .addCase(fetchUserDetail.fulfilled, (state, action) => {
                 state.loading = false;
-                state.profiles = action.payload.user
-                state.pharAddress = action.payload.pharAddress;
-                state.pharImg = action.payload.pharImg;
-                state.rating = action.payload.rating;
-                state.avgRating = action.payload.avgRating;
-                state.pharPerson = action.payload.pharPerson;
-                state.isRequest = action.payload.isRequest
-                state.pharLicense = action.payload.pharLicense;
+                state.staffData = action.payload.employee
+                state.employment = action.payload.employment;
+                state.professional = action.payload.professional;
+                state.empAccess = action.payload.empAccess;
             })
             .addCase(fetchUserDetail.rejected, (state, action) => {
                 state.loading = false;
@@ -89,5 +84,5 @@ const userSlice = createSlice({
     },
 });
 
-export const { clearProfiles, setOwner, setPermissions } = userSlice.actions;
-export default userSlice.reducer;
+export const { clearProfiles, setOwner, setPermissions } = staffSlice.actions;
+export default staffSlice.reducer;

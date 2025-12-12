@@ -1,6 +1,27 @@
-import { NavLink } from "react-router-dom"
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom"
+import { postApiData } from "../../Services/api";
+import { toast } from "react-toastify";
 
 function ForgotPassword() {
+  const navigate=useNavigate()
+  const [email,setEmail]=useState('')
+   const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const response = await postApiData('pharmacy/forgot-email', {email})
+        if (response.success) {
+          sessionStorage.setItem('email',email)
+          localStorage.setItem('userId',response.userId)
+          toast.success('Email sent successfully')
+          navigate('/otp')
+        } else {
+          toast.error(response.message)
+        }
+      } catch (err) {
+        console.error("Error creating lab:", err);
+      }
+    };
   return (
     <>
     <section className="admin-login-section ">
@@ -27,20 +48,22 @@ function ForgotPassword() {
                   <p>Please enter email   address below</p>
                 </div>
 
-                <form>
+                <form onSubmit={handleSubmit}>
                   <div className="custom-frm-bx admin-frm-bx">
                     <label htmlFor="">Email Address</label>
                     <input
                       type="email"
+                      value={email}
+                      onChange={(e)=>setEmail(e.target.value)}
                       className="form-control nw-frm-select"
                       placeholder="Enter Email Address"
                     />
                   </div>
 
                   <div className='mt-5'>
-                    <NavLink to="/otp" className="nw-thm-btn py-3 w-100">
+                    <button type="submit" className="nw-thm-btn py-3 w-100">
                       Submit
-                    </NavLink>
+                    </button>
                   </div>
                 </form>
               </div>

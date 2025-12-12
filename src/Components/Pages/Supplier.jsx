@@ -1,8 +1,129 @@
 import { faCircleXmark, faPen, faSearch, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
+import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
 function Supplier() {
-  return (
-     <>
+    const userId = localStorage.getItem('userId')
+    const [formData, setFormData] = useState({
+        name: "",
+        mobileNumber: "",
+        email: "",
+        address: "",
+        cityId: "",
+        pincode: "",
+        score: 0,
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+
+    // Step 2: handleChange function
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    // Step 3: handleSubmit function
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+        setSuccess("");
+
+        try {
+            if (formData?._id) {
+                const payload = { ...formData, pharId: userId, supplierId: formData?._id };
+                const response = await updateApiData("pharmacy/supplier", payload); // adjust API URL
+                if (response.success) {
+                    setSuccess("Supplier updated successfully!");
+                    setFormData({
+                        name: "",
+                        mobileNumber: "",
+                        email: "",
+                        address: "",
+                        cityId: "",
+                        pincode: "",
+                        score: 0,
+                    });
+                } else {
+                    toast.error(response.message)
+                }
+            } else {
+                const payload = { ...formData, pharId: userId };
+
+                const response = await securePostData("pharmacy/supplier", payload); // adjust API URL
+                if (response.success) {
+                    setSuccess("Supplier added successfully!");
+                    setFormData({
+                        name: "",
+                        mobileNumber: "",
+                        email: "",
+                        address: "",
+                        cityId: "",
+                        pincode: "",
+                        score: 0,
+                    });
+                } else {
+                    toast.error(response.message)
+                }
+            }
+
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
+    const [suppliers, setSuppliers] = useState([])
+    const [status, setStatus] = useState()
+    const [currentPage, setCurrentPage] = useState(1)
+    const [name, setName] = useState('')
+    const [totalPage, setTotalPage] = useState(1)
+    const fetchSupplier = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/supplier/${userId}?page=${currentPage}&name=${name}&status=${status}`);
+
+            if (response.success) {
+                setSuppliers(response.data)
+                setTotalPage(response.pagination.totalPages)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    useEffect(() => {
+        fetchSupplier()
+    }, [userId, currentPage, status])
+    const deleteSupplier = async (id) => {
+        try {
+            const response = await deleteApiData(`pharmacy/supplier/${id}`);
+            if (response.success) {
+                toast.success('Supplier deleted')
+                fetchSupplier()
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    useEffect(() => {
+        setTimeout(() => {
+
+            fetchSupplier()
+        }, 1000)
+    }, [name])
+    return (
+        <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
                 <div className="row mb-3">
                     <div className="d-flex align-items-center justify-content-between">
@@ -38,49 +159,53 @@ function Supplier() {
                     <div className="row">
                         <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                             <div className="d-flex align-items-center gap-2">
-                                    <div className="custom-frm-bx mb-0">
-                                        <input
-                                            type="email"
-                                            className="form-control admin-table-search-frm search-table-frm pe-5"
-                                            id="email"
-                                            placeholder="Search"
-                                            required
-                                        />
-                                        <div className="adm-search-bx">
-                                            <button className="tp-search-btn">
-                                                <FontAwesomeIcon icon={faSearch} />
-                                            </button>
-                                        </div>
+                                <div className="custom-frm-bx mb-0">
+                                    <input
+                                        type="text"
+                                        className="form-control admin-table-search-frm search-table-frm pe-5"
+                                        id="email"
+                                        value={name} onChange={(e) => setName(e.target.value)}
+                                        placeholder="Search"
+                                        required
+                                    />
+                                    <div className="adm-search-bx">
+                                        <button className="tp-search-btn">
+                                            <FontAwesomeIcon icon={faSearch} />
+                                        </button>
                                     </div>
-                                    <div className="filters">
-                                        <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
-                                            <label className="label">Short By :</label>
-                                            <select className="">
-                                                <option>Top score</option>
-                                                <option>Test 1</option>
-                                                <option>Test 2</option>
-                                            </select>
-                                        </div>
+                                </div>
+                                <div className="filters">
+                                    <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
+                                        <label className="label">Short By :</label>
+                                        <select className="">
+                                            <option>Top score</option>
+                                            <option>Test 1</option>
+                                            <option>Test 2</option>
+                                        </select>
                                     </div>
+                                </div>
 
                                 <div>
                                     <button className="nw-thm-btn">Filter</button>
                                 </div>
-                                   
-                                </div>
 
-                            
+                            </div>
+
+
 
                             <div className="page-selector d-flex align-items-center mb-2 mb-md-0">
-                                        <select className="form-select custom-page-dropdown nw-custom-page">
-                                            <option value="1" selected>100</option>
-                                            <option value="2">1</option>
-                                            <option value="3">2</option>
-                                        </select>
-                                    
-                                    </div>
+                                <select
+                                    value={currentPage}
+                                    onChange={(e) => setCurrentPage(e.target.value)}
+                                    className="form-select custom-page-dropdown nw-custom-page ">
+                                    {Array.from({ length: totalPage }, (_, i) => (
+                                        <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                    ))}
+                                </select>
 
-                         
+                            </div>
+
+
                         </div>
                     </div>
 
@@ -104,378 +229,53 @@ function Supplier() {
                                         </thead>
                                         <tbody>
 
-                                            <tr>
-                                                <td>
-                                                    <div className="admin-table-bx">
-                                                        <div className="admin-table-sub-bx">
-                                                            <img src="/admin-tb-logo.png" alt="" />
-                                                            <div className="admin-table-sub-details">
-                                                                <h6>Eleanor Pena</h6>
-                                                                
+                                            {suppliers?.length > 0 &&
+                                                suppliers?.map((item, key) =>
+                                                    <tr key={key}>
+                                                        <td>
+                                                            <div className="admin-table-bx">
+                                                                <div className="admin-table-sub-bx">
+
+                                                                    <div className="admin-table-sub-details">
+                                                                        <h6>{item?.name}</h6>
+
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                               
-                                                <td>
-                                                   9876543210
-                                                </td>
+                                                        </td>
 
-                                                 <td>
-                                                    Jaipur
-                                                </td>
+                                                        <td>
+                                                            {item?.mobileNumber}
+                                                        </td>
 
-                                                <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                <td>5</td>
-                                                <td>456567</td>
-                                                <td>4455</td>
+                                                        <td>
+                                                            {item?.city}
+                                                        </td>
 
-                                                <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div class="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            class="text-secondary"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                           <FontAwesomeIcon icon={faPen}/>
-                                                        </a>
-                                                        <ul
-                                                            class="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a class="prescription-nav" href="#" data-bs-toggle="modal" data-bs-target="#edit-Supplier">
-                                                                   View/Edit 
-                                                                </a>
-                                                            </li>
+                                                        <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
+                                                        <td>5</td>
+                                                        <td>456567</td>
+                                                        <td>4455</td>
 
-                                                            <li className="prescription-item">
-                                                                <a class=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <a href="javascript:void(0)" className="text-secondary"><FontAwesomeIcon icon={faTrash}/></a>
-                                                   </div>
-                                                </td>
-                                               
-                                            </tr>
-
-                                            <tr>
-
-                                                <td>
-                                                    <div className="admin-table-bx">
-                                                        <div className="admin-table-sub-bx">
-                                                            <img src="/admin-tb-logo.png" alt="" />
-                                                            <div className="admin-table-sub-details">
-                                                                <h6>Eleanor Pena</h6>
-                                                                
+                                                        <td>
+                                                            <div className="d-flex align-items-centet gap-2">
+                                                                <div class="dropdown">
+                                                                    <button
+                                                                        onClick={() => setFormData(item)}
+                                                                        class="text-secondary"
+                                                                        id="acticonMenu1"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#edit-Supplier"
+                                                                        aria-expanded="false"
+                                                                    >
+                                                                        <FontAwesomeIcon icon={faPen} />
+                                                                    </button>
+                                                                </div>
+                                                                <button onClick={() => deleteSupplier(item?._id)} className="text-secondary"><FontAwesomeIcon icon={faTrash} /></button>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                               
-                                                <td>
-                                                   9876543210
-                                                </td>
+                                                        </td>
 
-                                                 <td>
-                                                    Jaipur
-                                                </td>
-
-                                                <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                <td>5</td>
-                                                <td>456567</td>
-                                                <td>4455</td>
-
-                                                 <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div class="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            class="text-secondary"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                           <FontAwesomeIcon icon={faPen}/>
-                                                        </a>
-                                                        <ul
-                                                            class="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a class="prescription-nav" href="#" data-bs-toggle="modal" data-bs-target="#edit-Supplier">
-                                                                   View/Edit 
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a class=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <a href="javascript:void(0)" className="text-secondary"><FontAwesomeIcon icon={faTrash}/></a>
-                                                   </div>
-                                                </td>
-                                               
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                    <div className="admin-table-bx">
-                                                        <div className="admin-table-sub-bx">
-                                                            <img src="/admin-tb-logo.png" alt="" />
-                                                            <div className="admin-table-sub-details">
-                                                                <h6>Eleanor Pena</h6>
-                                                                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                               
-                                                <td>
-                                                   9876543210
-                                                </td>
-
-                                                 <td>
-                                                    Jaipur
-                                                </td>
-
-                                                <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                <td>5</td>
-                                                <td>456567</td>
-                                                <td>4455</td>
-
-                                                 <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div class="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            class="text-secondary"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                           <FontAwesomeIcon icon={faPen}/>
-                                                        </a>
-                                                        <ul
-                                                            class="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a class="prescription-nav" href="#" data-bs-toggle="modal" data-bs-target="#edit-Supplier">
-                                                                   View/Edit 
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a class=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <a href="javascript:void(0)" className="text-secondary"><FontAwesomeIcon icon={faTrash}/></a>
-                                                   </div>
-                                                </td>
-                                               
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                    <div className="admin-table-bx">
-                                                        <div className="admin-table-sub-bx">
-                                                            <img src="/admin-tb-logo.png" alt="" />
-                                                            <div className="admin-table-sub-details">
-                                                                <h6>Eleanor Pena</h6>
-                                                                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                               
-                                                <td>
-                                                   9876543210
-                                                </td>
-
-                                                 <td>
-                                                    Jaipur
-                                                </td>
-
-                                                <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                <td>5</td>
-                                                <td>456567</td>
-                                                <td>4455</td>
-
-                                                 <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div class="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            class="text-secondary"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                           <FontAwesomeIcon icon={faPen}/>
-                                                        </a>
-                                                        <ul
-                                                            class="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a class="prescription-nav" href="#" data-bs-toggle="modal" data-bs-target="#edit-Supplier">
-                                                                   View/Edit 
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a class=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <a href="javascript:void(0)" className="text-secondary"><FontAwesomeIcon icon={faTrash}/></a>
-                                                   </div>
-                                                </td>
-                                               
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                    <div className="admin-table-bx">
-                                                        <div className="admin-table-sub-bx">
-                                                            <img src="/admin-tb-logo.png" alt="" />
-                                                            <div className="admin-table-sub-details">
-                                                                <h6>Eleanor Pena</h6>
-                                                                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                               
-                                                <td>
-                                                   9876543210
-                                                </td>
-
-                                                 <td>
-                                                    Jaipur
-                                                </td>
-
-                                                <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                <td>5</td>
-                                                <td>456567</td>
-                                                <td>4455</td>
-
-                                                 <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div class="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            class="text-secondary"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                           <FontAwesomeIcon icon={faPen}/>
-                                                        </a>
-                                                        <ul
-                                                            class="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a class="prescription-nav" href="#" data-bs-toggle="modal" data-bs-target="#edit-Supplier">
-                                                                   View/Edit 
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a class=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <a href="javascript:void(0)" className="text-secondary"><FontAwesomeIcon icon={faTrash}/></a>
-                                                   </div>
-                                                </td>
-                                               
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                    <div className="admin-table-bx">
-                                                        <div className="admin-table-sub-bx">
-                                                            <img src="/admin-tb-logo.png" alt="" />
-                                                            <div className="admin-table-sub-details">
-                                                                <h6>Eleanor Pena</h6>
-                                                                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                               
-                                                <td>
-                                                   9876543210
-                                                </td>
-
-                                                 <td>
-                                                    Jaipur
-                                                </td>
-
-                                                <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                <td>5</td>
-                                                <td>456567</td>
-                                                <td>4455</td>
-
-                                                 <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div class="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            class="text-secondary"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                           <FontAwesomeIcon icon={faPen}/>
-                                                        </a>
-                                                        <ul
-                                                            class="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a class="prescription-nav" href="#" data-bs-toggle="modal" data-bs-target="#edit-Supplier">
-                                                                   View/Edit 
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a class=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <a href="javascript:void(0)" className="text-secondary"><FontAwesomeIcon icon={faTrash}/></a>
-                                                   </div>
-                                                </td>
-                                               
-                                            </tr>
+                                                    </tr>)}
 
                                         </tbody>
                                     </table>
@@ -495,155 +295,259 @@ function Supplier() {
             </div>
 
 
-              {/*Add Supplier Popup Start  */}
+            {/*Add Supplier Popup Start  */}
             {/* data-bs-toggle="modal" data-bs-target="#add-Supplier" */}
             <div className="modal step-modal" id="add-Supplier" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-              aria-labelledby="staticBackdropLabel" aria-hidden="true">
-              <div className="modal-dialog modal-dialog-centered modal-lg">
-                <div className="modal-content rounded-5">
-                  <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
-                    <div>
-                      <h6 className="lg_title mb-0">Add Supplier</h6>
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-lg">
+                    <div className="modal-content rounded-5">
+                        <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
+                            <div>
+                                <h6 className="lg_title mb-0">Add Supplier</h6>
+                            </div>
+                            <div>
+                                <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
+                                    <FontAwesomeIcon icon={faCircleXmark} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="modal-body px-4 pb-5">
+                            <form onSubmit={handleSubmit}>
+                                <div className="row">
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Supplier Name</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Supplier Name"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Supplier Mobile Number</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Mobile Number"
+                                                name="mobileNumber"
+                                                value={formData.mobileNumber}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Supplier Email Address</label>
+                                            <input
+                                                type="email"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Email Address"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Full Address</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Address"
+                                                name="address"
+                                                value={formData.address}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>City</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter City"
+                                                name="city"
+                                                value={formData.city}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Pin code</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Pin code"
+                                                name="pincode"
+                                                value={formData.pincode}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12">
+                                        <div className="text-center mt-4">
+                                            <button
+                                                type="submit"
+                                                className="nw-thm-btn rounded-2 w-75"
+                                                disabled={loading}
+                                            >
+                                                {loading ? "Saving..." : "Add Supplier"}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div>
-                      <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
-                        <FontAwesomeIcon icon={faCircleXmark} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="modal-body px-4 pb-5">
-                    <form action="">
-                        <div className="row">
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Supplier Name</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Supplier Name" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Supplier Mobile Number</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Mobile Number" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-12 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Supplier Email Address</label>
-                        <input type="email" className="form-control nw-frm-select " placeholder="Enter Email Address" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-12 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Full Address</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Address" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">City</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter City" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Pin code</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter  Pin code" />
-                        </div>
-                      </div>
-                      <div className="col-lg-12">
-                         <div className="text-center mt-4">
-                            <button className="nw-thm-btn rounded-2 w-75" >Add Supplier</button>
-                         </div>
-                      </div>
-                    </div>
-                    </form>
-                  </div>
                 </div>
-              </div>
             </div>
             {/*  Add Supplier Popup End */}
 
 
-              {/*Edit Supplier Popup Start  */}
+            {/*Edit Supplier Popup Start  */}
             {/* data-bs-toggle="modal" data-bs-target="#edit-Supplier" */}
             <div className="modal step-modal" id="edit-Supplier" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-              aria-labelledby="staticBackdropLabel" aria-hidden="true">
-              <div className="modal-dialog modal-dialog-centered modal-lg">
-                <div className="modal-content rounded-5 ">
-                  <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
-                    <div>
-                      <h6 className="lg_title mb-0">Edit Supplier</h6>
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-lg">
+                    <div className="modal-content rounded-5 ">
+                        <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
+                            <div>
+                                <h6 className="lg_title mb-0">Edit Supplier</h6>
+                            </div>
+                            <div>
+                                <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
+                                    <FontAwesomeIcon icon={faCircleXmark} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="modal-body px-4 pb-5">
+                            <form onSubmit={handleSubmit}>
+                                <div className="row">
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Supplier Name</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Supplier Name"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Supplier Mobile Number</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Mobile Number"
+                                                name="mobileNumber"
+                                                value={formData.mobileNumber}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Supplier Email Address</label>
+                                            <input
+                                                type="email"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Email Address"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Full Address</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Address"
+                                                name="address"
+                                                value={formData.address}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>City</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter City"
+                                                name="city"
+                                                value={formData.city}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-6 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Pin code</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Pin code"
+                                                name="pincode"
+                                                value={formData.pincode}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12">
+                                        <div className="text-center mt-4">
+                                            <button
+                                                type="submit"
+                                                className="nw-thm-btn rounded-2 w-75"
+                                                disabled={loading}
+                                            >
+                                                {loading ? "Saving..." : "Add Supplier"}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div>
-                      <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
-                        <FontAwesomeIcon icon={faCircleXmark} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="modal-body px-4 pb-5">
-                    <form action="">
-                        <div className="row">
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Supplier Name</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Supplier Name" value="Eleanor Pena" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Supplier Mobile Number</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Mobile Number" value="9876543210" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-12 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Supplier Email Address</label>
-                        <input type="email" className="form-control nw-frm-select " placeholder="Enter Email Address" value="eleanorpena@gmail.com" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-12 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Full Address</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Address" value="Jaipur" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">City</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter City" value="Jaipur" />
-                        </div>
-                      </div>
-
-                      <div className="col-lg-6 col-md-12 col-sm-12">
-                        <div className="custom-frm-bx">
-                        <label htmlFor="">Pin code</label>
-                        <input type="text" className="form-control nw-frm-select " placeholder="Enter  Pin code" value="322021" />
-                        </div>
-                      </div>
-                      <div className="col-lg-12">
-                         <div className="text-center mt-4">
-                            <button className="nw-thm-btn rounded-2 w-75" >Add Supplier</button>
-                         </div>
-                      </div>
-                    </div>
-                    </form>
-                  </div>
                 </div>
-              </div>
             </div>
             {/*  Edit Supplier Popup End */}
 
         </>
-  )
+    )
 }
 
 export default Supplier

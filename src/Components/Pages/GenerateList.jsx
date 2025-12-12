@@ -2,11 +2,37 @@ import { TbGridDots } from "react-icons/tb";
 import { faClose, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { NavLink, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
+import { getSecureApiData } from "../../Services/api";
 
 function GenerateList() {
-    const navigate = useNavigate()
-  return (
-    <>
+    const navigate =useNavigate();
+    const userId=localStorage?.getItem('userId')
+    const [list, setList] = useState([])
+    const [status, setStatus] = useState()
+    const [currentPage, setCurrentPage] = useState(1)
+    const [name, setName] = useState('')
+    const [totalPage, setTotalPage] = useState(1)
+    const fetchSupplier = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/purchase-order/${userId}?page=${currentPage}&name=${name}&status=${status}`);
+
+            if (response.success) {
+                setList(response.data)
+                setTotalPage(response.pagination.totalPages)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    useEffect(() => {
+        fetchSupplier()
+    }, [userId, currentPage, status])
+    return (
+        <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
                 <div className="row mb-3">
                     <div className="d-flex align-items-center justify-content-between">
@@ -31,8 +57,8 @@ function GenerateList() {
                             </div>
                         </div>
 
-                         <div className="d-flex gap-2">
-                            <button  className="nw-thm-btn rounded-3 nw-upload-bx " onClick={()=> navigate("/new-generate")} data-bs-dismiss="modal" aria-label="Close"  >Generate PO</button>
+                        <div className="d-flex gap-2">
+                            <button className="nw-thm-btn rounded-3 nw-upload-bx " onClick={() => navigate("/new-generate")} data-bs-dismiss="modal" aria-label="Close"  >Generate PO</button>
                         </div>
 
 
@@ -99,8 +125,86 @@ function GenerateList() {
                                         </thead>
                                         <tbody>
 
+                                            {list?.length>0 && 
+                                            list?.map((item,key)=>
+                                            <tr key={key}>
+                                                <td>
+                                                    <div className="admin-table-bx">
+                                                        <div className="admin-table-sub-bx">
+                                                            <div className="admin-table-sub-details">
+                                                                <h6>{item?.supplierId?.name}</h6>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    {item?.supplierId?.mobileNumber}
+                                                </td>
+
+                                                <td>
+                                                    {item?.deliveryDate ? new Date(item?.deliveryDate)?.toLocaleDateString() :'-'}
+                                                </td>
+
+                                                <td>
+                                                    <ul className="admin-appointment-list">
+                                                        {item?.products?.map((p,i)=><>
+                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
+                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
+                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
+                                                        <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
+                                                        <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
+                                                        </>)}
+                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
+                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
+                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
+                                                        <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
+                                                        <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
+
+                                                    </ul>
+                                                </td>
+                                                <td>
+                                                    --
+                                                </td>
+
+                                                <td>
+                                                    <div className="d-flex align-items-centet gap-2">
+                                                        <div className="dropdown">
+                                                            <a
+
+                                                                href="javascript:void(0)"
+                                                                className="grid-dots-btn"
+                                                                id="acticonMenu1"
+                                                                data-bs-toggle="dropdown"
+                                                                aria-expanded="false"
+                                                            >
+                                                                <TbGridDots />
+                                                            </a>
+                                                            <ul
+                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                aria-labelledby="acticonMenu1"
+                                                            >
+                                                                <li className="prescription-item">
+                                                                    <NavLink to="/edit-generate" className="prescription-nav" href="#" >
+                                                                        View/Edit
+                                                                    </NavLink>
+                                                                </li>
+                                                                <li className="prescription-item">
+                                                                    <a className=" prescription-nav" href="#">
+
+                                                                        Delete
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+
+                                                    </div>
+                                                </td>
+                                            </tr>)}
+
+
                                             <tr>
-                                                 <td>
+                                                <td>
                                                     <div className="admin-table-bx">
                                                         <div className="admin-table-sub-bx">
                                                             <img src="/admin-tb-logo.png" alt="" />
@@ -121,135 +225,60 @@ function GenerateList() {
 
                                                 <td>
                                                     <ul className="admin-appointment-list">
-                                                     <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                    <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                    <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                    <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
-                                                    <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
-                                                     <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                    <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                    <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                    <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
-                                                    <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
-                                                    
+                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
+                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
+                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
+                                                        <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
+                                                        <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
+                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
+                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
+                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
+                                                        <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
+                                                        <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
+
                                                     </ul>
                                                 </td>
                                                 <td>
                                                     --
                                                 </td>
 
-                                               <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                       
-                                                            href="javascript:void(0)"
-                                                            className="grid-dots-btn"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                         <TbGridDots />
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <NavLink to="/edit-generate" className="prescription-nav" href="#" >
-                                                                   View/Edit 
-                                                                </NavLink>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
-                                                </td>
-                                            </tr>
+                                                <td>
+                                                    <div className="d-flex align-items-centet gap-2">
+                                                        <div className="dropdown">
+                                                            <a
 
-                                            
-                                            <tr>
-                                                 <td>
-                                                    <div className="admin-table-bx">
-                                                        <div className="admin-table-sub-bx">
-                                                            <img src="/admin-tb-logo.png" alt="" />
-                                                            <div className="admin-table-sub-details">
-                                                                <h6>Eleanor Pena</h6>
-                                                            </div>
+                                                                href="javascript:void(0)"
+                                                                className="grid-dots-btn"
+                                                                id="acticonMenu1"
+                                                                data-bs-toggle="dropdown"
+                                                                aria-expanded="false"
+                                                            >
+                                                                <TbGridDots />
+                                                            </a>
+                                                            <ul
+                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                aria-labelledby="acticonMenu1"
+                                                            >
+                                                                <li className="prescription-item">
+                                                                    <a className="prescription-nav" href="#" >
+                                                                        View/Edit
+                                                                    </a>
+                                                                </li>
+                                                                <li className="prescription-item">
+                                                                    <a className=" prescription-nav" href="#">
+
+                                                                        Delete
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
                                                         </div>
+
                                                     </div>
-                                                </td>
-
-                                                <td>
-                                                    9876543210
-                                                </td>
-
-                                                <td>
-                                                    20 July 2025
-                                                </td>
-
-                                                <td>
-                                                    <ul className="admin-appointment-list">
-                                                     <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                    <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                    <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                    <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
-                                                    <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
-                                                     <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                    <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                    <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                    <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
-                                                    <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">20 Jun 2026</span></li>
-                                                    
-                                                    </ul>
-                                                </td>
-                                                <td>
-                                                    --
-                                                </td>
-
-                                               <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                       
-                                                            href="javascript:void(0)"
-                                                            className="grid-dots-btn"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                         <TbGridDots />
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   View/Edit 
-                                                                </a>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
                                                 </td>
                                             </tr>
 
-                                           
-                                         
+
+
 
                                         </tbody>
                                     </table>
@@ -262,64 +291,64 @@ function GenerateList() {
             </div>
 
             {/*Add Supplier Popup Start  */}
-                        {/* data-bs-toggle="modal" data-bs-target="#add-Request" */}
-                        <div className="modal step-modal" id="add-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div className="modal-dialog modal-dialog-centered modal-lg">
-                                <div className="modal-content rounded-5 p-4">
-                                    <div className="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <h6 className="lg_title mb-0">Send  H1 Medicine Request</h6>
-                                        </div>
-                                        <div>
-                                            <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
-                                                <FontAwesomeIcon icon={faClose} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="modal-body p-0">
-                                        <form action="">
-                                            <div className="row mt-3">
-                                                <div className="col-lg-12 col-md-12 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label>Select Medicine </label>
-                                                        <div className="select-wrapper">
-                                                            <select className="form-select custom-select">
-                                                            <option>Select Medicine </option>
-                                                            </select>
-                                                        </div>
-                                                        </div>
-                                                </div>
-                                                <div className="col-lg-12 col-md-12 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Quantity</label>
-                                                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Quantity" />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-12 col-md-12 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Message</label>
-                                                        <textarea name="" id=""  className="form-control nw-frm-select "></textarea>
-                                                       
-                                                    </div>
-                                                </div>
-            
-                                                <div className="col-lg-12">
-                                                    <div className="text-center mt-4">
-                                                        <button className="nw-thm-btn rounded-2 w-75" >Send Request</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
+            {/* data-bs-toggle="modal" data-bs-target="#add-Request" */}
+            <div className="modal step-modal" id="add-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-lg">
+                    <div className="modal-content rounded-5 p-4">
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 className="lg_title mb-0">Send  H1 Medicine Request</h6>
+                            </div>
+                            <div>
+                                <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
+                                    <FontAwesomeIcon icon={faClose} />
+                                </button>
                             </div>
                         </div>
-                        {/*  Add Supplier Popup End */}
+                        <div className="modal-body p-0">
+                            <form action="">
+                                <div className="row mt-3">
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Select Medicine </label>
+                                            <div className="select-wrapper">
+                                                <select className="form-select custom-select">
+                                                    <option>Select Medicine </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Quantity</label>
+                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Quantity" />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Message</label>
+                                            <textarea name="" id="" className="form-control nw-frm-select "></textarea>
+
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12">
+                                        <div className="text-center mt-4">
+                                            <button className="nw-thm-btn rounded-2 w-75" >Send Request</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/*  Add Supplier Popup End */}
 
         </>
-  )
+    )
 }
 
 export default GenerateList

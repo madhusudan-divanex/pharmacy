@@ -131,8 +131,6 @@ function PrescriptionsBar() {
                                                 Prescriptions
                                             </a>
                                         </li>
-
-
                                         <li className="nav-item" role="presentation">
                                             <a
                                                 className="nav-link"
@@ -144,7 +142,6 @@ function PrescriptionsBar() {
                                                 Medical Records
                                             </a>
                                         </li>
-
                                     </ul>
                                 </div>
                                 <div className="">

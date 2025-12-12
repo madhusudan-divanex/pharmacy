@@ -1,5 +1,5 @@
 import { faBell } from "@fortawesome/free-regular-svg-icons";
-import {  faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -8,9 +8,9 @@ import { Link, NavLink } from "react-router-dom";
 import base_url from "../../baseUrl";
 
 function TopHeader() {
-      const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(true);
 
-       useEffect(() => {
+  useEffect(() => {
     let overlay = document.querySelector('.mobile-overlay');
     if (!overlay) {
       overlay = document.createElement('div');
@@ -47,24 +47,27 @@ function TopHeader() {
       closeBtns.forEach(btn => btn.removeEventListener('click', handleClose));
     };
   }, []);
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   const {
-    profiles,isOwner,
+    profiles, isOwner,
     pharPerson
   } = useSelector((state) => state.user);
-
+  const {
+    staffData, empAccess,
+    professional, employment
+  } = useSelector((state) => state.staff);
   return (
     <>
       <div className="tp-header-section d-flex align-items-center justify-content-between w-100 py-2 px-3">
         <div className="dash-vendr-header-left-bx">
           <a href="#" className="tp-mobile-menu-btn me-lg-0 me-sm-3" onClick={(e) => {
-        e.preventDefault();
-        setIsOpen((prev) => !prev);
-      }}>
+            e.preventDefault();
+            setIsOpen((prev) => !prev);
+          }}>
             {/* <FontAwesomeIcon icon={faBars} className="fa-lg" /> */}
             {/* <FontAwesomeIcon icon={faChevronLeft} className="fa-lg" /> */}
-             <FontAwesomeIcon icon={isOpen ? faChevronLeft : faChevronRight} className="fa-lg" />
+            <FontAwesomeIcon icon={isOpen ? faChevronLeft : faChevronRight} className="fa-lg" />
           </a>
 
           {/* <div className="top-header-icon tp-header-search-br ">
@@ -106,10 +109,9 @@ function TopHeader() {
                 aria-expanded="false"
               >
                 <div className="admn-icon me-2">
-                  <img src={isOwner?`${base_url}/${profiles?.logo}` :"/user-avatar.png"} alt="" />
+                  <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt="" />
                 </div>
               </a>
-
               <ul
                 className="dropdown-menu dropdown-menu-end user-dropdown sallr-drop-box p-0"
                 aria-labelledby="userMenu"
@@ -117,14 +119,14 @@ function TopHeader() {
                 <div className="profile-card-box gap-0">
                   <div className="profile-top-section">
                     <img
-                      src={isOwner?`${base_url}/${profiles?.logo}` :"/user-avatar.png"}
+                      src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`}
                       alt="Profile"
                       className="profile-image"
                     />
                     <div className="profile-info">
-                      <span className="profile-role">{isOwner?'Admin':'Staff'}</span>
-                      <h4 className="profile-name">{profiles?.name}</h4>
-                      <p className="profile-id">ID : {profiles?.customId}</p>
+                      <span className="profile-role">{isOwner ? 'Admin' : employment?.position}</span>
+                      <h4 className="profile-name">{isOwner ? profiles?.name : staffData?.name}</h4>
+                      <p className="profile-id">ID : {isOwner ?profiles?.customId : staffData?._id?.slice(-10)}</p>
                     </div>
                   </div>
                   <div className="profile-logout-box">

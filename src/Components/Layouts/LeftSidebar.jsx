@@ -14,10 +14,13 @@ function LeftSidebar() {
     profiles, isOwner,
     pharPerson
   } = useSelector((state) => state.user);
-
-  useEffect(() => {
-    dispatch(fetchUserDetail());
-  }, [dispatch]);
+  const {
+    staffData, empAccess,
+    professional,employment
+  } = useSelector((state) => state.staff);
+  useEffect(()=>{
+      dispatch(fetchUserDetail())
+    },[])
   return (
     <>
       <div className="dashboard-left-side text-white min-vh-100 flex-shrink-0">
@@ -45,17 +48,15 @@ function LeftSidebar() {
           <div className="task-vendor-profile-crd">
             <NavLink to="#">
               <div className="task-vendor-profile-bx">
-                <img src={isOwner ? `${base_url}/${profiles?.logo}` : "/user-avatar.png"} alt="" />
+                <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt="" />
                 <div>
-                  <h6 className="new_title fw-500 mb-0">{isOwner ? profiles?.name : pharPerson?.name}</h6>
-                  <p>#{profiles?.customId}</p>
+                  <h6 className="new_title fw-500 mb-0">{isOwner ? profiles?.name : staffData?.name}</h6>
+                  <p>#{isOwner? profiles?.customId : staffData?._id?.slice(-10)}</p>
                 </div>
               </div>
             </NavLink>
           </div>
-
           <div className="left-navigation flex-grow-1 overflow-auto">
-
             <ul className="nav flex-column mt-3" >
               <h6 className="mb-0">Navigation</h6>
               <li className="nav-item">
@@ -273,7 +274,8 @@ function LeftSidebar() {
                       <button className="nw-thm-btn " data-bs-dismiss="modal" aria-label="Close"
                         onClick={() => {
                           localStorage.clear()
-                          navigate('/login')}}>Yes, Logout</button>
+                          navigate('/login')
+                        }}>Yes, Logout</button>
                     </div>
 
                   </div>

@@ -101,7 +101,7 @@ function Router() {
 
         { path: "/add-employee", element: <ProtectedRoute component={AddEmployee} /> },
 
-        { path: "/view-employee", element: <ProtectedRoute component={ViewEmployee} /> },
+        { path: "/view-employee/:name/:id", element: <ProtectedRoute component={ViewEmployee} /> },
 
         { path: "/permission-check/:name/:id", element: <ProtectedRoute component={PermissionCheck} /> },
 

@@ -171,7 +171,8 @@ function Permission() {
                                                             {item?.name}
                                                         </td>
                                                         <td>
-                                                            <span><NavLink onClick={() => sessionStorage.setItem('permission', JSON.stringify(item))} to={`/permission-check/${item?.name}/${item?._id}`} className="admin-sub-dropdown"> <FontAwesomeIcon icon={faKey} /> Permission</NavLink></span>
+                                                            <span><NavLink onClick={() => sessionStorage.setItem('permission', JSON.stringify(item))} to={`/permission-check/${item?.name}/${item?._id}`}
+                                                             className="admin-sub-dropdown"> <FontAwesomeIcon icon={faKey} /> Permission <small className="permission-title">{item?.totalUsed}</small></NavLink></span>
                                                         </td>
                                                         <td>
                                                             <div className="d-flex align-items-centet gap-2">
