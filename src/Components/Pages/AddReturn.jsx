@@ -1,8 +1,107 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { useEffect, useState } from "react";
 import { FaPlusSquare } from "react-icons/fa";
+import { getSecureApiData, securePostData } from "../../Services/api";
+import { toast } from "react-toastify";
+import Select from "react-select";
 
 function AddReturn() {
+    const userId = localStorage.getItem('userId')
+    const [inventoryList, setInventoryList] = useState([])
+    const [suppliers, setSuppliers] = useState([])
+    const [formData, setFormData] = useState({
+        supplierId: "",
+        deliveryDate: "",
+        status: "",
+        reason: "",
+        pharId:userId,
+        products: [
+            { inventoryId: "", quantity: "" },
+        ],
+    });
+
+    // handle input change
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    // handle product change
+    const handleProductSelectChange = (index, selectedOption) => {
+        const products = [...formData.products];
+        products[index].inventoryId = selectedOption.value;
+        setFormData({ ...formData, products });
+    };
+
+    // Quantity/input change
+    const handleProductQuantityChange = (index, e) => {
+        const { name, value } = e.target;
+        const products = [...formData.products];
+        products[index][name] = value;
+        setFormData({ ...formData, products });
+    };
+    // add new product row
+    const addProduct = () => {
+        setFormData({
+            ...formData,
+            products: [...formData.products, { inventoryId: "", quantity: "" }],
+        });
+    };
+
+    // remove product row
+    const removeProduct = (index) => {
+        const products = [...formData.products];
+        products.splice(index, 1);
+        setFormData({ ...formData, products });
+    };
+    const handleSubmit = async(e) => {
+        e.preventDefault();
+        try {
+            const response=await securePostData('pharmacy/return',formData)
+            if(response.success){
+                toast.success('Return created')
+            }else{
+                toast.error(response.message)
+            }
+        } catch (error) {
+            
+        }
+    };
+    const fetchSupplier = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/supplier/${userId}`);
+
+            if (response.success) {
+                setSuppliers(response.data)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    const fetchInventory = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=all`);
+
+            if (response.success) {
+                const data = response?.data?.map((item) => ({
+                    value: item?._id,
+                    label: item?.medicineName, // fixed typo
+                }));
+                setInventoryList(data)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    useEffect(() => {
+        fetchSupplier()
+        fetchInventory()
+    }, [userId])
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -33,14 +132,22 @@ function AddReturn() {
                 </div>
 
                 <div className='dashboard-main-card '>
-                    <form action="">
+                    <form onSubmit={handleSubmit}>
                         <div className="row">
+
                             <div className="col-lg-4 col-md-4 col-sm-12">
-                                <div class="custom-frm-bx">
+                                <div className="custom-frm-bx">
                                     <label>Select Supplier</label>
-                                    <div class="select-wrapper">
-                                        <select class="form-select custom-select">
-                                            <option>Select Supplier</option>
+                                    <div className="select-wrapper">
+                                        <select
+                                            className="form-select custom-select"
+                                            name="supplierId"
+                                            value={formData.supplierId}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">Select Supplier</option>
+                                            {suppliers?.map((item, key) =>
+                                                <option value={item?._id}>{item?.name}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -48,80 +155,105 @@ function AddReturn() {
 
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
-                                    <label htmlFor="">Delivery Date</label>
-                                    <input type="date" className="form-control nw-frm-select " placeholder="Enter Patient name" />
+                                    <label>Delivery Date</label>
+                                    <input
+                                        type="date"
+                                        className="form-control nw-frm-select"
+                                        name="deliveryDate"
+                                        value={formData.deliveryDate}
+                                        onChange={handleChange}
+                                    />
                                 </div>
                             </div>
 
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
-                                    <label htmlFor="">Delivery Date</label>
-                                    <input type="date" className="form-control nw-frm-select " placeholder="Enter Mobile Number" />
+                                    <label>Status</label>
+                                    <select
+                                        className="form-select custom-select"
+                                        name="status"
+                                        required
+                                        value={formData.status}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="">Select Status</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-
                         <div className="">
                             <h5 className="add-contact-title mb-3">Product</h5>
                         </div>
-
-                        <div className="sub-tab-brd rounded-2 mb-3">
-                            <div className="row">
-                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                    <div className="custom-frm-bx">
-                                        <label htmlFor="">Product Name</label>
-                                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Product Name" />
+                        {formData.products.map((product, index) => (
+                            <div className="sub-tab-brd rounded-2 mb-3" key={index}>
+                                <div className="row">
+                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Product Name</label>
+                                            <Select
+                                                options={inventoryList}
+                                                className="form-select nw-frm-select"
+                                                value={product.inventoryId}
+                                                onChange={(option) => handleProductSelectChange(index, option)}
+                                                placeholder="Select Product"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                  <div className=" return-box">
-                                        <div className="custom-frm-bx d-flex flex-column flex-grow-1">
-                                        <label htmlFor="">Quantity </label>
-                                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Quantity" />
-                                    </div>
-                                    <div>
-                                        <button className="text-black"><FontAwesomeIcon icon={faTrash} /></button>
-                                    </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div className="sub-tab-brd mb-3 rounded-2">
-                            <div className="row">
-                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                    <div className="custom-frm-bx">
-                                        <label htmlFor="">Product Name</label>
-                                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Product Name" />
-                                    </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                    <div className=" return-box">
-                                        <div className="custom-frm-bx d-flex flex-column flex-grow-1">
-                                        <label htmlFor="">Quantity </label>
-                                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Quantity" />
-                                    </div>
-                                    <div>
-                                        <button className="text-black"><FontAwesomeIcon icon={faTrash} /></button>
-                                    </div>
+                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="return-box d-flex align-items-center">
+                                            <div className="custom-frm-bx flex-grow-1">
+                                                <label>Quantity</label>
+                                                <input
+                                                    type="number"
+                                                    className="form-control nw-frm-select"
+                                                    placeholder="Enter Quantity"
+                                                    name="quantity"
+                                                    value={product.quantity}
+                                                    onChange={(e) => handleProductQuantityChange(index, e)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <button
+                                                    type="button"
+                                                    className="text-black ms-2"
+                                                    onClick={() => removeProduct(index)}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        ))}
                         <div className="mt-3 text-end">
-                            <a href="javascript:void(0)" className="add-employee-btn"><FaPlusSquare /> Add More</a>
+                            <button
+                                type="button"
+                                className="add-employee-btn"
+                                onClick={addProduct}
+                            >
+                                <FaPlusSquare /> Add More
+                            </button>
                         </div>
-                        <div className="row">
+                        <div className="row mt-3">
                             <div className="col-lg-12">
                                 <div className="custom-frm-bx">
-                                    <label htmlFor="">Reason</label>
-                                    <textarea name="" id="" className="form-control nw-frm-select "></textarea>
+                                    <label>Reason</label>
+                                    <textarea
+                                        className="form-control nw-frm-select"
+                                        name="reason"
+                                        value={formData.reason}
+                                        onChange={handleChange}
+                                    ></textarea>
                                 </div>
                             </div>
                         </div>
                         <div className="mt-3 text-end">
-                            <button className="nw-thm-btn rounded-3"> Submit</button>
+                            <button className="nw-thm-btn rounded-3" type="submit">
+                                Submit
+                            </button>
                         </div>
                     </form>
 

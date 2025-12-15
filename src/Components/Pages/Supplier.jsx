@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+import Loader from "../Layouts/Loader";
 function Supplier() {
     const userId = localStorage.getItem('userId')
     const [formData, setFormData] = useState({
@@ -87,9 +88,9 @@ function Supplier() {
     const [name, setName] = useState('')
     const [totalPage, setTotalPage] = useState(1)
     const fetchSupplier = async () => {
+        setLoading(true)
         try {
             const response = await getSecureApiData(`pharmacy/supplier/${userId}?page=${currentPage}&name=${name}&status=${status}`);
-
             if (response.success) {
                 setSuppliers(response.data)
                 setTotalPage(response.pagination.totalPages)
@@ -98,6 +99,8 @@ function Supplier() {
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        } finally {
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -124,175 +127,157 @@ function Supplier() {
     }, [name])
     return (
         <>
-            <div className="main-content flex-grow-1 p-3 overflow-auto">
-                <div className="row mb-3">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h3 className="innr-title mb-2 gradient-text">Supplier List</h3>
-                            <div className="admin-breadcrumb">
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb custom-breadcrumb">
-                                        <li className="breadcrumb-item">
-                                            <a href="#" className="breadcrumb-link">
-                                                Dashboard
-                                            </a>
-                                        </li>
-                                        <li
-                                            className="breadcrumb-item active"
-                                            aria-current="page"
-                                        >
-                                            Supplier
-                                        </li>
-                                    </ol>
-                                </nav>
-                            </div>
-                        </div>
-
-                        <div>
-                            <button className="nw-thm-btn" data-bs-toggle="modal" data-bs-target="#add-Supplier" >Add Supplier</button>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div className='new-mega-card'>
-                    <div className="row">
-                        <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                            <div className="d-flex align-items-center gap-2">
-                                <div className="custom-frm-bx mb-0">
-                                    <input
-                                        type="text"
-                                        className="form-control admin-table-search-frm search-table-frm pe-5"
-                                        id="email"
-                                        value={name} onChange={(e) => setName(e.target.value)}
-                                        placeholder="Search"
-                                        required
-                                    />
-                                    <div className="adm-search-bx">
-                                        <button className="tp-search-btn">
-                                            <FontAwesomeIcon icon={faSearch} />
-                                        </button>
-                                    </div>
+            {loading ?
+                <Loader /> : <div className="main-content flex-grow-1 p-3 overflow-auto">
+                    <div className="row mb-3">
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h3 className="innr-title mb-2 gradient-text">Supplier List</h3>
+                                <div className="admin-breadcrumb">
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb custom-breadcrumb">
+                                            <li className="breadcrumb-item">
+                                                <a href="#" className="breadcrumb-link">
+                                                    Dashboard
+                                                </a>
+                                            </li>
+                                            <li
+                                                className="breadcrumb-item active"
+                                                aria-current="page"
+                                            >
+                                                Supplier
+                                            </li>
+                                        </ol>
+                                    </nav>
                                 </div>
-                                <div className="filters">
-                                    <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
-                                        <label className="label">Short By :</label>
-                                        <select className="">
-                                            <option>Top score</option>
-                                            <option>Test 1</option>
-                                            <option>Test 2</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <button className="nw-thm-btn">Filter</button>
-                                </div>
-
                             </div>
-
-
-
-                            <div className="page-selector d-flex align-items-center mb-2 mb-md-0">
-                                <select
-                                    value={currentPage}
-                                    onChange={(e) => setCurrentPage(e.target.value)}
-                                    className="form-select custom-page-dropdown nw-custom-page ">
-                                    {Array.from({ length: totalPage }, (_, i) => (
-                                        <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                    ))}
-                                </select>
-
+                            <div>
+                                <button className="nw-thm-btn" onClick={() => setFormData({
+                                    name: "",
+                                    mobileNumber: "",
+                                    email: "",
+                                    address: "",
+                                    cityId: "",
+                                    pincode: "",
+                                    score: 0,
+                                })} data-bs-toggle="modal" data-bs-target="#add-Supplier">Add Supplier</button>
                             </div>
-
-
                         </div>
                     </div>
+                    <div className='new-mega-card'>
+                        <div className="row">
+                            <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                <div className="d-flex align-items-center gap-2">
+                                    <div className="custom-frm-bx mb-0">
+                                        <input
+                                            type="text"
+                                            className="form-control admin-table-search-frm search-table-frm pe-5"
+                                            id="email"
+                                            value={name} onChange={(e) => setName(e.target.value)}
+                                            placeholder="Search"
+                                            required
+                                        />
+                                        <div className="adm-search-bx">
+                                            <button className="tp-search-btn">
+                                                <FontAwesomeIcon icon={faSearch} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="filters">
+                                        <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
+                                            <label className="label">Short By :</label>
+                                            <select className="">
+                                                <option>Top score</option>
+                                                <option>Test 1</option>
+                                                <option>Test 2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button className="nw-thm-btn">Filter</button>
+                                    </div>
+                                </div>
+                                <div className="page-selector d-flex align-items-center mb-2 mb-md-0">
+                                    <select
+                                        value={currentPage}
+                                        onChange={(e) => setCurrentPage(e.target.value)}
+                                        className="form-select custom-page-dropdown nw-custom-page ">
+                                        {Array.from({ length: totalPage }, (_, i) => (
+                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
 
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="table-section">
+                                    <div className="table table-responsive mb-0">
+                                        <table className="table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Supplier</th>
+                                                    <th>Mobile Number </th>
+                                                    <th>Address</th>
+                                                    <th>Score</th>
+                                                    <th>On-time delivery</th>
+                                                    <th>Price</th>
+                                                    <th>Quality</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {suppliers?.length > 0 &&
+                                                    suppliers?.map((item, key) =>
+                                                        <tr key={key}>
+                                                            <td>
+                                                                <div className="admin-table-bx">
+                                                                    <div className="admin-table-sub-bx">
 
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <div className="table-section">
-                                <div className="table table-responsive mb-0">
-                                    <table className="table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Supplier</th>
-                                                <th>Mobile Number </th>
-                                                <th>Address</th>
-                                                <th>Score</th>
-                                                <th>On-time delivery</th>
-                                                <th>Price</th>
-                                                <th>Quality</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                                                        <div className="admin-table-sub-details">
+                                                                            <h6>{item?.name}</h6>
 
-                                            {suppliers?.length > 0 &&
-                                                suppliers?.map((item, key) =>
-                                                    <tr key={key}>
-                                                        <td>
-                                                            <div className="admin-table-bx">
-                                                                <div className="admin-table-sub-bx">
-
-                                                                    <div className="admin-table-sub-details">
-                                                                        <h6>{item?.name}</h6>
-
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td>
-                                                            {item?.mobileNumber}
-                                                        </td>
-
-                                                        <td>
-                                                            {item?.city}
-                                                        </td>
-
-                                                        <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                        <td>5</td>
-                                                        <td>456567</td>
-                                                        <td>4455</td>
-
-                                                        <td>
-                                                            <div className="d-flex align-items-centet gap-2">
-                                                                <div class="dropdown">
-                                                                    <button
-                                                                        onClick={() => setFormData(item)}
-                                                                        class="text-secondary"
-                                                                        id="acticonMenu1"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#edit-Supplier"
-                                                                        aria-expanded="false"
-                                                                    >
-                                                                        <FontAwesomeIcon icon={faPen} />
-                                                                    </button>
+                                                            </td>
+                                                            <td>
+                                                                {item?.mobileNumber}
+                                                            </td>
+                                                            <td>
+                                                                {item?.city}
+                                                            </td>
+                                                            <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
+                                                            <td>5</td>
+                                                            <td>456567</td>
+                                                            <td>4455</td>
+                                                            <td>
+                                                                <div className="d-flex align-items-centet gap-2">
+                                                                    <div class="dropdown">
+                                                                        <button
+                                                                            onClick={() => setFormData(item)}
+                                                                            class="text-secondary"
+                                                                            id="acticonMenu1"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#edit-Supplier"
+                                                                            aria-expanded="false"
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faPen} />
+                                                                        </button>
+                                                                    </div>
+                                                                    <button onClick={() => deleteSupplier(item?._id)} className="text-secondary"><FontAwesomeIcon icon={faTrash} /></button>
                                                                 </div>
-                                                                <button onClick={() => deleteSupplier(item?._id)} className="text-secondary"><FontAwesomeIcon icon={faTrash} /></button>
-                                                            </div>
-                                                        </td>
-
-                                                    </tr>)}
-
-                                        </tbody>
-                                    </table>
+                                                            </td>
+                                                        </tr>)}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
-
-
-
-                </div>
-
-
-
-
-            </div>
+                </div>}
 
 
             {/*Add Supplier Popup Start  */}

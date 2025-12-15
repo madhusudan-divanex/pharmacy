@@ -76,7 +76,6 @@ function SetPassword() {
                           required
                           onChange={(e) => setPassword(e.target.value)}
                         />
-
                         <div className="pass-eye-bx">
                           <button type="button" onClick={(e) => setIsPass(!isPass)} className="pass-eye-slash-btn">
                             <FontAwesomeIcon icon={isPass ? faEye : faEyeSlash} />

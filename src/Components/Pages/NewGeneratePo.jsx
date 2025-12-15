@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import { FaPlusSquare } from "react-icons/fa";
 import { getSecureApiData, securePostData } from "../../Services/api";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 function NewGeneratePo() {
+    const navigate = useNavigate()
     const userId = localStorage.getItem('userId')
     const [suppliers, setSuppliers] = useState([])
     const fetchSupplier = async () => {
@@ -33,9 +35,6 @@ function NewGeneratePo() {
         pincode: "",
         score: 0,
     });
-
-
-    // Step 2: handleChange function
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -44,15 +43,15 @@ function NewGeneratePo() {
             [name]: value,
         }));
     };
-
-    // Step 3: handleSubmit function
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const payload = { ...formData, pharId: userId };
             const response = await securePostData("pharmacy/supplier", payload); // adjust API URL
             if (response.success) {
+                toast.success("Purhcase order created")
                 fetchSupplier()
+                navigate('/generate-list')
                 setPurchaseData({...purchaseData,supplierId:response.supplier?._id})
                 setFormData({
                     name: "",
@@ -94,8 +93,6 @@ function NewGeneratePo() {
             [name]: value,
         }));
     };
-
-    // Step 3: Handle product array changes
     const handleItemChange = (index, e) => {
         const { name, value } = e.target;
         setPurchaseData((prev) => {
@@ -116,16 +113,12 @@ function NewGeneratePo() {
             ],
         }));
     };
-
-    // Step 5: Remove product row
     const removeProduct = (index) => {
         setPurchaseData((prev) => {
             const products = prev.products.filter((_, i) => i !== index);
             return { ...prev, products };
         });
     };
-
-    // Step 6: Handle form submit
     const handleProductSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -214,6 +207,11 @@ function NewGeneratePo() {
                                         required
                                     />
                                 </div>
+                            </div>
+                            <div className="col-lg-4 col-md-4 col-sm-12 d-flex align-items-center">
+                               <div className="">
+                                 <a href="#" className="nw-thm-btn outline rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#add-Supplier"> <img src="/add-supplier.svg" alt="" /> Add Supplier</a>
+                               </div>
                             </div>
                         </div>
 
@@ -453,6 +451,7 @@ function NewGeneratePo() {
                                         <div className="text-center mt-4">
                                             <button
                                                 type="submit"
+                                                data-bs-dismiss="modal"
                                                 className="nw-thm-btn rounded-2 w-75"
 
                                             >
