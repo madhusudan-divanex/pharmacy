@@ -15,9 +15,9 @@ function AddReturn() {
         deliveryDate: "",
         status: "",
         reason: "",
-        pharId:userId,
+        pharId: userId,
         products: [
-            { inventoryId: "", quantity: "" },
+            { inventoryId: null, quantity: "" },
         ],
     });
 
@@ -55,17 +55,17 @@ function AddReturn() {
         products.splice(index, 1);
         setFormData({ ...formData, products });
     };
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response=await securePostData('pharmacy/return',formData)
-            if(response.success){
+            const response = await securePostData('pharmacy/return', formData)
+            if (response.success) {
                 toast.success('Return created')
-            }else{
+            } else {
                 toast.error(response.message)
             }
         } catch (error) {
-            
+
         }
     };
     const fetchSupplier = async () => {
@@ -102,6 +102,7 @@ function AddReturn() {
         fetchSupplier()
         fetchInventory()
     }, [userId])
+    console.log(formData)
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -192,13 +193,20 @@ function AddReturn() {
                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
                                             <label>Product Name</label>
+                                            <div className="select-wrapper">
                                             <Select
-                                                options={inventoryList}
-                                                className="form-select nw-frm-select"
-                                                value={product.inventoryId}
+                                                options={inventoryList.filter(
+                                                    item =>
+                                                        !formData.products.some(
+                                                            (p, i) => p.inventoryId === item.value && i !== index
+                                                        )
+                                                )}
+                                                 classNamePrefix="custom-select"
+                                                value={inventoryList.find(item => item.value === product.inventoryId) || null}
                                                 onChange={(option) => handleProductSelectChange(index, option)}
                                                 placeholder="Select Product"
                                             />
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="col-lg-6 col-md-6 col-sm-12">

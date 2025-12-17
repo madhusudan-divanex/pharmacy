@@ -41,6 +41,9 @@ import CreateAccountPerson from "./Auth/CreateAccountPerson";
 import ApproveProfile from "./Pages/ApproveProfile";
 import ProtectedRoute from "./ProtectedRoute";
 import Wating from "./Auth/Waiting";
+import H1Medicine from "./Pages/H1Medicine";
+import XMedicine from "./Pages/XMedicine";
+import HMedicine from "./Pages/HMedicine";
 
 function Router() {
   const router = createBrowserRouter([
@@ -114,6 +117,10 @@ function Router() {
         { path: "/medicine-request", element: <ProtectedRoute component={MedicineRequest} /> },
 
         { path: "/wating-for-approval", element: <ProtectedRoute component={Wating} /> },
+        { path: "/h1", element: <ProtectedRoute component={H1Medicine} /> },
+        { path: "/h", element: <ProtectedRoute component={HMedicine} /> },
+        { path: "/x", element: <ProtectedRoute component={XMedicine} /> },
+
 
         // -----------------------------
         // 🔓 PUBLIC ROUTES

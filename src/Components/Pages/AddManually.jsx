@@ -1,12 +1,120 @@
 import { faCircleXmark, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { IoCloudUploadOutline } from "react-icons/io5";
-import { FaPlusCircle } from "react-icons/fa";
+import { FaPlusCircle, FaPlusSquare } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
+import { getSecureApiData } from "../../Services/api";
+import { use, useEffect, useState } from "react";
+import Select from "react-select";
 
 function AddManually() {
     const navigate = useNavigate()
+    const userId = localStorage.getItem("userId")
+    const [patientId, setPatientId] = useState("")
+    const [doctorId, setDoctorId] = useState("")
+    const [dtData, setDtData] = useState({})
+    const [ptData, setPtData] = useState({})
+    const [medicineList, setMedicineList] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
+    const [formData, setFormData] = useState({
+        patientId: "",
+        doctorId: "",
+        products: [
+            { inventoryId: null, quantity: 0, price: 0 },
+        ],
+    })
+    const fetchPatient = async () => {
+        try {
+            const response = await getSecureApiData(`patient/${patientId}`);
+            if (response.success) {
+                setPtData(response.data)
+                setIsLoading(false)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    const fetchDoctor = async () => {
+        try {
+            const response = await getSecureApiData(`doctor/${doctorId}`);
+            if (response.success) {
+                setDtData(response.data)
+                setIsLoading(false)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    const fetchInventory = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=all&limit=10000&status=Approved`);
+            if (response.success) {
+                const data = response?.data?.map((item) => ({
+                    value: item?._id,
+                    label: item?.medicineName, // fixed typo
+                }));
+                setMedicineList(data)
+                setIsLoading(false)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        } finally {
+            setIsLoading(false)
+        }
+    }
+    useEffect(() => {
+        if (patientId?.length > 3) {
+            fetchPatient()
+        }
+    }, [patientId])
+    useEffect(() => {
+        if (doctorId?.length > 3) {
+            fetchDoctor()
+        }
+    }, [doctorId])
+    useEffect(() => {
+        fetchInventory()
+    }, [userId])
+    const handleProductSelectChange = (index, selectedOption) => {
+        const products = [...formData.products];
+        products[index].inventoryId = selectedOption.value;
+        setFormData({ ...formData, products });
+    };
+
+    // Quantity/input change
+    const handleProductQuantityChange = (index, e) => {
+        const { name, value } = e.target;
+        const products = [...formData.products];
+        products[index][name] = value;
+        setFormData({ ...formData, products });
+    };
+    const handleProductPriceChange = (index, e) => {
+        const { name, value } = e.target;
+        const products = [...formData.products];
+        products[index][name] = value;
+        setFormData({ ...formData, products });
+    };
+    // add new product row
+    const addProduct = () => {
+        setFormData({
+            ...formData,
+            products: [...formData.products, { inventoryId: "", quantity: "" }],
+        });
+    };
+
+    // remove product row
+    const removeProduct = (index) => {
+        const products = [...formData.products];
+        products.splice(index, 1);
+        setFormData({ ...formData, products });
+    };
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -49,42 +157,42 @@ function AddManually() {
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
                                     <label htmlFor="">Patient Id</label>
-                                    <input type="text" className="form-control nw-frm-select " placeholder="Enter Patient Id" />
+                                    <input type="number" value={patientId} onChange={(e) => setPatientId(e.target.value)} className="form-control nw-frm-select " placeholder="Enter Patient Id" />
                                 </div>
                             </div>
 
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
                                     <label htmlFor="">Patient Name</label>
-                                    <input type="text" className="form-control nw-frm-select " placeholder="Enter Patient name" />
+                                    <input type="text" value={ptData?.name} disabled className="form-control nw-frm-select " placeholder="Enter Patient name" />
                                 </div>
                             </div>
 
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
                                     <label htmlFor="">Patient Mobile Number</label>
-                                    <input type="number" className="form-control nw-frm-select " placeholder="Enter Patient Mobile Number" />
+                                    <input type="number" value={ptData?.contactNumber} disabled className="form-control nw-frm-select " placeholder="Enter Patient Mobile Number" />
                                 </div>
                             </div>
 
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
                                     <label htmlFor="">Doctor Id</label>
-                                    <input type="text" className="form-control nw-frm-select " placeholder="Enter Doctor Id" />
+                                    <input type="text" value={doctorId} onChange={(e) => setDoctorId(e.target.value)} className="form-control nw-frm-select " placeholder="Enter Doctor Id" />
                                 </div>
                             </div>
 
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
                                     <label htmlFor="">Doctor  Name</label>
-                                    <input type="text" className="form-control nw-frm-select " placeholder="Enter Doctor name" />
+                                    <input type="text" value={dtData?.name} disabled className="form-control nw-frm-select " placeholder="Enter Doctor name" />
                                 </div>
                             </div>
 
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
                                     <label htmlFor="">Doctor Mobile Number</label>
-                                    <input type="number" className="form-control nw-frm-select " placeholder="Enter Doctor Mobile Number" />
+                                    <input type="number" value={dtData?.contactNumber} disabled className="form-control nw-frm-select " placeholder="Enter Doctor Mobile Number" />
                                 </div>
                             </div>
 
@@ -134,65 +242,65 @@ function AddManually() {
                             <div className="mb-3">
                                 <h5 className="add-contact-title">Manually Add Medications</h5>
                             </div>
+                            {formData.products.map((product, index) => (
+                                <div className="row mb-2" key={index}>
+                                    <div className="col-lg-4 col-md-4 col-sm-12">
+                                        <div class="custom-frm-bx">
+                                            <label>Medication</label>
+                                            <div class="select-wrapper">
+                                                <Select
+                                                    options={medicineList.filter(
+                                                        item =>
+                                                            !formData.products.some(
+                                                                (p, i) => p.inventoryId === item.value && i !== index
+                                                            )
+                                                    )}
+                                                    classNamePrefix="custom-select"
+                                                    value={medicineList.find(item => item.value === product.inventoryId) || null}
+                                                    onChange={(option) => handleProductSelectChange(index, option)}
+                                                    placeholder="Select Product"
+                                                />
+                                            </div>
+                                        </div>
 
-                            <div className="col-lg-4 col-md-4 col-sm-12">
-                                 <div class="custom-frm-bx">
-                                    <label>Medication</label>
-                                    <div class="select-wrapper">
-                                        <select class="form-select custom-select">
-                                            <option>Select Medication</option>
-                                        </select>
                                     </div>
-                                </div>
 
-                            </div>
-
-                            <div className="col-lg-4 col-md-4 col-sm-12">
-                                <div className="custom-frm-bx">
-                                    <label htmlFor="">Quantity</label>
-                                    <input type="text" className="form-control nw-frm-select " placeholder="Enter Quantity" />
-                                </div>
-                            </div>
-                            <div className="col-lg-4 col-md-4 col-sm-12 d-flex align-items-center">
-                                <div className="custom-frm-bx mb-0">
-                                    <button className="text-danger"><FontAwesomeIcon icon={faTrash} /></button>
-                                </div>
-                            </div>
-
-                            <div className="col-lg-4 col-md-4 col-sm-12">
-                                 <div class="custom-frm-bx">
-                                    <label>Medication</label>
-                                    <div class="select-wrapper">
-                                        <select class="form-select custom-select">
-                                            <option>Select Medication</option>
-                                        </select>
+                                    <div className="col-lg-4 col-md-4 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Quantity</label>
+                                            <input type="number" 
+                                            value={product?.quantity}
+                                            name="quantity"
+                                            onChange={(e)=>handleProductQuantityChange(index,e)}
+                                            className="form-control nw-frm-select " placeholder="Enter Quantity" />
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                    <div className="col-lg-4 col-md-4 col-sm-12 d-flex align-items-center">
+                                        <div className="custom-frm-bx mb-0">
+                                            <button className="text-danger"
+                                                onClick={() => removeProduct(index)}
+                                            ><FontAwesomeIcon icon={faTrash} /></button>
+                                        </div>
+                                        {index == formData?.products?.length - 1 &&
+                                            <div className="text-end">
+                                                <button
+                                                    type="button"
+                                                    className="reprting-name"
+                                                    onClick={addProduct}
+                                                >
+                                                    <FaPlusCircle />
+                                                </button>
+                                            </div>}
+                                    </div>
+                                </div>))}
 
-                            <div className="col-lg-4 col-md-4 col-sm-12">
-                                <div className="custom-frm-bx">
-                                    <label htmlFor="">Quantity</label>
-                                    <input type="text" className="form-control nw-frm-select " placeholder="Enter Quantity" />
-                                </div>
-                            </div>
-
-                            <div className="col-lg-4 col-md-4 col-sm-12 d-flex align-items-center">
-                                <div className="custom-frm-bx mb-0">
-                                    <button className="text-danger"><FontAwesomeIcon icon={faTrash} /></button>
-                                    <button className="reprting-name"><FaPlusCircle /></button>
-                                </div>
-                            </div>
 
                             <div className="col-lg-12 col-md-12 col-sm-12 mt-2">
                                 <div className="generate-bill">
                                     <h5 className="add-contact-title mb-0 fz-22">Generate Bill </h5>
-
                                     <div className="text-center">
                                         <img src="/bill.svg" alt="" />
-
                                         <p className="py-2">Please Generate PrescriptionsBill </p>
-
                                         <a href="javascript:void(0)" className="nw-thm-btn outline rounded-5" data-bs-toggle="modal" data-bs-target="#bill-Generate">Generate Bill</a>
                                     </div>
                                 </div>
@@ -211,7 +319,7 @@ function AddManually() {
                                 </div>
 
                                 <div>
-                                    <button className="nw-thm-btn rounded-3"  onClick={()=> navigate("/sell")} data-bs-dismiss="modal" aria-label="Close" >Submit</button>
+                                    <button className="nw-thm-btn rounded-3" onClick={() => navigate("/sell")} data-bs-dismiss="modal" aria-label="Close" >Submit</button>
                                 </div>
                             </div>
 
@@ -251,110 +359,56 @@ function AddManually() {
                         </div>
                         <div className="modal-body px-4 pb-5">
                             <form action="">
-                                <div className="row">
-                                    <div className="col-lg-6 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Medicine Name</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Medicine Name" />
+                                {formData?.products?.map((product, index) =>
+                                    <div className="row" key={index}>
+                                        <div className="col-lg-6 col-md-4 col-sm-12">
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Medicine Name</label>
+                                                <div class="select-wrapper">
+                                                    <Select
+                                                        options={medicineList.filter(
+                                                            item =>
+                                                                !formData.products.some(
+                                                                    (p, i) => p.inventoryId === item.value && i !== index
+                                                                )
+                                                        )}
+                                                        classNamePrefix="custom-select"
+                                                        disabled
+                                                        value={medicineList.find(item => item.value === product.inventoryId) || null}
+                                                        onChange={(option) => handleProductSelectChange(index, option)}
+                                                        placeholder="Select Product"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Quantity</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter  Quantity" />
+                                        <div className="col-lg-3 col-md-4 col-sm-12">
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Quantity</label>
+                                                <input type="number"
+                                                    value={product?.quantity}
+                                                    disabled
+                                                    className="form-control nw-frm-select " placeholder="Enter  Quantity" />
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Amount($)</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Amount" />
+                                        <div className="col-lg-3 col-md-4 col-sm-12">
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Amount($)</label>
+                                                <input type="text"
+                                                name="price"
+                                                value={product?.price} 
+                                                onChange={(e)=>handleProductPriceChange(index,e)}
+                                                className="form-control nw-frm-select " placeholder="Enter Amount" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="col-lg-6 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Medicine Name</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Medicine Name" />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Quantity</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter  Quantity" />
-                                        </div>
-                                    </div>
+                                    </div>)}
 
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Amount($)</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Amount" />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-6 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Medicine Name</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Medicine Name" />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Quantity</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter  Quantity" />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Amount($)</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Amount" />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-6 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Medicine Name</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Medicine Name" />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Quantity</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter  Quantity" />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Amount($)</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Amount" />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-6 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Medicine Name</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Medicine Name" />
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Quantity</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter  Quantity" />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-3 col-md-4 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Amount($)</label>
-                                            <input type="text" className="form-control nw-frm-select " placeholder="Enter Amount" />
-                                        </div>
-                                    </div>
-
-
-                                    <div className="col-lg-12">
-                                        <div className="text-center mt-4">
-                                            <button className="nw-thm-btn rounded-2 w-75" >Submit</button>
-                                        </div>
+                                <div className="col-lg-12">
+                                    <div className="text-center mt-4">
+                                        <button className="nw-thm-btn rounded-2 w-75" >Submit</button>
                                     </div>
                                 </div>
+
                             </form>
                         </div>
                     </div>

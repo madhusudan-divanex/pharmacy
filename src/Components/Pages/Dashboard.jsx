@@ -297,11 +297,9 @@ const Dashboard = () => {
                       <td>
                         9876543210
                       </td>
-
                       <td>
                         Jaipur
                       </td>
-
                       <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
                       <td>4455</td>
                     </tr>
@@ -512,7 +510,6 @@ const Dashboard = () => {
               <div>
                 <h5 className="text-grad mb-0">Margin Analysis</h5>
               </div>
-
               <div>
                 <NavLink to="/inventory" className="thm-btn rounded-3">View All </NavLink>
               </div>
@@ -527,7 +524,6 @@ const Dashboard = () => {
                       <th>Avg Margin</th>
                       <th>Low Margin</th>
                       <th>High Margin</th>
-
                     </tr>
                   </thead>
                   <tbody>

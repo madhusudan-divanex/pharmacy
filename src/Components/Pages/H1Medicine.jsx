@@ -8,7 +8,7 @@ import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "
 import { toast } from "react-toastify";
 import Barcode from "react-barcode"
 
-function InventoryList() {
+function H1Medicine() {
     const handleDetected = (code) => {
         alert("Scanned barcode: " + code);
     };
@@ -75,7 +75,7 @@ function InventoryList() {
     const [totalPage, setTotalPage] = useState(1)
     const fetchInventory = async () => {
         try {
-            const response = await getSecureApiData(`pharmacy/inventory/${userId}?page=${currentPage}&search=${name}&schedule=${schedule}`);
+            const response = await getSecureApiData(`pharmacy/inventory/${userId}?page=${currentPage}&search=${name}&schedule=H1`);
             if (response.success) {
                 setList(response.data)
                 setTotalPage(response.pagiantion.totalPages)
@@ -109,7 +109,7 @@ function InventoryList() {
                 <div className="row mb-3">
                     <div className="d-flex align-items-center justify-content-between">
                         <div>
-                            <h3 className="innr-title mb-2 gradient-text">Inventory</h3>
+                            <h3 className="innr-title mb-2 gradient-text">Schedule Medicine</h3>
                             <div className="admin-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb custom-breadcrumb">
@@ -122,17 +122,17 @@ function InventoryList() {
                                             className="breadcrumb-item active"
                                             aria-current="page"
                                         >
-                                            Inventory
+                                            H1
                                         </li>
                                     </ol>
                                 </nav>
                             </div>
                         </div>
 
-                        <div className="d-flex gap-2">
+                        {/* <div className="d-flex gap-2">
                             <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button>
                             <button className="nw-thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
-                        </div>
+                        </div> */}
 
 
                     </div>
@@ -160,7 +160,7 @@ function InventoryList() {
                                         </div>
                                     </div>
 
-                                    <div className="filters">
+                                    {/* <div className="filters">
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
                                             <label className="label">Schedule :</label>
                                             <select className="" value={schedule} onChange={(e) => setSchedule(e.target.value)}>
@@ -169,7 +169,7 @@ function InventoryList() {
                                                 <option value="H">H</option>
                                             </select>
                                         </div>
-                                    </div>
+                                    </div> */}
                                     <div>
                                         <button onClick={() => fetchInventory()} className="nw-thm-btn rounded-2">
                                             Filter
@@ -221,7 +221,7 @@ function InventoryList() {
                                         </thead>
                                         <tbody>
 
-                                            {list?.length > 0 &&
+                                            {list?.length > 0 ?
                                                 list?.map((item, key) =>
                                                     <tr key={key}>
                                                         <td>{key + 1}</td>
@@ -331,7 +331,8 @@ function InventoryList() {
                                                                 <button className="text-secondary" onClick={() => deleteInventory(item?._id)}><FontAwesomeIcon icon={faTrash} /></button>
                                                             </div>
                                                         </td>
-                                                    </tr>)}
+                                                    </tr>)
+                                                    :<span className="text-center">No data found</span>}
 
                                         </tbody>
                                     </table>
@@ -807,4 +808,4 @@ function InventoryList() {
     )
 }
 
-export default InventoryList
+export default H1Medicine

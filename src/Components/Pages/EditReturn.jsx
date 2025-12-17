@@ -59,13 +59,13 @@ function EditReturn() {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const returnData=JSON.parse(sessionStorage.getItem('returnData'))
-        const data={returnId:returnData?._id,...formData}
+        const returnData = JSON.parse(sessionStorage.getItem('returnData'))
+        const data = { returnId: returnData?._id, ...formData }
         try {
             const response = await updateApiData('pharmacy/return', data)
             if (response.success) {
                 toast.success('Return updated')
-            }else{
+            } else {
                 toast.error(response.message)
             }
         } catch (error) {
@@ -228,13 +228,20 @@ function EditReturn() {
                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
                                             <label>Product Name</label>
+                                            <div className="select-wrapper">
                                             <Select
-                                                options={inventoryList}
-                                                className="form-select nw-frm-select"
+                                                options={inventoryList.filter(
+                                                    item =>
+                                                        !formData.products.some(
+                                                            (p, i) => p.inventoryId === item.value && i !== index
+                                                        )
+                                                )}
+                                                classNamePrefix="custom-select"
                                                 value={inventoryList.find(opt => opt.value === product.inventoryId) || null}
                                                 onChange={(option) => handleProductSelectChange(index, option)}
                                                 placeholder="Select Product"
                                             />
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="col-lg-6 col-md-6 col-sm-12">
@@ -264,7 +271,6 @@ function EditReturn() {
                                 </div>
                             </div>
                         ))}
-
                         <div className="mt-3 text-end">
                             <button
                                 type="button"

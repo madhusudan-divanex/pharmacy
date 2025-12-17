@@ -2,8 +2,88 @@ import { TbGridDots } from "react-icons/tb";
 
 import { faCircleXmark, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from "react";
+import { getSecureApiData, securePostData } from "../../Services/api";
+import { toast } from "react-toastify";
 function MedicineRequest() {
+    const [loading, setLoading] = useState(true)
+    const userId = localStorage.getItem('userId')
+    const [currentPage, setCurrentPage] = useState(1)
+    const [status,setStatus] =useState('all')
+    const [name, setName] = useState('')
+    const [totalPage, setTotalPage] = useState(1)
+    const [medicineList, setMedicineList] = useState([])
+    const [medicineRequest, setMedicineRequest] = useState([])
+    const [formData, setFormData] = useState({
+        pharId: userId,
+        medicineId: null,
+        quantity: null,
+        message: '',
+        schedule: 'H1'
+    })
+    const fetchInventory = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=all&limit=10000`);
+            if (response.success) {
+                setMedicineList(response.data)
+                setLoading(false)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        } finally {
+            setLoading(false)
+        }
+    }
+    const fetchMedicineRequest = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/medicine-request/${userId}?page=${currentPage}&status=${status}`);
+            if (response.success) {
+                setMedicineRequest(response.data)
+                setTotalPage(response.pagination?.totalPages)
+                setLoading(false)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        } finally {
+            setLoading(false)
+        }
+    }
+    useEffect(() => {
+        fetchInventory()
+        fetchMedicineRequest()
+    }, [userId])
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }))
+    }
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            const response = await securePostData('pharmacy/medicine-request', formData)
+            if (response.success) {
+                setFormData({
+                    pharId: userId,
+                    medicineId: null,
+                    quantity: null,
+                    message: ''
+                })
+                toast.success("Medicine request sent to the admin")
+            } else {
+                toast.error(response.message)
+            }
+        } catch (error) {
+
+        }
+    }
     return (
+
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
                 <div className="row mb-3">
@@ -40,9 +120,11 @@ function MedicineRequest() {
                                 <div className="d-flex align-items-center gap-2 nw-box">
                                     <div className="custom-frm-bx mb-0">
                                         <input
-                                            type="email"
+                                            type="text"
                                             className="form-control admin-table-search-frm search-table-frm pe-5"
                                             id="email"
+                                            value={name}
+                                            onChange={(e)=>setName(e.target.value)}
                                             placeholder="Search"
                                             required
                                         />
@@ -55,18 +137,20 @@ function MedicineRequest() {
 
                                     <div className="filters">
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
-                                            <label className="label">Medicine :</label>
-                                            <select className="">
-                                                <option>All</option>
-                                                <option>Test 1</option>
-                                                <option>Test 2</option>
+                                            <label className="label">Status :</label>
+                                            <select className="" value={status} onChange={(e)=>setStatus(e.target.value)}>
+                                                <option value="all">All</option>
+                                                <option value="Pending">Pending</option>
+                                                <option value="Approved">Approved</option>
+                                                <option value="Rejected">Rejected</option>
+
                                             </select>
                                         </div>
                                     </div>
                                     <div>
-                                        <a href="#" className="nw-thm-btn rounded-2">
+                                        <button onClick={()=>fetchMedicineRequest()} className="nw-thm-btn rounded-2">
                                             Filter
-                                        </a>
+                                        </button>
                                     </div>
 
                                 </div>
@@ -78,13 +162,16 @@ function MedicineRequest() {
                                     <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#add-Request">Send Request</button>
                                 </div>
 
-                                <div className="filters">
-                                    <select className="form-select custom-page-dropdown nw-custom-page ">
-                                        <option value="1" selected>100</option>
-                                        <option value="2">1</option>
-                                        <option value="3">2</option>
+                                {totalPage &&<div className="filters">
+                                    <select
+                                        value={currentPage}
+                                        onChange={(e) => setCurrentPage(e.target.value)}
+                                        className="form-select custom-page-dropdown nw-custom-page ">
+                                        {Array.from({ length: totalPage }, (_, i) => (
+                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                        ))}
                                     </select>
-                                </div>
+                                </div>}
                             </div>
                         </div>
                     </div>
@@ -103,32 +190,33 @@ function MedicineRequest() {
                                                 <th>Description</th>
                                                 <th>Stock</th>
                                                 <th>Status</th>
-
                                             </tr>
                                         </thead>
                                         <tbody>
-
-                                            <tr>
-                                                <td>1</td>
-
-                                                <td>
-                                                    Alprazolam
-                                                </td>
-
-                                                <td>
-                                                    20 June 2025
-                                                </td>
-
-                                                <td>Lorem ipsum dolor sit amet.</td>
-                                                <td>
-                                                    100
-                                                </td>
-
-                                                <td>
-                                                    <span className="paid-title"> Approved</span>
-                                                </td>
-                                            </tr>
-
+                                            {medicineRequest?.length > 0 &&
+                                                medicineRequest?.map((item, key) =>
+                                                    <tr key={key}>
+                                                        <td>{key + 1}</td>
+                                                        <td>
+                                                            {item?.medicineName}
+                                                        </td>
+                                                        <td>
+                                                            {item?.createdAt ? new Date(item?.createdAt)?.toLocaleDateString('en-GB', {
+                                                                    day: '2-digit',
+                                                                    month: 'short',
+                                                                    year: 'numeric'
+                                                                    }) : '-'}
+                                                        </td>
+                                                        <td>{item?.message}</td>
+                                                        <td>
+                                                            {item?.quantity}
+                                                        </td>
+                                                        <td>
+                                                            {item?.status == "Approved" && <span className="paid-title"> Approved</span>}
+                                                            {item?.status == "Pending" && <span className="pending-title">  Pending</span>}
+                                                            {item?.status == "Rejected" && <span className="reject-title">  Rejected</span>}
+                                                        </td>
+                                                    </tr>)}
                                             <tr>
                                                 <td>2</td>
 
@@ -146,7 +234,7 @@ function MedicineRequest() {
                                                 </td>
 
                                                 <td>
-                                                    <span className="pending-title">  Pending</span>
+                                                    <span className="pending-title">Pending</span>
                                                 </td>
                                             </tr>
 
@@ -266,61 +354,76 @@ function MedicineRequest() {
             </div>
 
             {/*Add Supplier Popup Start  */}
-                        {/* data-bs-toggle="modal" data-bs-target="#add-Request" */}
-                        <div className="modal step-modal" id="add-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div className="modal-dialog modal-dialog-centered modal-lg">
-                                <div className="modal-content rounded-5">
-                                    <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
-                                        <div>
-                                            <h6 className="lg_title mb-0">Send  H1 Medicine Request</h6>
-                                        </div>
-                                        <div>
-                                            <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
-                                                <FontAwesomeIcon icon={faCircleXmark} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="modal-body px-4 pb-5">
-                                        <form action="">
-                                            <div className="row">
-                                                <div className="col-lg-12 col-md-12 col-sm-12">
-                                                    <div class="custom-frm-bx">
-                                                        <label>Select Medicine </label>
-                                                        <div class="select-wrapper">
-                                                            <select class="form-select custom-select">
-                                                            <option>Select Medicine </option>
-                                                            </select>
-                                                        </div>
-                                                        </div>
-                                                </div>
-                                                <div className="col-lg-12 col-md-12 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Quantity</label>
-                                                        <input type="text" className="form-control nw-frm-select " placeholder="Enter Quantity" />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-12 col-md-12 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Message</label>
-                                                        <textarea name="" id=""  className="form-control nw-frm-select "></textarea>
-                                                       
-                                                    </div>
-                                                </div>
-            
-                                                <div className="col-lg-12">
-                                                    <div className="text-center mt-4">
-                                                        <button className="nw-thm-btn rounded-2 w-75" >Send Request</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
+            {/* data-bs-toggle="modal" data-bs-target="#add-Request" */}
+            <div className="modal step-modal" id="add-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-lg">
+                    <div className="modal-content rounded-5">
+                        <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
+                            <div>
+                                <h6 className="lg_title mb-0">Send  H1 Medicine Request</h6>
+                            </div>
+                            <div>
+                                <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
+                                    <FontAwesomeIcon icon={faCircleXmark} />
+                                </button>
                             </div>
                         </div>
-                        {/*  Add Supplier Popup End */}
+                        <div className="modal-body px-4 pb-5">
+                            <form onSubmit={handleSubmit}>
+                                <div className="row">
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div class="custom-frm-bx">
+                                            <label>Select Medicine </label>
+                                            <div class="select-wrapper">
+                                                <select class="form-select custom-select" name="medicineId"
+                                                    value={formData?.medicineId}
+                                                    onChange={handleChange}>
+                                                    <option>Select Medicine </option>
+                                                    {medicineList?.length > 0 &&
+                                                        medicineList?.map((item, key) =>
+                                                            <option value={item?._id}>{item?.medicineName} </option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Quantity</label>
+                                            <input type="number"
+                                                value={formData?.quantity}
+                                                onChange={handleChange}
+                                                name="quantity"
+                                                className="form-control nw-frm-select " placeholder="Enter Quantity" />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12 col-md-12 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Message</label>
+                                            <textarea id=""
+                                                value={formData?.message}
+                                                onChange={handleChange}
+                                                name="message"
+                                                className="form-control nw-frm-select "></textarea>
+
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-12">
+                                        <div className="text-center mt-4">
+                                            <button type="submit"
+                                                data-bs-dismiss="modal"
+                                                className="nw-thm-btn rounded-2 w-75" >Send Request</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/*  Add Supplier Popup End */}
 
         </>
     )

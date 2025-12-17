@@ -197,7 +197,7 @@ function Supplier() {
                                         <button className="nw-thm-btn">Filter</button>
                                     </div>
                                 </div>
-                                <div className="page-selector d-flex align-items-center mb-2 mb-md-0">
+                                {totalPage &&<div className="page-selector d-flex align-items-center mb-2 mb-md-0">
                                     <select
                                         value={currentPage}
                                         onChange={(e) => setCurrentPage(e.target.value)}
@@ -206,7 +206,7 @@ function Supplier() {
                                             <option key={i + 1} value={i + 1}>{i + 1}</option>
                                         ))}
                                     </select>
-                                </div>
+                                </div>}
                             </div>
                         </div>
 

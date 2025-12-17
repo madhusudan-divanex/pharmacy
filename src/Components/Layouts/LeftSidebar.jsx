@@ -110,15 +110,15 @@ function LeftSidebar() {
 
                 <ul className=" product-submenu collapse" id="labReportsSubmenu" data-bs-parent=".nav">
                   <li className="nav-item">
-                    <NavLink to="#" className="nav-link submenu-link">H1</NavLink>
+                    <NavLink to="/h1" className="nav-link submenu-link">H1</NavLink>
                   </li>
 
                   <li className="nav-item">
-                    <NavLink to="#" className="nav-link submenu-link">H</NavLink>
+                    <NavLink to="/h" className="nav-link submenu-link">H</NavLink>
                   </li>
 
                   <li className="nav-item">
-                    <NavLink to="#" className="nav-link submenu-link">X</NavLink>
+                    <NavLink to="/x" className="nav-link submenu-link">X</NavLink>
                   </li>
 
                   <li className="nav-item">

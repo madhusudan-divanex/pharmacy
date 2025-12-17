@@ -125,7 +125,7 @@ function Returns() {
 
                             </div>
 
-                            <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                            {totalPage &&<div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
                                 <div>
                                     <select
                                         value={currentPage}
@@ -136,10 +136,7 @@ function Returns() {
                                         ))}
                                     </select>
                                 </div>
-
-
-
-                            </div>
+                            </div>}
 
 
                         </div>
