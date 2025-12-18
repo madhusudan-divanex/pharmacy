@@ -4,7 +4,7 @@ import { IoCloudUploadOutline } from "react-icons/io5";
 import { FaPlusCircle, FaPlusSquare } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getSecureApiData } from "../../Services/api";
+import { getSecureApiData, securePostData } from "../../Services/api";
 import { use, useEffect, useState } from "react";
 import Select from "react-select";
 
@@ -18,8 +18,11 @@ function AddManually() {
     const [medicineList, setMedicineList] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
-        patientId: "",
-        doctorId: "",
+        patientId: null,
+        doctorId: null,
+        pharId:userId,
+        prescriptionFile:null,
+        paymentStatus:"Pending",
         products: [
             { inventoryId: null, quantity: 0, price: 0 },
         ],
@@ -28,6 +31,7 @@ function AddManually() {
         try {
             const response = await getSecureApiData(`patient/${patientId}`);
             if (response.success) {
+                setFormData({...formData,patientId:response.data._id})
                 setPtData(response.data)
                 setIsLoading(false)
             } else {
@@ -41,6 +45,7 @@ function AddManually() {
         try {
             const response = await getSecureApiData(`doctor/${doctorId}`);
             if (response.success) {
+                setFormData({...formData,doctorId:response.data._id})
                 setDtData(response.data)
                 setIsLoading(false)
             } else {
@@ -115,6 +120,29 @@ function AddManually() {
         products.splice(index, 1);
         setFormData({ ...formData, products });
     };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const data=new FormData();
+        data.append("patientId",formData.patientId)
+        data.append("doctorId",formData.doctorId)
+        data.append("pharId",formData.pharId)
+        if(formData.prescriptionFile){
+            data.append("prescriptionFile",formData.prescriptionFile)
+        }
+        data.append("paymentStatus",formData.paymentStatus)
+        data.append("products",JSON.stringify(formData.products))
+        try {
+            const response=await securePostData(`pharmacy/sell`,data);
+            if(response.success){
+                toast.success(response.message)
+                navigate("/sell")
+            }else{
+                toast.error(response.message)
+            }
+        } catch (error) {
+            
+        }
+    }
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -149,7 +177,7 @@ function AddManually() {
                 </div>
 
                 <div className='dashboard-main-card '>
-                    <form action="">
+                    <form onSubmit={handleSubmit}>
                         <div className="row">
                             <div className="mb-3">
                                 <h5 className="add-contact-title text-black fz-24">Manually Details</h5>
@@ -224,12 +252,15 @@ function AddManually() {
                                                 type="file"
                                                 className="d-none"
                                                 id="fileInput1"
+                                                onChange={(e)=>setFormData({...formData,prescriptionFile:e.target.files[0]})}
                                                 accept=".png,.jpg,.jpeg"
                                             />
 
-                                            <div id="filePreviewWrapper" className="d-none mt-3">
-                                                <img src="" alt="Preview" className="img-thumbnail" />
-                                            </div>
+                                            {formData.prescriptionFile && (
+                                                <div id="filePreviewWrapper" className=" mt-3">
+                                                    <img src={URL.createObjectURL(formData.prescriptionFile)} alt="Preview" className="img-thumbnail" />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -301,7 +332,9 @@ function AddManually() {
                                     <div className="text-center">
                                         <img src="/bill.svg" alt="" />
                                         <p className="py-2">Please Generate PrescriptionsBill </p>
-                                        <a href="javascript:void(0)" className="nw-thm-btn outline rounded-5" data-bs-toggle="modal" data-bs-target="#bill-Generate">Generate Bill</a>
+                                        <button
+                                        disabled={formData?.products[0].inventoryId==null}
+                                         className="nw-thm-btn outline rounded-5" data-bs-toggle="modal" data-bs-target="#bill-Generate">Generate Bill</button>
                                     </div>
                                 </div>
                             </div>
@@ -310,7 +343,10 @@ function AddManually() {
                                 <div className="permission-check-main-bx">
 
                                     <div className="form-check custom-check d-inline-block">
-                                        <input className="form-check-input" type="checkbox" value="" id="chat" />
+                                        <input className="form-check-input" type="checkbox" 
+                                        checked={formData?.paymentStatus==="Completed"}
+                                        onChange={(e)=>setFormData({...formData,paymentStatus:e.target.checked?"Completed":"Pending"})}
+                                         id="chat" />
                                         <label className="form-check-label" for="chat">
                                             Payment Done
                                         </label>
@@ -319,7 +355,7 @@ function AddManually() {
                                 </div>
 
                                 <div>
-                                    <button className="nw-thm-btn rounded-3" onClick={() => navigate("/sell")} data-bs-dismiss="modal" aria-label="Close" >Submit</button>
+                                    <button className="nw-thm-btn rounded-3" type="submit" data-bs-dismiss="modal" aria-label="Close" >Submit</button>
                                 </div>
                             </div>
 
@@ -358,7 +394,7 @@ function AddManually() {
                             </div>
                         </div>
                         <div className="modal-body px-4 pb-5">
-                            <form action="">
+                            <form >
                                 {formData?.products?.map((product, index) =>
                                     <div className="row" key={index}>
                                         <div className="col-lg-6 col-md-4 col-sm-12">

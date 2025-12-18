@@ -103,9 +103,7 @@ function Supplier() {
             setLoading(false)
         }
     }
-    useEffect(() => {
-        fetchSupplier()
-    }, [userId, currentPage, status])
+    
     const deleteSupplier = async (id) => {
         try {
             const response = await deleteApiData(`pharmacy/supplier/${id}`);
@@ -120,11 +118,11 @@ function Supplier() {
         }
     }
     useEffect(() => {
-        setTimeout(() => {
-
+        const timer = setTimeout(() => {
             fetchSupplier()
-        }, 1000)
-    }, [name])
+        }, 800)
+        return () => clearTimeout(timer)
+    }, [name,userId, currentPage, status])
     return (
         <>
             {loading ?

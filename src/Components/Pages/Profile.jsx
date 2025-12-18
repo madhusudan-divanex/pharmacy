@@ -246,7 +246,8 @@ function Profile() {
                                     <h6>{profiles?.customId}</h6>
                                   </div>
                                   <QRCodeCanvas
-                                    value={String(userId)}
+                                    // value={String(userId)}
+                                    value="693fa2fe0e25c19097d673e1"
                                     size={256}
                                     className="qr-code"
                                     style={{ height: "auto", maxWidth: "100%", width: "20%" }}
@@ -255,6 +256,7 @@ function Profile() {
 
 
                                 </div>
+                                
 
                                 {/* <div className="d-flex flex-column gap-2 card-down-bx">
                                                         <button className="patient-crd-down-btn"><FontAwesomeIcon icon={faDownload} /></button>

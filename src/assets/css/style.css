@@ -5427,4 +5427,6 @@ display: none !important;
 /* select categoreis */
 
 
-
+.hide-buttons .no-print {
+  display: none !important;
+}

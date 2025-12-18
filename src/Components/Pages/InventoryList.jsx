@@ -130,14 +130,11 @@ function InventoryList() {
                         </div>
 
                         <div className="d-flex gap-2">
-                            <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button>
+                            {/* <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button> */}
                             <button className="nw-thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
                         </div>
-
-
                     </div>
                 </div>
-
                 <div className='new-mega-card'>
                     <div className="row">
                         <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details">
@@ -190,12 +187,8 @@ function InventoryList() {
                                     </select>
                                 </div>
                             </div>}
-
-
                         </div>
                     </div>
-
-
                     <div className="row">
                         <div className="col-lg-12">
                             <div className="table-section">
@@ -278,8 +271,8 @@ function InventoryList() {
                                                             {showBarcode == key ?
                                                                 <div className="inventory-barcd">
 
-                                                                    <Barcode value={item._id} width={0.5} displayValue={false}
-                                                                        height={50} />
+                                                                    <Barcode value={item?.customId} width={1.3} displayValue={false}
+                                                                        height={80} />
                                                                 </div>
                                                                 :
                                                                 <button

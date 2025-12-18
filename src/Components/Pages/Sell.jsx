@@ -2,15 +2,71 @@ import { TbGridDots } from "react-icons/tb";
 
 import { faCircleXmark, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Scanner from "./Scanner";
 import { NavLink, useNavigate } from "react-router-dom";
+import { deleteApiData, getSecureApiData } from "../../Services/api";
+import { toast } from "react-toastify";
+import { useEffect, useRef, useState } from "react";
+import {
+    BrowserMultiFormatReader,
+    BarcodeFormat,
+    DecodeHintType,
+} from "@zxing/library";
+
 
 
 function Sell() {
     const navigate = useNavigate()
-    const handleDetected = (code) => {
-        alert("Scanned barcode: " + code);
+    const userId = localStorage.getItem("userId")
+    const [currentPage, setCurrentPage] = useState(1)
+    const [schedule, setSchedule] = useState('all')
+    const [name, setName] = useState('')
+    const [sort, setSort] = useState('newest')
+    const [scannerOpen, setScannerOpen] = useState(false)
+    const [list, setList] = useState([])
+    const [startDate, setStartDate] = useState()
+    const [endDate, setEndDate] = useState()
+    const [totalPage, setTotalPage] = useState(1)
+
+    const openScanner = () => setScannerOpen(true);
+    const closeScanner = () => setScannerOpen(false);
+    const fetchSellData = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/sell/${userId}?page=${currentPage}
+                &search=${name}&schedule=${schedule}&startDate=${startDate}&endDate=${endDate}&sort=${sort}`);
+            if (response.success) {
+                setList(response.data)
+                setTotalPage(response.pagiantion.totalPages)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
+    useEffect(() => {
+        fetchSellData()
+    }, [userId, currentPage])
+    const handleDetected = (code, err) => {
+        if (err) {
+            alert(err);
+            setScannerOpen(false);   // close modal
+            return;
+        }
+        setScannerOpen(false);
     };
+    const deleteSellRecord = async (id) => {
+        try {
+            const response = await deleteApiData(`pharmacy/sell/${id}`);
+            if (response.success) {
+                toast.success("Sell record deleted successfully")
+                fetchSellData()
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.error("Error creating lab:", err);
+        }
+    }
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -38,7 +94,7 @@ function Sell() {
                         </div>
 
                         <div className="d-flex gap-2">
-                            <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button>
+                            <button className="thm-btn rounded-3" onClick={() => setScannerOpen(true)} >Scan</button>
                             <button className="nw-thm-btn rounded-3" onClick={() => navigate("/add-manually")} data-bs-dismiss="modal" aria-label="Close" >Add Manually</button>
                         </div>
 
@@ -46,43 +102,7 @@ function Sell() {
                 </div>
 
                 <div className='new-mega-card'>
-                    {/* <div className="row">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <div className="d-flex align-items-center gap-2">
-                                    <div className="custom-frm-bx mb-0">
-                                        <input
-                                            type="email"
-                                            className="form-control  pe-5"
-                                            id="email"
-                                            placeholder="Search"
-                                            required
-                                        />
-                                        <div className="adm-search-bx">
-                                            <button className="tp-search-btn text-secondary">
-                                                <FontAwesomeIcon icon={faSearch} />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                
-                            </div>
-
-                            <div className="page-selector d-flex align-items-center mb-2 mb-md-0">
-                                        <select className="form-select custom-page-dropdown nw-custom-page">
-                                            <option value="1" selected>100</option>
-                                            <option value="2">1</option>
-                                            <option value="3">2</option>
-                                        </select>
-
-
-                                    
-                                    </div>
-
-                         
-                        </div>
-                    </div> */}
+                    
 
                     <div className="row">
                         <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details flex-wrap gap-2">
@@ -90,9 +110,11 @@ function Sell() {
                                 <div className="d-flex align-items-center gap-2 nw-box flex-wrap">
                                     <div className="custom-frm-bx mb-0">
                                         <input
-                                            type="email"
+                                            type="text"
                                             className="form-control search-table-frm pe-5 admin-table-search-frm"
                                             id="email"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
                                             placeholder="Search"
                                             required
                                         />
@@ -105,11 +127,10 @@ function Sell() {
 
                                     <div className="filters">
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
-                                            <label className="label">Short By :</label>
-                                            <select className="">
-                                                <option>H1</option>
-                                                <option>Test 1</option>
-                                                <option>Test 2</option>
+                                            <label className="label">Sort By :</label>
+                                            <select className="" value={sort} onChange={(e)=>setSort(e.target.value)}>
+                                                <option value="newest" >Newest</option>
+                                                <option value="oldest">Oldest</option>
                                             </select>
                                         </div>
                                     </div>
@@ -118,19 +139,18 @@ function Sell() {
                                             <label className="label">Date Range:</label>
 
                                             <div className="date-range-box">
-                                                <input type="date" className="date-input" />
+                                                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="date-input" />
 
                                                 <span className="label">To</span>
 
-                                                <input type="date" className="date-input" />
-
+                                                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="date-input" />
                                                 <i className="fa fa-calendar calendar-icon"></i>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <button className="nw-thm-btn">Filter</button>
+                                        <button className="nw-thm-btn" onClick={()=>fetchSellData()}>Filter</button>
                                     </div>
                                 </div>
 
@@ -146,378 +166,10 @@ function Sell() {
                                 </div>
 
 
-
-                            </div>
-
-
-                        </div>
+                            </div>                        </div>
                     </div>
 
 
-                    {/* <div className="row">
-                        <div className="col-lg-12">
-                            <div className="table-section">
-                                <div className="table table-responsive mb-0">
-                                    <table className="table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Patient Name</th>
-                                                <th>Prescriber Name</th>
-                                                <th>Note</th>
-                                                <th>Prescription</th>
-                                                <th>Action</th>
-                                                
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                               
-                                                <td>
-                                                   Ram Kumar
-                                                </td>
-
-                                                 <td>
-                                                    Dr. Arjun Singh
-                                                </td>
-
-                                                <td>-</td>
-                                                <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            className="admin-sub-dropdown"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                          View
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <NavLink to="/scan-prescriptions-detail" className="prescription-nav" href="#" >
-                                                                   View
-                                                                </NavLink>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <NavLink to="/prescriptions-bar" className="prescription-nav" href="#" >
-                                                                   Edit
-                                                                </NavLink>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
-                                                </td>
-
-                                                <td>
-                                                    <a href="" className="grid-dots-btn"><TbGridDots /></a>
-                                                </td>
-                                               
-                                            </tr>
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                               
-                                                <td>
-                                                   Ram Kumar
-                                                </td>
-
-                                                 <td>
-                                                    Dr. Arjun Singh
-                                                </td>
-
-                                                <td>-</td>
-                                                <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            className="admin-sub-dropdown"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                          View
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   View
-                                                                </a>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   Edit
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
-                                                </td>
-
-                                                <td>
-                                                    <a href="" className="grid-dots-btn"><TbGridDots /></a>
-                                                </td>
-                                               
-                                            </tr>
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                               
-                                                <td>
-                                                   Ram Kumar
-                                                </td>
-
-                                                 <td>
-                                                    Dr. Arjun Singh
-                                                </td>
-
-                                                <td>-</td>
-                                                <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            className="admin-sub-dropdown"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                          View
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   View
-                                                                </a>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   Edit
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
-                                                </td>
-
-                                                <td>
-                                                    <a href="" className="grid-dots-btn"><TbGridDots /></a>
-                                                </td>
-                                               
-                                            </tr>
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                               
-                                                <td>
-                                                   Ram Kumar
-                                                </td>
-
-                                                 <td>
-                                                    Dr. Arjun Singh
-                                                </td>
-
-                                                <td>-</td>
-                                                <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            className="admin-sub-dropdown"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                          View
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   View
-                                                                </a>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   Edit
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
-                                                </td>
-
-                                                <td>
-                                                    <a href="" className="grid-dots-btn"><TbGridDots /></a>
-                                                </td>
-                                               
-                                            </tr>
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                               
-                                                <td>
-                                                   Ram Kumar
-                                                </td>
-
-                                                 <td>
-                                                    Dr. Arjun Singh
-                                                </td>
-
-                                                <td>-</td>
-                                                <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            className="admin-sub-dropdown"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                          View
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   View
-                                                                </a>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   Edit
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
-                                                </td>
-
-                                                <td>
-                                                    <a href="" className="grid-dots-btn"><TbGridDots /></a>
-                                                </td>
-                                               
-                                            </tr>
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                               
-                                                <td>
-                                                   Ram Kumar
-                                                </td>
-
-                                                 <td>
-                                                    Dr. Arjun Singh
-                                                </td>
-
-                                                <td>-</td>
-                                                <td>
-                                                   <div className="d-flex align-items-centet gap-2">
-                                                      <div className="dropdown">
-                                                        <a
-                                                            href="javascript:void(0)"
-                                                            className="admin-sub-dropdown"
-                                                            id="acticonMenu1"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false"
-                                                        >
-                                                          View
-                                                        </a>
-                                                        <ul
-                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                            aria-labelledby="acticonMenu1"
-                                                        >
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   View
-                                                                </a>
-                                                            </li>
-                                                            <li className="prescription-item">
-                                                                <a className="prescription-nav" href="#" >
-                                                                   Edit
-                                                                </a>
-                                                            </li>
-
-                                                            <li className="prescription-item">
-                                                                <a className=" prescription-nav" href="#">
-                                                                   
-                                                                  Delete 
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                   
-                                                   </div>
-                                                </td>
-
-                                                <td>
-                                                    <a href="" className="grid-dots-btn"><TbGridDots /></a>
-                                                </td>
-                                               
-                                            </tr>
-
-                                            
-
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div> */}
 
                     <div className="row">
                         <div className="col-lg-12">
@@ -538,208 +190,113 @@ function Sell() {
                                         </thead>
                                         <tbody>
 
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                                <td>Ram Kumar</td>
-                                                <td>Dr. Arjun Singh</td>
+                                            {list?.length > 0 &&
+                                                list?.map((item, key) =>
+                                                    <tr key={key}>
+                                                        <td>{new Date(item?.createdAt).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })}</td>
+                                                        <td>{item?.patient?.name}</td>
+                                                        <td>Dr. {item?.doctor?.name}</td>
 
-                                                <td>
-                                                    <ul className="admin-appointment-list">
-                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">H1</span></li>
-
-                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                        <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
+                                                        <td>
+                                                            <ul className="admin-appointment-list">
+                                                                {item?.products?.map((product, index) => (
+                                                                    <>
+                                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.inventoryId?.medicineName}</span></li>
+                                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">{product?.quantity}</span></li>
+                                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{product?.inventoryId?.batchNumber}</span></li>
+                                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventoryId?.schedule}</span></li>
+                                                                    </>))}
 
 
-                                                    </ul>
-                                                </td>
+                                                            </ul>
+                                                        </td>
 
 
-                                                <td>
-                                                    -
-                                                </td>
+                                                        <td>
+                                                            {item?.note || '-'}
+                                                        </td>
 
-                                                <td>
-                                                    <div className="d-flex align-items-centet gap-2">
-                                                        <div className="dropdown">
-                                                            <a
-                                                                href="javascript:void(0)"
-                                                                className="admin-sub-dropdown"
-                                                                id="acticonMenu1"
-                                                                data-bs-toggle="dropdown"
-                                                                aria-expanded="false"
-                                                            >
-                                                                View
-                                                            </a>
-                                                            <ul
-                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                                aria-labelledby="acticonMenu1"
-                                                            >
-                                                                <li className="prescription-item">
-                                                                    <NavLink to="/scan-prescriptions-detail" className="prescription-nav" href="#" >
+                                                        <td>
+                                                            <div className="d-flex align-items-centet gap-2">
+                                                                <div className="dropdown">
+                                                                    <a
+                                                                        href="javascript:void(0)"
+                                                                        className="admin-sub-dropdown"
+                                                                        id="acticonMenu1"
+                                                                        data-bs-toggle="dropdown"
+                                                                        aria-expanded="false"
+                                                                    >
                                                                         View
-                                                                    </NavLink>
-                                                                </li>
-                                                                <li className="prescription-item">
-                                                                    <NavLink to="/prescriptions-bar" className="prescription-nav" href="#" >
-                                                                        Edit
-                                                                    </NavLink>
-                                                                </li>
-
-                                                                <li className="prescription-item">
-                                                                    <a className=" prescription-nav" href="#">
-
-                                                                        Delete
                                                                     </a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
+                                                                    <ul
+                                                                        className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                        aria-labelledby="acticonMenu1"
+                                                                    >
+                                                                        <li className="prescription-item">
+                                                                            <NavLink to={`/scan-prescriptions-detail/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                View
+                                                                            </NavLink>
+                                                                        </li>
+                                                                        <li className="prescription-item">
+                                                                            <NavLink to="/prescriptions-bar" className="prescription-nav" href="#" >
+                                                                                Edit
+                                                                            </NavLink>
+                                                                        </li>
 
-                                                    </div>
-                                                </td>
+                                                                        <li className="prescription-item">
+                                                                            <button className=" prescription-nav" onClick={() => deleteSellRecord(item?._id)}>
+
+                                                                                Delete
+                                                                            </button>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+
+                                                            </div>
+                                                        </td>
 
 
-                                                <td>
-                                                    <div className="d-flex align-items-centet gap-2">
-                                                        <div className="dropdown">
-                                                            <a
+                                                        <td>
+                                                            <div className="d-flex align-items-centet gap-2">
+                                                                <div className="dropdown">
+                                                                    <a
 
-                                                                href="javascript:void(0)"
-                                                                className="grid-dots-btn"
-                                                                id="acticonMenu1"
-                                                                data-bs-toggle="dropdown"
-                                                                aria-expanded="false"
-                                                            >
-                                                                <TbGridDots />
-                                                            </a>
-                                                            <ul
-                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                                aria-labelledby="acticonMenu1"
-                                                            >
-                                                                <li className="prescription-item">
-                                                                    <NavLink to="/edit-generate" className="prescription-nav" href="#" >
-                                                                        View/Edit
-                                                                    </NavLink>
-                                                                </li>
-                                                                <li className="prescription-item">
-                                                                    <a className=" prescription-nav" href="#">
-
-                                                                        Delete
+                                                                        href="javascript:void(0)"
+                                                                        className="grid-dots-btn"
+                                                                        id="acticonMenu1"
+                                                                        data-bs-toggle="dropdown"
+                                                                        aria-expanded="false"
+                                                                    >
+                                                                        <TbGridDots />
                                                                     </a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
+                                                                    <ul
+                                                                        className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                        aria-labelledby="acticonMenu1"
+                                                                    >
+                                                                        <li className="prescription-item">
+                                                                            <NavLink to="/edit-generate" className="prescription-nav" href="#" >
+                                                                                View/Edit
+                                                                            </NavLink>
+                                                                        </li>
+                                                                        <li className="prescription-item">
+                                                                            <a className=" prescription-nav" href="#">
 
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                                                                Delete
+                                                                            </a>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
 
-
-                                            <tr>
-                                                <td>01-Oct-25</td>
-                                                <td>Ram Kumar</td>
-                                                <td>Dr. Arjun Singh</td>
-
-                                                <td>
-                                                    <ul className="admin-appointment-list">
-                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">H1</span></li>
-
-                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">Salbetol -2 (Salbutamol Tablets IP 2 mg)</span></li>
-                                                        <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">80</span></li>
-                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">2324423</span></li>
-                                                        <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">H1</span></li>
+                                                            </div>
+                                                        </td>
+                                                    </tr>)}
 
 
-                                                    </ul>
-                                                </td>
 
-
-                                                <td>
-                                                    -
-                                                </td>
-
-                                                <td>
-                                                    <div className="d-flex align-items-centet gap-2">
-                                                        <div className="dropdown">
-                                                            <a
-                                                                href="javascript:void(0)"
-                                                                className="admin-sub-dropdown"
-                                                                id="acticonMenu1"
-                                                                data-bs-toggle="dropdown"
-                                                                aria-expanded="false"
-                                                            >
-                                                                View
-                                                            </a>
-                                                            <ul
-                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                                aria-labelledby="acticonMenu1"
-                                                            >
-                                                                <li className="prescription-item">
-                                                                    <NavLink to="/scan-prescriptions-detail" className="prescription-nav" href="#" >
-                                                                        View
-                                                                    </NavLink>
-                                                                </li>
-                                                                <li className="prescription-item">
-                                                                    <NavLink to="/prescriptions-bar" className="prescription-nav" href="#" >
-                                                                        Edit
-                                                                    </NavLink>
-                                                                </li>
-
-                                                                <li className="prescription-item">
-                                                                    <a className=" prescription-nav" href="#">
-
-                                                                        Delete
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-
-                                                    </div>
-                                                </td>
-
-
-                                                <td>
-                                                    <div className="d-flex align-items-centet gap-2">
-                                                        <div className="dropdown">
-                                                            <a
-
-                                                                href="javascript:void(0)"
-                                                                className="grid-dots-btn"
-                                                                id="acticonMenu1"
-                                                                data-bs-toggle="dropdown"
-                                                                aria-expanded="false"
-                                                            >
-                                                                <TbGridDots />
-                                                            </a>
-                                                            <ul
-                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                                aria-labelledby="acticonMenu1"
-                                                            >
-                                                                <li className="prescription-item">
-                                                                    <NavLink to="/edit-generate" className="prescription-nav" href="#" >
-                                                                        View/Edit
-                                                                    </NavLink>
-                                                                </li>
-                                                                <li className="prescription-item">
-                                                                    <a className=" prescription-nav" href="#">
-
-                                                                        Delete
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-
-                                                    </div>
-                                                </td>
-                                            </tr>
 
                                         </tbody>
                                     </table>
@@ -761,8 +318,11 @@ function Sell() {
 
             {/*Payment Status Popup Start  */}
             {/* data-bs-toggle="modal" data-bs-target="#scanner-Request" */}
-            <div className="modal step-modal" id="scanner-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            {scannerOpen && <div className="modal fade show step-modal"
+          id="scanner-Request"
+          style={{ display: "block", background: "#00000080" }}
+          data-bs-backdrop="static"
+          data-bs-keyboard="false">
                 <div className="modal-dialog modal-dialog-centered modal-md">
                     <div className="modal-content rounded-5">
                         <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
@@ -770,7 +330,8 @@ function Sell() {
                                 <h6 className="lg_title mb-0 fz-20">Scan NeoHealthCard / Prescription </h6>
                             </div>
                             <div>
-                                <button type="button" className="fz-18" data-bs-dismiss="modal" aria-label="Close" style={{ color: "#00000040" }}>
+                                <button type="button" onClick={closeScanner}  
+                                 className="fz-18"  style={{ color: "#00000040" }}>
                                     <FontAwesomeIcon icon={faCircleXmark} />
                                 </button>
                             </div>
@@ -778,7 +339,7 @@ function Sell() {
                         <div className="modal-body px-4">
                             <div className="row ">
                                 <div className="col-lg-12">
-                                    <Scanner onDetected={handleDetected} />
+                                    <Scanner open={scannerOpen} onDetected={handleDetected} />
 
 
 
@@ -787,7 +348,7 @@ function Sell() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>}
             {/*  Payment Status Popup End */}
 
 
@@ -798,3 +359,104 @@ function Sell() {
 }
 
 export default Sell
+
+function Scanner({ onDetected, open }) {
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
+    const readerRef = useRef(null);
+
+    const [result, setResult] = useState("");
+
+    useEffect(() => {
+        if (open) {
+            startScanner();
+        } else {
+            stopScanner();
+        }
+
+        return () => stopScanner();
+    }, [open]);
+
+    const startScanner = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" },
+                audio: false,
+            });
+
+            streamRef.current = stream;
+            videoRef.current.srcObject = stream;
+
+            await videoRef.current.play();
+            startDecoding();
+        } catch (err) {
+            stopScanner();
+
+            // Notify parent about error
+            onDetected?.(null, "Camera not available or permission denied");
+            console.error("Camera Start Error:", err);
+        }
+    };
+
+    const startDecoding = () => {
+        const hints = new Map();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]);
+
+        const reader = new BrowserMultiFormatReader(hints);
+        readerRef.current = reader;
+
+        reader.decodeFromVideoDevice(null, videoRef.current, (result, err) => {
+            if (result) {
+                const text = result.getText();
+                setResult(text);
+                onDetected?.(text);
+
+                stopScanner();
+
+                setTimeout(() => {
+                    if (text?.length < 24) {
+                        window.location.href = `https://neopha.divanex.in/prescriptions-bar/${text}`;
+                    } else {
+                        window.location.href = `https://neopha.divanex.in/prescriptions-detail/${text}`;
+
+                    }
+                }, 300);
+            }
+        });
+    };
+
+    const stopScanner = () => {
+        try {
+            readerRef.current?.reset();
+            streamRef.current?.getTracks().forEach((t) => t.stop());
+        } catch (err) { }
+    };
+
+    return (
+        <>
+            {open && (
+                <div style={{ maxWidth: 400, margin: "0 auto", textAlign: "center" }}>
+                    <div
+                        style={{
+                            position: "relative",
+                            height: 320,
+                            overflow: "hidden",
+                            borderRadius: 12,
+                        }}
+                    >
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                    </div>
+
+                    {result && <p>Scanned: {result}</p>}
+                </div>
+            )}
+        </>
+    );
+}
+

@@ -62,13 +62,13 @@ function Router() {
 
         { path: "/sell", element: <ProtectedRoute component={Sell} /> },
 
-        { path: "/prescriptions-bar", element: <ProtectedRoute component={PrescriptionsBar} /> },
+        { path: "/prescriptions-bar/:id", element: <ProtectedRoute component={PrescriptionsBar} /> },
 
-        { path: "/prescriptions-detail", element: <ProtectedRoute component={PrescriptionDetails} /> },
+        { path: "/prescriptions-detail/:id", element: <ProtectedRoute component={PrescriptionDetails} /> },
 
         { path: "/add-prescriptions-detail", element: <ProtectedRoute component={AddPrescriptionDetails} /> },
 
-        { path: "/scan-prescriptions-detail", element: <ProtectedRoute component={ScanPrescriptionDetails} /> },
+        { path: "/scan-prescriptions-detail/:id", element: <ProtectedRoute component={ScanPrescriptionDetails} /> },
 
         { path: "/add-manually", element: <ProtectedRoute component={AddManually} /> },
 

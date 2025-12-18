@@ -33,13 +33,11 @@ function Returns() {
         }
     }
     useEffect(() => {
-        fetchReturns()
-    }, [userId, currentPage, status])
-    useEffect(() => {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             fetchReturns()
-        }, 1000);
-    }, [name])
+        }, 800);
+        return () => clearTimeout(timer)
+    }, [name,userId, currentPage, status])
     const deleteReturn = async (id) => {
         try {
             const response = await deleteApiData(`pharmacy/return/${id}`);
