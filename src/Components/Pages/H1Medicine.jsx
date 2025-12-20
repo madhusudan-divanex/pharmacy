@@ -258,19 +258,19 @@ function H1Medicine() {
                                                         </td>
 
                                                         <td>
-                                                            100/ <span className="stock-title">150</span>
+                                                            {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
                                                         </td>
                                                         <td>
                                                             ${item?.purchasePrice}
                                                         </td>
                                                         <td>
-                                                            {item?.avgMargin} {item?.marginType == 'percentage' && '%'}
+                                                            {item?.avgMargin} {item?.marginType == 'Percentage' && '%'}
                                                         </td>
                                                         <td>
-                                                            {item?.lowMargin} {item?.marginType == 'percentage' && '%'}
+                                                            {item?.lowMargin} {item?.marginType == 'Percentage' && '%'}
                                                         </td>
                                                         <td>
-                                                            {item?.highMargin} {item?.marginType == 'percentage' && '%'}
+                                                            {item?.highMargin} {item?.marginType == 'Percentage' && '%'}
                                                         </td>
 
                                                         <td>

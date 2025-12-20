@@ -81,7 +81,6 @@ function EditProfile() {
             } else {
                 toast.error(response.message)
             }
-            console.log("Lab created:", response.data);
         } catch (err) {
             console.error("Error creating lab:", err);
         }
@@ -123,7 +122,6 @@ function EditProfile() {
             } else {
                 toast.error(res.message)
             }
-            console.log(res.data);
         } catch (error) {
             console.error(error);
         }
@@ -222,7 +220,6 @@ function EditProfile() {
             } else {
                 toast.error(response.message)
             }
-            console.log("Lab created:", response.data);
         } catch (err) {
             console.error("Error creating lab:", err);
         }

@@ -9,7 +9,7 @@ import {
 } from "chart.js";
 import { useEffect, useState } from "react";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getSecureApiData } from "../../Services/api";
 import Loader from "../Layouts/Loader";
@@ -75,28 +75,23 @@ const Dashboard = () => {
 
 
   // ---------------- DOUGHNUT CHART ----------------
-  const doughnutData = {
-    labels: ["A", "B", "C", "D", "E", "F", "G", "H", "I"],
+  const [doughnutData, setDoughnutData] = useState({
+    labels: ["H1", "X", "H",],
     datasets: [
       {
         label: "Inventory %",
-        data: [20, 15, 8, 10, 10, 8, 30, 35, 3],
+        data: [0, 0, 0],
         backgroundColor: [
           "#68E256",
-          "#56E2CF",
           "#5668E2",
           "#CF56E2",
-          "#F1ABD7",
-          "#E256AE",
-          "#E28956",
-          "#56E289",
-          "#E2CF56",
+
         ],
         borderWidth: 2,
         cutout: "45%",
       },
     ],
-  };
+  });
 
   const doughnutOptions = {
     responsive: true,
@@ -110,8 +105,15 @@ const Dashboard = () => {
   };
   const userId = localStorage.getItem('userId')
   const [inventoryValue, setInventoryValue] = useState(0)
+  const [h1Compliance, setH1Compliance] = useState(0)
+  const [hCompliance, setHCompliance] = useState(0)
+  const [xCompliance, setXCompliance] = useState(0)
   const [expiryCount, setExpiryCount] = useState(0)
-  const [loading,setLoading] =useState(false)
+  const [totalSales,setTotalSales] = useState()
+  const [marginData,setMarginData] =useState([])
+  const [supplierData,setSupplierData] =useState([])
+  const [inventory,setInventory] =useState([])
+  const [loading, setLoading] = useState(false)
   const pharDashboard = async () => {
     setLoading(true)
     try {
@@ -119,12 +121,35 @@ const Dashboard = () => {
       if (response.success) {
         setExpiryCount(response.expiringSoonCount)
         setInventoryValue(response.inventoryValue)
+        setH1Compliance(response.h1Compliance)
+        setHCompliance(response.totalHQuantity)
+        setXCompliance(response.totalXQuantity)
+        setMarginData(response.marginAnalysis)
+        setTotalSales(response.totalSales)
+        setSupplierData(response.supplierData)
+        setInventory(response.inventory)
+        setDoughnutData({
+          labels: ["H1", "X", "H",],
+          datasets: [
+            {
+              label: "Inventory %",
+              data: [response.totalH1Quantity,response.totalXQuantity,response.totalHQuantity],
+              backgroundColor: [
+                "#68E256",
+                "#5668E2",
+                "#CF56E2",
+              ],
+              borderWidth: 2,
+              cutout: "45%",
+            },
+          ],
+        })
       } else {
         toast.error(response.message)
       }
     } catch (err) {
       console.error("Error creating lab:", err);
-    } finally{
+    } finally {
       setLoading(false)
     }
   }
@@ -134,463 +159,275 @@ const Dashboard = () => {
 
   return (
     <>
-    {loading?
-    <Loader/>
-    :<div className="main-content flex-grow-1 p-3 overflow-auto">
-      <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="inventory-content">
-              <div className="inventory-parent-bx">
-                <div className="inventory-bx">
-                  <img src="/box.svg" alt="" />
+      {loading ?
+        <Loader />
+        : <div className="main-content flex-grow-1 p-3 overflow-auto">
+          <div className="row">
+            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="inventory-content">
+                  <div className="inventory-parent-bx">
+                    <div className="inventory-bx">
+                      <img src="/box.svg" alt="" />
+                    </div>
+                    <h4>{inventoryValue}</h4>
+                  </div>
+                  <p className="mt-2">Total Inventory Value</p>
                 </div>
-                <h4>{inventoryValue}</h4>
               </div>
-              <p className="mt-2">Total Inventory Value</p>
             </div>
-          </div>
-        </div>
-        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="inventory-content">
-              <div className="inventory-parent-bx">
-                <div className="inventory-bx">
-                  <img src="/cash.svg" alt="" />
+            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="inventory-content">
+                  <div className="inventory-parent-bx">
+                    <div className="inventory-bx">
+                      <img src="/cash.svg" alt="" />
+                    </div>
+                    <h4>{totalSales}</h4>
+                  </div>
+                  <p className="mt-2">Monthly Sales</p>
                 </div>
-                <h4>59589</h4>
               </div>
-              <p className="mt-2">Monthly Sales</p>
             </div>
-          </div>
-        </div>
 
-        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="inventory-content">
-              <div className="inventory-parent-bx">
-                <div className="inventory-bx">
-                  <img src="/chart.svg" alt="" />
+            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="inventory-content">
+                  <div className="inventory-parent-bx">
+                    <div className="inventory-bx">
+                      <img src="/chart.svg" alt="" />
+                    </div>
+                    <h4>59589</h4>
+                  </div>
+                  <p className="mt-2">Stock Turnover Ratio</p>
                 </div>
-                <h4>59589</h4>
               </div>
-              <p className="mt-2">Stock Turnover Ratio</p>
             </div>
-          </div>
-        </div>
 
-        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="inventory-content">
-              <div className="inventory-parent-bx">
-                <div className="inventory-bx">
-                  <img src="/margin.svg" alt="" />
+            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="inventory-content">
+                  <div className="inventory-parent-bx">
+                    <div className="inventory-bx">
+                      <img src="/margin.svg" alt="" />
+                    </div>
+                    <h4>59589</h4>
+                  </div>
+                  <p className="mt-2">Gross Margin</p>
                 </div>
-                <h4>59589</h4>
               </div>
-              <p className="mt-2">Gross Margin</p>
             </div>
-          </div>
-        </div>
 
-        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="inventory-content">
-              <div className="inventory-parent-bx ">
-                <div className="inventory-bx alert-inventory-bx">
-                  <img src="/alert.svg" alt="" />
+            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="inventory-content">
+                  <div className="inventory-parent-bx ">
+                    <div className="inventory-bx alert-inventory-bx">
+                      <img src="/alert.svg" alt="" />
+                    </div>
+                    <h4>{expiryCount}</h4>
+                  </div>
+                  <p className="mt-2">Expiring Soon (30 days)</p>
                 </div>
-                <h4>{expiryCount}</h4>
               </div>
-              <p className="mt-2">Expiring Soon (30 days)</p>
             </div>
-          </div>
-        </div>
-
-        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="inventory-content">
-              <div className="inventory-parent-bx">
-                <div className="inventory-bx">
-                  <img src="/page.svg" alt="" />
+            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="inventory-content">
+                  <div className="inventory-parent-bx">
+                    <div className="inventory-bx">
+                      <img src="/page.svg" alt="" />
+                    </div>
+                    <h4>{h1Compliance}</h4>
+                  </div>
+                  <p className="mt-2">Schedule H1 Compliance</p>
                 </div>
-                <h4>56</h4>
               </div>
-              <p className="mt-2">Schedule H1 Compliance</p>
             </div>
-          </div>
-        </div>
-
-        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="inventory-content">
-              <div className="inventory-parent-bx">
-                <div className="inventory-bx ">
-                  <img src="/percentage.svg" alt="" />
+            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="inventory-content">
+                  <div className="inventory-parent-bx">
+                    <div className="inventory-bx ">
+                      <img src="/percentage.svg" alt="" />
+                    </div>
+                    <h4>35</h4>
+                  </div>
+                  <p className="mt-2">GST Compliance</p>
                 </div>
-                <h4>35</h4>
-              </div>
-              <p className="mt-2">GST Compliance</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="col-lg-6 mb-3">
-          <div className="new-mega-card">
-            <div>
-              <h5 className="text-grad">Inventory Stock</h5>
-            </div>
-            <div style={{ height: "350px" }}>
-              <Bar data={barData} options={barOptions} />
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-6 mb-3">
-          <div className="new-mega-card">
-            <div>
-              <h5 className="text-grad">Inventory %</h5>
-            </div>
-            <div style={{ height: "350px" }}>
-              <Doughnut data={doughnutData} options={doughnutOptions} />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-lg-8 col-md-6 col-sm-12 mb-3">
-          <div className="new-mega-card">
-            <div className="admn-title mb-4 d-flex align-items-center justify-content-between flex-wrap">
-              <div>
-                <h5 className="text-grad">Supplier</h5>
-              </div>
-              <div className="d-flex align-items-center gap-2">
-                <a href="javascript:void(0)" className="nw-thm-btn rounded-3">Add Supplier</a>
-                <a href="javascript:void(0)" className="thm-btn rounded-3">View All </a>
-              </div>
-            </div>
-            <div className="table-section">
-              <div className="table table-responsive mb-0">
-                <table className="table mb-0">
-                  <thead>
-                    <tr>
-                      <th>Supplier</th>
-                      <th>Score</th>
-                      <th>On-time delivery</th>
-                      <th>Price</th>
-                      <th>Quality</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        9876543210
-                      </td>
-                      <td>
-                        Jaipur
-                      </td>
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                      <td>4455</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>
-                        9876543210
-                      </td>
-
-                      <td>
-                        Jaipur
-                      </td>
-
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                      <td>4455</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>
-                        9876543210
-                      </td>
-
-                      <td>
-                        Jaipur
-                      </td>
-
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                      <td>4455</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>
-                        9876543210
-                      </td>
-
-                      <td>
-                        Jaipur
-                      </td>
-
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                      <td>4455</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>
-                        9876543210
-                      </td>
-
-                      <td>
-                        Jaipur
-                      </td>
-
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                      <td>4455</td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="col-lg-4 col-md-6 col-sm-12 mb-3">
-          <div className="new-mega-card nw-pharmacy-card">
-            <div className="admn-title mb-4">
-              <div>
-                <h5 className="text-white">Best Supplier</h5>
+          <div className="row">
+            <div className="col-lg-6 mb-3">
+              <div className="new-mega-card">
+                <div>
+                  <h5 className="text-grad">Inventory Stock</h5>
+                </div>
+                <div style={{ height: "350px" }}>
+                  <Bar data={barData} options={barOptions} />
+                </div>
               </div>
             </div>
-
-            <div className="table-section pharmacy-nw-table">
-              <div className="table table-responsive  mb-0">
-                <table className="table mb-0">
-                  <thead>
-                    <tr>
-                      <th>Supplier</th>
-                      <th>Total Quality</th>
-                      <th>Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>4455</td>
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>4455</td>
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>4455</td>
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>4455</td>
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="admin-table-bx">
-                          <div className="admin-table-sub-bx">
-                            <img src="/admin-tb-logo.png" alt="" />
-                            <div className="admin-table-sub-details">
-                              <h6>Eleanor Pena</h6>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>4455</td>
-                      <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                    </tr>
-                  </tbody>
-                </table>
+            <div className="col-lg-6 mb-3">
+              <div className="new-mega-card">
+                <div>
+                  <h5 className="text-grad">Inventory %</h5>
+                </div>
+                <div style={{ height: "350px" }}>
+                  <Doughnut data={doughnutData} options={doughnutOptions} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-lg-12">
-          <div className="new-mega-card">
-            <div className="admn-title mb-4 d-flex align-items-center justify-content-between">
-              <div>
-                <h5 className="text-grad mb-0">Margin Analysis</h5>
-              </div>
-              <div>
-                <NavLink to="/inventory" className="thm-btn rounded-3">View All </NavLink>
+          <div className="row">
+            <div className="col-lg-8 col-md-6 col-sm-12 mb-3">
+              <div className="new-mega-card">
+                <div className="admn-title mb-4 d-flex align-items-center justify-content-between flex-wrap">
+                  <div>
+                    <h5 className="text-grad">Supplier</h5>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <Link to="/supplier" className="nw-thm-btn rounded-3">Add Supplier</Link>
+                    <Link to="/generate-list" className="thm-btn rounded-3">View All </Link>
+                  </div>
+                </div>
+                <div className="table-section">
+                  <div className="table table-responsive mb-0">
+                    <table className="table mb-0">
+                      <thead>
+                        <tr>
+                          <th>Supplier</th>
+                          <th>Phone</th>
+                          <th>Email</th>
+                          <th>City</th>
+                          <th>Quality</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {supplierData?.length>0 ?
+                        supplierData?.map((item,key)=>
+                        <tr key={key}>
+                          <td>
+                            <div className="admin-table-bx">
+                              <div className="admin-table-sub-bx">
+                                <div className="admin-table-sub-details">
+                                  <h6>{item?.name}</h6>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            {item?.mobileNumber}
+                          </td>
+                          <td>{item?.email}</td>
+                          <td>
+                            {item?.city}
+                          </td>
+                          {/* <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td> */}
+
+                          <td>{item?.totalQuantity}</td>
+                        </tr>):'No supplier found'}
+                        
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="table-section ">
-              <div className="table table-responsive mb-0">
-                <table className="table mb-0">
-                  <thead>
-                    <tr>
-                      <th>Medicine Name</th>
-                      <th>MRP</th>
-                      <th>Avg Margin</th>
-                      <th>Low Margin</th>
-                      <th>High Margin</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+            <div className="col-lg-4 col-md-6 col-sm-12 mb-3">
+              <div className="new-mega-card nw-pharmacy-card">
+                <div className="admn-title mb-4">
+                  <div>
+                    <h5 className="text-white">High Demand Medicine</h5>
+                  </div>
+                </div>
 
-                    <tr>
-                      <td>OTC</td>
-
-                      <td>454</td>
-                      <td>22%</td>
-
-                      <td >12%</td>
-                      <td> 30%</td>
-                    </tr>
-                    <tr>
-                      <td>OTC</td>
-
-                      <td>454</td>
-                      <td>22%</td>
-
-                      <td >12%</td>
-                      <td> 30%</td>
-                    </tr>
-                    <tr>
-                      <td>OTC</td>
-
-                      <td>454</td>
-                      <td>22%</td>
-
-                      <td >12%</td>
-                      <td> 30%</td>
-                    </tr>
-                    <tr>
-                      <td>OTC</td>
-
-                      <td>454</td>
-                      <td>22%</td>
-
-                      <td >12%</td>
-                      <td> 30%</td>
-                    </tr>
-                    <tr>
-                      <td>OTC</td>
-
-                      <td>454</td>
-                      <td>22%</td>
-
-                      <td >12%</td>
-                      <td> 30%</td>
-                    </tr>
-
-
-
-
-                  </tbody>
-                </table>
+                <div className="table-section pharmacy-nw-table">
+                  <div className="table table-responsive  mb-0">
+                    <table className="table mb-0">
+                      <thead>
+                        <tr>
+                          <th>Medicine Name</th>
+                          <th>Total Quantity</th>
+                          <th>Total Sell</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inventory?.length>0 ?
+                        inventory?.map((item,key)=>
+                        <tr key={key}>
+                          <td>
+                            <div className="admin-table-bx">
+                              <div className="admin-table-sub-bx">
+                                <div className="admin-table-sub-details">
+                                  <h6>{item?.medicineName?.length>25?item?.medicineName?.slice(0,25)+'...':item?.medicineName }</h6>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{item?.quantity}</td>
+                          <td><span className="score-title"> <img src="/score.svg" alt="" /> {item?.sellCount}</span></td>
+                        </tr>):'No Data found'}                        
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
-
-
-
             </div>
-
           </div>
-        </div>
-      </div>
+          <div className="row">
+            <div className="col-lg-12">
+              <div className="new-mega-card">
+                <div className="admn-title mb-4 d-flex align-items-center justify-content-between">
+                  <div>
+                    <h5 className="text-grad mb-0">Margin Analysis</h5>
+                  </div>
+                  <div>
+                    <NavLink to="/inventory" className="thm-btn rounded-3">View All </NavLink>
+                  </div>
+                </div>
+                <div className="table-section ">
+                  <div className="table table-responsive mb-0">
+                    <table className="table mb-0">
+                      <thead>
+                        <tr>
+                          <th>Medicine Name</th>
+                          <th>Purchase Price</th>
+                          <th>Avg Margin</th>
+                          <th>Low Margin</th>
+                          <th>High Margin</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+
+                        {marginData?.length>0 ? 
+                        marginData?.map((item,key)=>
+                        <tr key={key}>
+                          <td>{item?.medicineName}</td>
+
+                          <td>{item?.purchasePrice}</td>
+                          <td>{item?.avgMargin}%</td>
+
+                          <td >{item?.lowMargin}%</td>
+                          <td> {item?.highMargin}%</td>
+                        </tr>):'No data is available to show'}
+                        
+                      </tbody>
+                    </table>
+                  </div>
 
 
-    </div>}
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
+        </div>}
     </>
   )
 }

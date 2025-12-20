@@ -75,7 +75,6 @@ function CreateAccount() {
             }else{
                 toast .error(response.message)
             }
-            console.log("Lab created:", response.data);
         } catch (err) {
             console.error("Error creating lab:", err);
         }
@@ -87,7 +86,6 @@ function CreateAccount() {
         }
     }
     useEffect(()=>{
-        console.log(profiles)
         if(profiles){
             navigate('/create-account-image')
         }

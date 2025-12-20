@@ -49,7 +49,6 @@ function CreateAccountImage() {
             } else {
                 toast.error(res.message)
             }
-            console.log(res.data);
         } catch (error) {
             console.error(error);
         }

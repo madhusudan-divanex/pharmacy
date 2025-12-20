@@ -126,7 +126,7 @@ function TopHeader() {
                     <div className="profile-info">
                       <span className="profile-role">{isOwner ? 'Admin' : employment?.position}</span>
                       <h4 className="profile-name">{isOwner ? profiles?.name : staffData?.name}</h4>
-                      <p className="profile-id">ID : {isOwner ?profiles?.customId : staffData?._id?.slice(-10)}</p>
+                      <p className="profile-id">ID : {isOwner ? profiles?.customId : staffData?._id?.slice(-10)}</p>
                     </div>
                   </div>
                   <div className="profile-logout-box">

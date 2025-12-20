@@ -14,8 +14,8 @@ function InventoryList() {
         alert("Scanned barcode: " + code);
     };
     const userId = localStorage.getItem('userId')
-    const { permissions ,isOwner} = useSelector(state => state.user)
-    const navigate=useNavigate()
+    const { permissions, isOwner } = useSelector(state => state.user)
+    const navigate = useNavigate()
 
     const [showBarcode, setShowBarcode] = useState(false);
     const [formData, setFormData] = useState({
@@ -111,8 +111,8 @@ function InventoryList() {
         }
     }
     useEffect(() => {
-        if (Object.keys(permissions)?.length > 0) {
-            if (!isOwner && !permissions.listView) {
+        if (permissions && Object.keys(permissions)?.length > 0) {
+            if (!isOwner && !permissions?.listView) {
                 navigate('/')
                 toast.error('You do not have permission to add test ')
                 return
@@ -148,8 +148,8 @@ function InventoryList() {
                         <div className="d-flex gap-2">
                             {/* <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button> */}
                             <button className="nw-thm-btn rounded-3" data-bs-toggle="modal"
-                            disabled={!isOwner && !permissions?.add}
-                             data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
+                                disabled={!isOwner && !permissions?.add}
+                                data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
                         </div>
                     </div>
                 </div>
@@ -182,6 +182,8 @@ function InventoryList() {
                                                 <option value='all'>All</option>
                                                 <option value="H1">H1</option>
                                                 <option value="H">H</option>
+                                                <option value="X">X</option>
+
                                             </select>
                                         </div>
                                     </div>
@@ -269,19 +271,19 @@ function InventoryList() {
                                                         </td>
 
                                                         <td>
-                                                            {item?.quantity - item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
+                                                            {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
                                                         </td>
                                                         <td>
                                                             ${item?.purchasePrice}
                                                         </td>
                                                         <td>
-                                                            {item?.avgMargin} {item?.marginType == 'percentage' && '%'}
+                                                            {item?.avgMargin} {item?.marginType == 'Percentage' && '%'}
                                                         </td>
                                                         <td>
-                                                            {item?.lowMargin} {item?.marginType == 'percentage' && '%'}
+                                                            {item?.lowMargin} {item?.marginType == 'Percentage' && '%'}
                                                         </td>
                                                         <td>
-                                                            {item?.highMargin} {item?.marginType == 'percentage' && '%'}
+                                                            {item?.highMargin} {item?.marginType == 'Percentage' && '%'}
                                                         </td>
                                                         <td>
                                                             {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
@@ -401,6 +403,8 @@ function InventoryList() {
                                                     <option value="">Select</option>
                                                     <option value="H1">H1</option>
                                                     <option value="H">H</option>
+                                                    <option value="X">X</option>
+
                                                 </select>
                                             </div>
                                         </div>

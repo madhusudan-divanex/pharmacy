@@ -14,9 +14,11 @@ function NewAnalysis() {
     const [name, setName] = useState('')
     const [list, setList] = useState([])
     const [totalPage, setTotalPage] = useState(1)
+    const [totalStock, setTotalStock] = useState(0)
     const [loading, setLoading] = useState(true)
     const [medicineList, setMedicineList] = useState([])
     const [medicineName, setMedicineName] = useState('')
+    const [totalSales,setTotalSales]=useState(0)
     const [inventoryValue, setInventoryValue] = useState(0)
     const [expiryCount, setExpiryCount] = useState(0)
     const fetchInventory = async () => {
@@ -39,6 +41,8 @@ function NewAnalysis() {
             if (response.success) {
                 setInventoryValue(response.inventoryValue)
                 setMedicineList(response.data)
+                setTotalStock(response.totalStock)
+                setTotalSales(response.totalSales)
                 setExpiryCount(response.expiringSoonCount)
             } else {
                 toast.error(response.message)
@@ -157,205 +161,202 @@ function NewAnalysis() {
                         </div>
                     </form>
 
-
-                    <div className="row">
-                        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-                            <div className="new-mega-card">
-                                <div className="inventory-content">
-                                    <div className="inventory-parent-bx">
-                                        <div className="inventory-bx">
-                                            <img src="/box.svg" alt="" />
+                    {medicineList?.length > 0 && <>
+                        <div className="row">
+                            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+                                <div className="new-mega-card">
+                                    <div className="inventory-content">
+                                        <div className="inventory-parent-bx">
+                                            <div className="inventory-bx">
+                                                <img src="/box.svg" alt="" />
+                                            </div>
+                                            <h4>{inventoryValue}</h4>
                                         </div>
-                                        <h4>{inventoryValue}</h4>
+                                        <p className="mt-2">Total Inventory Value</p>
                                     </div>
-                                    <p className="mt-2">Total Inventory Value</p>
+                                </div>
+                            </div>
+
+                            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+                                <div className="new-mega-card">
+                                    <div className="inventory-content">
+                                        <div className="inventory-parent-bx">
+                                            <div className="inventory-bx">
+                                                <img src="/cash.svg" alt="" />
+                                            </div>
+                                            <h4>{totalSales}</h4>
+                                        </div>
+                                        <p className="mt-2">Total Sales</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+                                <div className="new-mega-card">
+                                    <div className="inventory-content">
+                                        <div className="inventory-parent-bx ">
+                                            <div className="inventory-bx alert-inventory-bx">
+                                                <img src="/alert.svg" alt="" />
+                                            </div>
+                                            <h4>{expiryCount}</h4>
+                                        </div>
+                                        <p className="mt-2">Expiring Soon (30 days)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
+                                <div className="new-mega-card">
+                                    <div className="inventory-content">
+                                        <div className="inventory-parent-bx">
+                                            <div className="inventory-bx">
+                                                <img src="/chart.svg" alt="" />
+                                            </div>
+                                            <h4>{totalStock}</h4>
+                                        </div>
+                                        <p className="mt-2">Total Stock</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-                            <div className="new-mega-card">
-                                <div className="inventory-content">
-                                    <div className="inventory-parent-bx">
-                                        <div className="inventory-bx">
-                                            <img src="/cash.svg" alt="" />
-                                        </div>
-                                        <h4>59589</h4>
-                                    </div>
-                                    <p className="mt-2">Total Sales</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-                            <div className="new-mega-card">
-                                <div className="inventory-content">
-                                    <div className="inventory-parent-bx ">
-                                        <div className="inventory-bx alert-inventory-bx">
-                                            <img src="/alert.svg" alt="" />
-                                        </div>
-                                        <h4>{expiryCount}</h4>
-                                    </div>
-                                    <p className="mt-2">Expiring Soon (30 days)</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="col-lg-3 col-md-4 col-sm-12 mb-3">
-                            <div className="new-mega-card">
-                                <div className="inventory-content">
-                                    <div className="inventory-parent-bx">
-                                        <div className="inventory-bx">
-                                            <img src="/chart.svg" alt="" />
-                                        </div>
-                                        <h4>8</h4>
-                                    </div>
-                                    <p className="mt-2">Total Stock</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details">
-                            <div>
-                                <div className="d-flex align-items-center gap-2 nw-box">
-                                    <div className="custom-frm-bx mb-0">
-                                        <input
-                                            type="email"
-                                            className="form-control admin-table-search-frm search-table-frm pe-5"
-                                            id="email"
-                                            placeholder="Search"
-                                            required
-                                        />
-                                        <div className="adm-search-bx">
-                                            <button className="tp-search-btn text-secondary">
-                                                <FontAwesomeIcon icon={faSearch} />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="filters">
-                                        <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
-                                            <label className="label">Medicine :</label>
-                                            <select className="">
-                                                <option>All</option>
-                                                <option>Test 1</option>
-                                                <option>Test 2</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <a href="#" className="nw-thm-btn rounded-2">
-                                            Filter
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
-
+                        <div className="row">
+                            <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details">
                                 <div>
-                                    <select
-                                        value={currentPage}
-                                        onChange={(e) => setCurrentPage(e.target.value)}
-                                        className="form-select custom-page-dropdown nw-custom-page ">
-                                        {Array.from({ length: totalPage }, (_, i) => (
-                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                        ))}
-                                    </select>
+                                    <div className="d-flex align-items-center gap-2 nw-box">
+                                        <div className="custom-frm-bx mb-0">
+                                            <input
+                                                type="email"
+                                                className="form-control admin-table-search-frm search-table-frm pe-5"
+                                                id="email"
+                                                placeholder="Search"
+                                                required
+                                            />
+                                            <div className="adm-search-bx">
+                                                <button className="tp-search-btn text-secondary">
+                                                    <FontAwesomeIcon icon={faSearch} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="filters">
+                                            <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
+                                                <label className="label">Medicine :</label>
+                                                <select className="">
+                                                    <option>All</option>
+                                                    <option>Test 1</option>
+                                                    <option>Test 2</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <a href="#" className="nw-thm-btn rounded-2">
+                                                Filter
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                                    <div>
+                                        <select
+                                            value={currentPage}
+                                            onChange={(e) => setCurrentPage(e.target.value)}
+                                            className="form-select custom-page-dropdown nw-custom-page ">
+                                            {Array.from({ length: totalPage }, (_, i) => (
+                                                <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <div className="table-section">
-                                <div className="table table-responsive mb-0">
-                                    <table className="table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>S.no.</th>
-                                                <th>Medicine Name</th>
-                                                <th>Schedule</th>
-                                                <th>Batch No</th>
-                                                <th>MFG Date</th>
-                                                <th>Exp Date</th>
-                                                <th>Quantity/Stock</th>
-                                                <th>MRP</th>
-                                                <th>Avg Margin</th>
-                                                <th>Low Margin</th>
-                                                <th>High Margin</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="table-section">
+                                    <div className="table table-responsive mb-0">
+                                        <table className="table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>S.no.</th>
+                                                    <th>Medicine Name</th>
+                                                    <th>Schedule</th>
+                                                    <th>Batch No</th>
+                                                    <th>MFG Date</th>
+                                                    <th>Exp Date</th>
+                                                    <th>Quantity/Stock</th>
+                                                    <th>Purchase Price</th>
+                                                    <th>Avg Margin</th>
+                                                    <th>Low Margin</th>
+                                                    <th>High Margin</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
 
-                                            {medicineList?.length > 0 &&
-                                                medicineList?.map((item, key) =>
-                                                    <tr key={key}>
-                                                        <td>{key + 1}</td>
-                                                        <td>
-                                                            {item?.medicineName}
-                                                        </td>
-                                                        <td> {item?.schedule}</td>
-                                                        <td>
-                                                            {item?.batchNumber}
-                                                        </td>
-                                                        <td>
-                                                            {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric'
-                                                            })}
-                                                        </td>
-                                                        <td>
-                                                            {new Date(item?.expDate) > new Date() ?
-                                                                new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                {medicineList?.length > 0 &&
+                                                    medicineList?.map((item, key) =>
+                                                        <tr key={key}>
+                                                            <td>{key + 1}</td>
+                                                            <td>
+                                                                {item?.medicineName}
+                                                            </td>
+                                                            <td> {item?.schedule}</td>
+                                                            <td>
+                                                                {item?.batchNumber}
+                                                            </td>
+                                                            <td>
+                                                                {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
                                                                     day: '2-digit',
                                                                     month: 'short',
                                                                     year: 'numeric'
-                                                                })
-                                                                : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
-                                                                    day: '2-digit',
-                                                                    month: 'short',
-                                                                    year: 'numeric'
-                                                                })}</span>
-                                                            }
-                                                        </td>
-                                                        <td>
-                                                            100/ <span className="stock-title">150</span>
-                                                        </td>
-                                                        <td>
-                                                            ${item?.purchasePrice}
-                                                        </td>
-                                                        <td>
-                                                            {item?.avgMargin} {item?.marginType == 'percentage' && '%'}
-                                                        </td>
-                                                        <td>
-                                                            {item?.lowMargin} {item?.marginType == 'percentage' && '%'}
-                                                        </td>
-                                                        <td>
-                                                            {item?.highMargin} {item?.marginType == 'percentage' && '%'}
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex align-items-center gap-2">
-                                                                <a href="javascript:void(0)" className="text-secondary" onClick={() => {
-                                                                    const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
-                                                                    const expDate = new Date(item?.expDate).toISOString().split("T")[0]
-                                                                    setFormData({ ...item, mfgDate: mfgDate, expDate: expDate })
+                                                                })}
+                                                            </td>
+                                                            <td>
+                                                                {new Date(item?.expDate) > new Date() ?
+                                                                    new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                        day: '2-digit',
+                                                                        month: 'short',
+                                                                        year: 'numeric'
+                                                                    })
+                                                                    : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                        day: '2-digit',
+                                                                        month: 'short',
+                                                                        year: 'numeric'
+                                                                    })}</span>
                                                                 }
-
-                                                                } data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen} /></a>
-                                                                <button onClick={() => deleteInventory(item?._id)} className="text-secondary"><FontAwesomeIcon icon={faTrash} /></button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>)}
-                                        </tbody>
-                                    </table>
+                                                            </td>
+                                                            <td>
+                                                                {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
+                                                            </td>
+                                                            <td>
+                                                                ${item?.purchasePrice}
+                                                            </td>
+                                                            <td>
+                                                                {item?.avgMargin} {item?.marginType == 'Percentage' && '%'}
+                                                            </td>
+                                                            <td>
+                                                                {item?.lowMargin} {item?.marginType == 'Percentage' && '%'}
+                                                            </td>
+                                                            <td>
+                                                                {item?.highMargin} {item?.marginType == 'Percentage' && '%'}
+                                                            </td>
+                                                            <td>
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    <a href="javascript:void(0)" className="text-secondary" onClick={() => {
+                                                                        const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
+                                                                        const expDate = new Date(item?.expDate).toISOString().split("T")[0]
+                                                                        setFormData({ ...item, mfgDate: mfgDate, expDate: expDate })
+                                                                    }
+                                                                    } data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen} /></a>
+                                                                    <button onClick={() => deleteInventory(item?._id)} className="text-secondary"><FontAwesomeIcon icon={faTrash} /></button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>)}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </>}
                 </div>
                 <div className="modal step-modal" id="edit-Inventory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                     aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -374,7 +375,6 @@ function NewAnalysis() {
                             <div className="modal-body px-4">
                                 <form onSubmit={handleSubmit}>
                                     <div className="row">
-
                                         <div className="col-lg-6 col-md-6 col-sm-12">
                                             <div className="custom-frm-bx">
                                                 <label>Medicine Name</label>
@@ -402,6 +402,7 @@ function NewAnalysis() {
                                                         <option value="">Select</option>
                                                         <option value="H1">H1</option>
                                                         <option value="H">H</option>
+                                                        <option value="X">X</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -420,7 +421,6 @@ function NewAnalysis() {
                                                 />
                                             </div>
                                         </div>
-
                                         <div className="col-lg-6 col-md-6 col-sm-12">
                                             <div className="custom-frm-bx">
                                                 <label>MFG Date</label>
@@ -476,7 +476,6 @@ function NewAnalysis() {
                                                 <div className="stock-bx"></div>
                                             </div>
                                         </div>
-
                                         <div className="col-lg-6 col-md-6 col-sm-12">
                                             <div className="custom-frm-bx">
                                                 <label>Purchase Price</label>

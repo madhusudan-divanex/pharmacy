@@ -215,9 +215,9 @@ function Supplier() {
                                                     <th>Supplier</th>
                                                     <th>Mobile Number </th>
                                                     <th>Address</th>
-                                                    <th>Score</th>
-                                                    <th>On-time delivery</th>
-                                                    <th>Price</th>
+                                                    {/* <th>Score</th>
+                                                    <th>On-time delivery</th> */}
+                                                    {/* <th>Price</th> */}
                                                     <th>Quality</th>
                                                     <th>Action</th>
                                                 </tr>
@@ -243,10 +243,10 @@ function Supplier() {
                                                             <td>
                                                                 {item?.city}
                                                             </td>
-                                                            <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
-                                                            <td>5</td>
-                                                            <td>456567</td>
-                                                            <td>4455</td>
+                                                            {/* <td><span className="score-title"> <img src="/score.svg" alt="" /> 774</span></td>
+                                                            <td>5</td> */}
+                                                            {/* <td>456567</td> */}
+                                                            <td>{item?.totalQuantity}</td>
                                                             <td>
                                                                 <div className="d-flex align-items-centet gap-2">
                                                                     <div class="dropdown">

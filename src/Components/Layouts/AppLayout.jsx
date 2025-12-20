@@ -3,16 +3,24 @@ import LeftSidebar from "./LeftSidebar"
 import TopHeader from "./TopHeader"
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
-import { fetchUserDetail } from "../../redux/feature/staffSlice";
+import { fetchUserDetail } from "../../redux/feature/userSlice";
+import { fetchStaffDetail } from "../../redux/feature/staffSlice";
 
 function AppLayout() {
   const dispatch=useDispatch()
   const location = useLocation();
   const path = location.pathname;
   const staticRoute = ['/login', '/wating-for-approval', '/forgot-password', '/otp', '/set-password', '/create-account', '/create-account-image', '/create-account-address', '/create-account-person', '/create-account-upload']
-  useEffect(()=>{
-    dispatch(fetchUserDetail())
-  },[])
+  useEffect(() => {
+  const isOwner = localStorage.getItem('isOwner');
+
+  if (isOwner === 'true') {
+    dispatch(fetchUserDetail());
+  } else if (isOwner === 'false') {
+    dispatch(fetchStaffDetail());
+  }
+}, [dispatch]);
+
 
   return (
     <>

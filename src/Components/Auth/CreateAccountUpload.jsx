@@ -44,7 +44,6 @@ function CreateAccountUpload() {
         const { name, value } = e.target;
         const list = [...formData.pharCert];
         list[index][name] = value;
-        console.log(list)
         setFormData({ ...formData, pharCert: list });
     };
 

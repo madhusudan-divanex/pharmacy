@@ -9,9 +9,11 @@ import { toast } from "react-toastify";
 import { Tab } from "bootstrap";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
 import base_url from "../../baseUrl";
+import { useSelector } from "react-redux";
 
 function AddEmployee() {
     const [searchParams] = useSearchParams()
+    const {isOwner}=useSelector(state=>state.user)
     const [staffId, setStaffId] = useState(searchParams.get('id'))
     const userId = localStorage.getItem('userId')
     const [permisions, setPermissions] = useState([])
@@ -371,7 +373,13 @@ function AddEmployee() {
         { value: "Cleaning Staff", label: "Cleaning Staff" },
         { value: "Security Guard", label: "Security Guard" },
     ];
-
+    useEffect(() => {
+        if (!isOwner) {
+            navigate('/')
+            toast.error('You do not have permission to add an employee ')
+            return
+        }
+    }, [isOwner])
 
     return (
         <>
@@ -1008,7 +1016,7 @@ function AddEmployee() {
                                                         <input type="number" value={employmentInfo?.salary}
                                                             required
                                                             name="salary"
-                                                            onChange={handleEmploymentChange} id="" 
+                                                            onChange={handleEmploymentChange} id=""
                                                             className="form-control nw-frm-select"
                                                         />
                                                     </div>

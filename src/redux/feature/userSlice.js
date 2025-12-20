@@ -21,7 +21,6 @@ export const fetchUserDetail = createAsyncThunk(
     async (searchText, { rejectWithValue }) => {
         try {
             const response = await getSecureApiData(`pharmacy/detail/${localStorage.getItem('userId')}`);
-            console.log(response)
             if (response.success) {
                 return response;
             }
@@ -81,6 +80,8 @@ const userSlice = createSlice({
                 state.pharPerson = action.payload.pharPerson;
                 state.isRequest = action.payload.isRequest
                 state.pharLicense = action.payload.pharLicense;
+                state.isOwner= localStorage.getItem('isOwner') === 'true' ?true:false;
+                state.permissions= JSON.parse(localStorage.getItem('permissions')) || null;
             })
             .addCase(fetchUserDetail.rejected, (state, action) => {
                 state.loading = false;

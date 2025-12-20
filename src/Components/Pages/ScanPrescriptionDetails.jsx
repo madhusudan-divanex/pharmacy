@@ -233,7 +233,7 @@ function ScanPrescriptionDetails() {
                                     <div className="new-invoice-card">
                                         <div className="d-flex align-items-center justify-content-between mb-3">
                                             <div>
-                                                <h5 className="first_para fw-700 fz-20 mb-0">Generate Bill</h5>
+                                                <h5 className="no-print first_para fw-700 fz-20 mb-0">Generate Bill</h5>
                                             </div>
                                             <div className="d-flex align-items-center gap-2 flex-wrap">
 

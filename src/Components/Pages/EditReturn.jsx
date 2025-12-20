@@ -260,6 +260,7 @@ function EditReturn() {
                                             <div>
                                                 <button
                                                     type="button"
+                                                    disabled={formData?.products?.length==1}
                                                     className="text-black ms-2"
                                                     onClick={() => removeProduct(index)}
                                                 >

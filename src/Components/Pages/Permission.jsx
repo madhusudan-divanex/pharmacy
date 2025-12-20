@@ -13,6 +13,7 @@ import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
+import { useSelector } from "react-redux";
 
 function Permission() {
     const userId = localStorage.getItem('userId')
@@ -21,9 +22,11 @@ function Permission() {
     const [search, setSearch] = useState(null)
     const [totalPage, setTotalPage] = useState()
     const [currentPage, setCurrentPage] = useState(1)
+    const {isOwner} =useSelector(state=>state.user)
 
     const [permissions, setPermissions] = useState([])
     const fetchPharPermission = async () => {
+       
         try {
             const response = await getSecureApiData(`pharmacy/permission/${userId}?page=${currentPage}&name=${search}`);
             if (response.success) {
@@ -87,7 +90,21 @@ function Permission() {
     }
     useEffect(() => {
         fetchPharPermission()
-    }, [currentPage, userId,search])
+    }, [currentPage, userId])
+    useEffect(()=>{
+        if(search?.length>1){
+            setTimeout(() => {
+                fetchPharPermission()
+            }, 800);
+        }
+    },[search])
+    useEffect(() => {
+        if (!isOwner) {
+            navigate('/')
+            toast.error('You do not have permission to see permissions ')
+            return
+        }
+    }, [isOwner])
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -128,8 +145,8 @@ function Permission() {
                 <div className="row ">
                     <div className="d-flex align-items-center justify-content-between">
                         <div className="custom-frm-bx">
-                            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} 
-                            className="form-control nw-form-select pe-5" placeholder="Search " />
+                            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+                                className="form-control nw-form-select pe-5" placeholder="Search " />
 
                             <div className="search-item-bx">
                                 <button className="search-item-btn"><FontAwesomeIcon icon={faSearch} /></button>
@@ -166,13 +183,13 @@ function Permission() {
                                             {permissions?.length > 0 &&
                                                 permissions?.map((item, key) =>
                                                     <tr key={key}>
-                                                        <td>{key+1}</td>
+                                                        <td>{key + 1}</td>
                                                         <td>
                                                             {item?.name}
                                                         </td>
                                                         <td>
                                                             <span><NavLink onClick={() => sessionStorage.setItem('permission', JSON.stringify(item))} to={`/permission-check/${item?.name}/${item?._id}`}
-                                                             className="admin-sub-dropdown"> <FontAwesomeIcon icon={faKey} /> Permission <small className="permission-title">{item?.totalUsed}</small></NavLink></span>
+                                                                className="admin-sub-dropdown"> <FontAwesomeIcon icon={faKey} /> Permission <small className="permission-title">{item?.totalUsed}</small></NavLink></span>
                                                         </td>
                                                         <td>
                                                             <div className="d-flex align-items-centet gap-2">

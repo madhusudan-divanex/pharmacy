@@ -6,17 +6,19 @@ import { toast } from "react-toastify";
 import { deleteApiData, getSecureApiData, securePostData } from "../../Services/api";
 import { useEffect, useState } from "react";
 import base_url from "../../baseUrl";
+import { useSelector } from "react-redux";
 
 
 function Employee() {
     const navigate = useNavigate()
     const userId = localStorage.getItem('userId')
+    const {isOwner}=useSelector(state=>state.user)
     const [employees, setEmployees] = useState([])
     const [status, setStatus] = useState()
     const [currentPage, setCurrentPage] = useState(1)
     const [name, setName] = useState('')
     const [totalPage, setTotalPage] = useState(1)
-    const fetchLabStaff = async () => {
+    const fetchPharStaff = async () => {
         try {
             const response = await getSecureApiData(`pharmacy/staff/${userId}?page=${currentPage}&name=${name}&status=${status}`);
 
@@ -31,7 +33,7 @@ function Employee() {
         }
     }
     useEffect(() => {
-        fetchLabStaff()
+        fetchPharStaff()
     }, [userId, currentPage, status])
     const staffAction = async (e, id, status) => {
         e.preventDefault()
@@ -40,7 +42,7 @@ function Employee() {
             const response = await securePostData(`pharmacy/staff-action`, data);
             if (response.success) {
                 toast.success('Status updated')
-                fetchLabStaff()
+                fetchPharStaff()
             } else {
                 toast.error(response.message)
             }
@@ -53,7 +55,7 @@ function Employee() {
             const response = await deleteApiData(`pharmacy/staff/${id}`);
             if (response.success) {
                 toast.success('Staff deleted')
-                fetchLabStaff()
+                fetchPharStaff()
             } else {
                 toast.error(response.message)
             }
@@ -61,11 +63,14 @@ function Employee() {
             console.error("Error creating lab:", err);
         }
     }
+   
     useEffect(() => {
-        setTimeout(() => {
-            fetchLabStaff()
-        }, 1000)
-    }, [name])
+        if (!isOwner) {
+            navigate('/')
+            toast.error('You do not have permission to see employee ')
+            return
+        }
+    }, [isOwner])
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -91,15 +96,11 @@ function Employee() {
                                 </nav>
                             </div>
                         </div>
-
                         <div>
                             <button className="thm-btn rounded-3" onClick={() => navigate("/add-employee")} data-bs-dismiss="modal" aria-label="Close" >Add</button>
                         </div>
-
-
                     </div>
                 </div>
-
                 <div className='new-mega-card'>
                     <div className="row">
                         <div className="d-flex align-items-center justify-content-between mb-3 nw-box gap-2">
@@ -120,7 +121,6 @@ function Employee() {
                                             </button>
                                         </div>
                                     </div>
-
                                     <div className="filters">
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
                                             <label className="label">Status :</label>
@@ -129,14 +129,13 @@ function Employee() {
                                                 <option value="active">Active</option>
                                                 <option value="inactive">In Active</option>
                                                 <option value="onleave">On Leave</option>
-
                                             </select>
                                         </div>
                                     </div>
                                     <div>
-                                        <a href="#" className="nw-thm-btn rounded-2">
+                                        <button onClick={()=>fetchPharStaff()} className="nw-thm-btn rounded-2">
                                             Filter
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

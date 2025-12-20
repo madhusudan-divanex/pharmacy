@@ -5,6 +5,8 @@ import { useDispatch } from 'react-redux'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { postApiData } from '../../Services/api'
 import { toast } from 'react-toastify'
+import { clearStaffProfiles, fetchStaffDetail } from '../../redux/feature/staffSlice'
+import { clearProfiles, fetchUserDetail } from '../../redux/feature/userSlice'
 function Login() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -23,9 +25,14 @@ function Login() {
         localStorage.setItem('userId', response.userId)
         localStorage.setItem('isOwner', response.isOwner);
         if (!response.isOwner) {
+          dispatch(clearStaffProfiles())
           localStorage.setItem('staffId', response.staffId)
           localStorage.setItem('permissions', JSON.stringify(response.user.permissionId))
+          dispatch(fetchStaffDetail())
+          dispatch(clearProfiles())
+          dispatch(fetchUserDetail())
           
+        }else{
         }
         toast.success('Login successfully')
         if (response.user.status == 'pending') {

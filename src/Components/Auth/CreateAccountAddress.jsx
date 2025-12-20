@@ -48,7 +48,6 @@ function CreateAccountAddress() {
             } else {
                 toast.error(response.message)
             }
-            console.log("Pharmacy created:", response.data);
         } catch (err) {
             console.error("Error creating lab:", err);
         }

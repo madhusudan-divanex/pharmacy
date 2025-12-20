@@ -5,22 +5,28 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUserDetail } from "../../redux/feature/userSlice";
 import { useEffect } from "react";
 import base_url from "../../baseUrl";
+import { fetchStaffDetail } from "../../redux/feature/staffSlice";
 function LeftSidebar() {
   const dispatch = useDispatch();
   const navigate = useNavigate()
   const { pathname } = useLocation();
-
   const {
     profiles, isOwner,
     pharPerson
   } = useSelector((state) => state.user);
   const {
     staffData, empAccess,
-    professional,employment
+    professional, employment
   } = useSelector((state) => state.staff);
-  useEffect(()=>{
-      dispatch(fetchUserDetail())
-    },[])
+  useEffect(() => {
+  const isOwner = localStorage.getItem('isOwner');
+
+  if (isOwner === 'true') {
+    dispatch(fetchUserDetail());
+  } else if (isOwner === 'false') {
+    dispatch(fetchStaffDetail());
+  }
+}, [dispatch]);
   return (
     <>
       <div className="dashboard-left-side text-white min-vh-100 flex-shrink-0">
@@ -51,7 +57,7 @@ function LeftSidebar() {
                 <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt="" />
                 <div>
                   <h6 className="new_title fw-500 mb-0">{isOwner ? profiles?.name : staffData?.name}</h6>
-                  <p>#{isOwner? profiles?.customId : staffData?._id?.slice(-10)}</p>
+                  <p>#{isOwner ? profiles?.customId : staffData?._id?.slice(-10)}</p>
                 </div>
               </div>
             </NavLink>
@@ -177,7 +183,7 @@ function LeftSidebar() {
                 </NavLink>
               </li>
 
-              <li className="nav-item">
+              {isOwner && <li className="nav-item">
                 <NavLink
                   to="/employee"
                   className={({ isActive }) =>
@@ -186,9 +192,9 @@ function LeftSidebar() {
                 >
                   <FontAwesomeIcon icon={faUsers} /> Employee
                 </NavLink>
-              </li>
+              </li>}
 
-              <li className="nav-item">
+              {isOwner &&<li className="nav-item">
                 <NavLink
                   to="/permission"
                   className={({ isActive }) =>
@@ -197,7 +203,7 @@ function LeftSidebar() {
                 >
                   <FontAwesomeIcon icon={faUserAltSlash} /> Permissions
                 </NavLink>
-              </li>
+              </li>}
 
               <li className="nav-item">
                 <NavLink
@@ -221,7 +227,7 @@ function LeftSidebar() {
                 </NavLink>
               </li>
 
-              <li className="nav-item">
+              {isOwner && <li className="nav-item">
                 <NavLink
                   to="/change-password"
                   className={({ isActive }) =>
@@ -230,7 +236,7 @@ function LeftSidebar() {
                 >
                   <FontAwesomeIcon icon={faLock} />  Change Password
                 </NavLink>
-              </li>
+              </li>}
 
               <li className="nav-item">
                 <NavLink

@@ -23,7 +23,7 @@ function MedicineRequest() {
     })
     const fetchInventory = async () => {
         try {
-            const response = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=all&limit=10000`);
+            const response = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=all&limit=10000&status=Pending`);
             if (response.success) {
                 setMedicineList(response.data)
                 setLoading(false)
@@ -152,11 +152,8 @@ function MedicineRequest() {
                                             Filter
                                         </button>
                                     </div>
-
                                 </div>
-
                             </div>
-
                             <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
                                 <div>
                                     <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#add-Request">Send Request</button>
@@ -175,8 +172,6 @@ function MedicineRequest() {
                             </div>
                         </div>
                     </div>
-
-
                     <div className="row">
                         <div className="col-lg-12">
                             <div className="table-section">
@@ -216,9 +211,7 @@ function MedicineRequest() {
                                                             {item?.status == "Pending" && <span className="pending-title">  Pending</span>}
                                                             {item?.status == "Rejected" && <span className="reject-title">  Rejected</span>}
                                                         </td>
-                                                    </tr>)}
-                                           
-
+                                                    </tr>)}                                         
                                         </tbody>
                                     </table>
                                 </div>
@@ -282,7 +275,6 @@ function MedicineRequest() {
                                                 onChange={handleChange}
                                                 name="message"
                                                 className="form-control nw-frm-select "></textarea>
-
                                         </div>
                                     </div>
 

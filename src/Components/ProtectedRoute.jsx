@@ -28,7 +28,6 @@ const ProtectedRoute = ({ component: Component }) => {
         }
       } catch (error) {
         const toastId = "token-Id"
-        console.log("Token validation error:", error);
         localStorage.removeItem("token");
         localStorage.removeItem('userId')
         setIsAuthenticated(false);

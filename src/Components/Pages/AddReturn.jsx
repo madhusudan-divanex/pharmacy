@@ -102,7 +102,6 @@ function AddReturn() {
         fetchSupplier()
         fetchInventory()
     }, [userId])
-    console.log(formData)
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -118,7 +117,6 @@ function AddReturn() {
                                                 Dashboard
                                             </a>
                                         </li>
-
                                         <li
                                             className="breadcrumb-item active"
                                             aria-current="page"
@@ -135,7 +133,6 @@ function AddReturn() {
                 <div className='dashboard-main-card '>
                     <form onSubmit={handleSubmit}>
                         <div className="row">
-
                             <div className="col-lg-4 col-md-4 col-sm-12">
                                 <div className="custom-frm-bx">
                                     <label>Select Supplier</label>
@@ -225,6 +222,7 @@ function AddReturn() {
                                             <div>
                                                 <button
                                                     type="button"
+                                                    disabled={formData?.products?.length==1}
                                                     className="text-black ms-2"
                                                     onClick={() => removeProduct(index)}
                                                 >

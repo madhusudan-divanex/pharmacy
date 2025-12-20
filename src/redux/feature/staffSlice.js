@@ -3,7 +3,7 @@ import axios from "axios";
 import { getApiData, getSecureApiData, securePostData } from "../../Services/api";
 
 // Async thunk to fetch staff profile
-export const fetchUserProfile = createAsyncThunk(
+export const fetchStaffProfile = createAsyncThunk(
     "staffProfile/fetch",
     async (searchText, { rejectWithValue }) => {
         try {
@@ -18,7 +18,7 @@ export const fetchUserProfile = createAsyncThunk(
         }
     }
 );
-export const fetchUserDetail = createAsyncThunk(
+export const fetchStaffDetail = createAsyncThunk(
     "staffDetail/fetch",
     async (searchText, { rejectWithValue }) => {
         try {
@@ -46,43 +46,45 @@ const staffSlice = createSlice({
         permissions: JSON.parse(localStorage.getItem('permissions')) || null,
     },
     reducers: {
-        clearProfiles: (state) => {
-            state.profiles = [];
+        clearStaffProfiles: (state) => {
+            state.staffData = null;
             state.error = null;
             state.loading = false;
         },
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchUserProfile.pending, (state) => {
+            .addCase(fetchStaffProfile.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchUserProfile.fulfilled, (state, action) => {
+            .addCase(fetchStaffProfile.fulfilled, (state, action) => {
                 state.loading = false;
                 state.profiles = action.payload;
             })
-            .addCase(fetchUserProfile.rejected, (state, action) => {
+            .addCase(fetchStaffProfile.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
-            .addCase(fetchUserDetail.pending, (state) => {
+            .addCase(fetchStaffDetail.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchUserDetail.fulfilled, (state, action) => {
+            .addCase(fetchStaffDetail.fulfilled, (state, action) => {
                 state.loading = false;
                 state.staffData = action.payload.employee
                 state.employment = action.payload.employment;
                 state.professional = action.payload.professional;
                 state.empAccess = action.payload.empAccess;
+                state.isOwner= localStorage.getItem('isOwner') === 'true' ?true:false;
+                state.permissions= JSON.parse(localStorage.getItem('permissions')) || null;
             })
-            .addCase(fetchUserDetail.rejected, (state, action) => {
+            .addCase(fetchStaffDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });
     },
 });
 
-export const { clearProfiles, setOwner, setPermissions } = staffSlice.actions;
+export const { clearStaffProfiles, setOwner, setPermissions } = staffSlice.actions;
 export default staffSlice.reducer;
