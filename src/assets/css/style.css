@@ -2513,6 +2513,7 @@ min-height: 100vh; */
     font-weight: 400;
     font-size: 18px;
     color: #4D667E;
+    overflow-wrap: anywhere;
 }
 
 .ovrview-bx p {

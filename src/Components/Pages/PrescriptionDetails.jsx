@@ -128,9 +128,7 @@ function PrescriptionDetails() {
             toast.error(error);
             return;
         }
-
         if (!id) return;
-
         fetchInventory(id);
     };
     useEffect(() => {

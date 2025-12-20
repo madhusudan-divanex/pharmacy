@@ -3,16 +3,19 @@ import { faCircleXmark, faDollar, faPen, faSearch, faTrash } from "@fortawesome/
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Scanner from "./Scanner";
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
 import { toast } from "react-toastify";
 import Barcode from "react-barcode"
+import { useSelector } from "react-redux";
 
 function InventoryList() {
     const handleDetected = (code) => {
         alert("Scanned barcode: " + code);
     };
     const userId = localStorage.getItem('userId')
+    const { permissions ,isOwner} = useSelector(state => state.user)
+    const navigate=useNavigate()
 
     const [showBarcode, setShowBarcode] = useState(false);
     const [formData, setFormData] = useState({
@@ -50,6 +53,8 @@ function InventoryList() {
                 if (res.success) {
                     fetchInventory()
                     toast.success("Inventory Updated Successfully");
+                } else {
+                    toast.error(res.message);
                 }
             } else {
                 const data = { pharId: userId, ...formData }
@@ -61,6 +66,8 @@ function InventoryList() {
                 if (res.success) {
                     fetchInventory()
                     toast.success("Inventory Added Successfully");
+                } else {
+                    toast.error(res.message);
                 }
             }
         } catch (error) {
@@ -103,6 +110,15 @@ function InventoryList() {
             console.error("Error creating lab:", err);
         }
     }
+    useEffect(() => {
+        if (Object.keys(permissions)?.length > 0) {
+            if (!isOwner && !permissions.listView) {
+                navigate('/')
+                toast.error('You do not have permission to add test ')
+                return
+            }
+        }
+    }, [permissions])
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -131,7 +147,9 @@ function InventoryList() {
 
                         <div className="d-flex gap-2">
                             {/* <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button> */}
-                            <button className="nw-thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
+                            <button className="nw-thm-btn rounded-3" data-bs-toggle="modal"
+                            disabled={!isOwner && !permissions?.add}
+                             data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
                         </div>
                     </div>
                 </div>
@@ -175,7 +193,7 @@ function InventoryList() {
                                 </div>
                             </div>
 
-                            {totalPage &&<div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                            {totalPage && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
                                 <div>
                                     <select
                                         value={currentPage}
@@ -230,10 +248,10 @@ function InventoryList() {
                                                         <td> {item?.schedule}</td>
                                                         <td>
                                                             {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
-                                                                    day: '2-digit',
-                                                                    month: 'short',
-                                                                    year: 'numeric'
-                                                                    })}
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })}
                                                         </td>
                                                         <td>
                                                             {new Date(item?.expDate) > new Date() ?
@@ -241,17 +259,17 @@ function InventoryList() {
                                                                     day: '2-digit',
                                                                     month: 'short',
                                                                     year: 'numeric'
-                                                                    })
+                                                                })
                                                                 : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
                                                                     day: '2-digit',
                                                                     month: 'short',
                                                                     year: 'numeric'
-                                                                    })}</span>
+                                                                })}</span>
                                                             }
                                                         </td>
 
                                                         <td>
-                                                            100/ <span className="stock-title">150</span>
+                                                            {item?.quantity - item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
                                                         </td>
                                                         <td>
                                                             ${item?.purchasePrice}
@@ -265,7 +283,6 @@ function InventoryList() {
                                                         <td>
                                                             {item?.highMargin} {item?.marginType == 'percentage' && '%'}
                                                         </td>
-
                                                         <td>
                                                             {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
                                                             {showBarcode == key ?
@@ -289,20 +306,21 @@ function InventoryList() {
                                                                 {/* <a href="javascript:void(0)" className="text-secondary" data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen}/></a> */}
                                                                 <div className="d-flex align-items-centet gap-2">
                                                                     <div className="dropdown">
-                                                                        <a
+                                                                        <button
+                                                                            disabled={!isOwner && !permissions?.add}
 
-                                                                            href="javascript:void(0)"
                                                                             className="text-secondary"
                                                                             id="acticonMenu1"
                                                                             onClick={() => {
-                                                                                const mfgDate=new Date(item?.mfgDate).toISOString().split("T")[0]
-                                                                                const expDate=new Date(item?.expDate).toISOString().split("T")[0]
-                                                                                setFormData({...item,mfgDate:mfgDate,expDate:expDate})}
+                                                                                const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
+                                                                                const expDate = new Date(item?.expDate).toISOString().split("T")[0]
+                                                                                setFormData({ ...item, mfgDate: mfgDate, expDate: expDate })
+                                                                            }
 
                                                                             } data-bs-toggle="modal" data-bs-target="#edit-Inventory"
                                                                         >
                                                                             <FontAwesomeIcon icon={faPen} />
-                                                                        </a>
+                                                                        </button>
                                                                         <ul
                                                                             className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
                                                                             aria-labelledby="acticonMenu1"

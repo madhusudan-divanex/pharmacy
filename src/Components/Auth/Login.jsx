@@ -21,12 +21,11 @@ function Login() {
       if (response.success) {
         localStorage.setItem('token', response.token)
         localStorage.setItem('userId', response.userId)
-        console.log(response.isOwner)
         localStorage.setItem('isOwner', response.isOwner);
         if (!response.isOwner) {
           localStorage.setItem('staffId', response.staffId)
-
           localStorage.setItem('permissions', JSON.stringify(response.user.permissionId))
+          
         }
         toast.success('Login successfully')
         if (response.user.status == 'pending') {

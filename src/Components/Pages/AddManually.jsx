@@ -20,9 +20,9 @@ function AddManually() {
     const [formData, setFormData] = useState({
         patientId: null,
         doctorId: null,
-        pharId:userId,
-        prescriptionFile:null,
-        paymentStatus:"Pending",
+        pharId: userId,
+        prescriptionFile: null,
+        paymentStatus: "Pending",
         products: [
             { inventoryId: null, quantity: 0, price: 0 },
         ],
@@ -31,7 +31,7 @@ function AddManually() {
         try {
             const response = await getSecureApiData(`patient/${patientId}`);
             if (response.success) {
-                setFormData({...formData,patientId:response.data._id})
+                setFormData({ ...formData, patientId: response.data._id })
                 setPtData(response.data)
                 setIsLoading(false)
             } else {
@@ -45,7 +45,7 @@ function AddManually() {
         try {
             const response = await getSecureApiData(`doctor/${doctorId}`);
             if (response.success) {
-                setFormData({...formData,doctorId:response.data._id})
+                setFormData({ ...formData, doctorId: response.data._id })
                 setDtData(response.data)
                 setIsLoading(false)
             } else {
@@ -122,25 +122,33 @@ function AddManually() {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const data=new FormData();
-        data.append("patientId",formData.patientId)
-        data.append("doctorId",formData.doctorId)
-        data.append("pharId",formData.pharId)
-        if(formData.prescriptionFile){
-            data.append("prescriptionFile",formData.prescriptionFile)
+        if (!patientId || !doctorId) {
+            toast.error("Please fill all required fields")
+            return
         }
-        data.append("paymentStatus",formData.paymentStatus)
-        data.append("products",JSON.stringify(formData.products))
+        const data = new FormData();
+        data.append("patientId", formData.patientId)
+        data.append("doctorId", formData.doctorId)
+        data.append("pharId", formData.pharId)
+        if (formData.prescriptionFile) {
+            data.append("prescriptionFile", formData.prescriptionFile)
+        }else{
+            toast.error("Please upload prescription file")
+            return
+        }
+        data.append("paymentStatus", formData.paymentStatus)
+        data.append("products", JSON.stringify(formData.products))
+        // data.appent("total",total)
         try {
-            const response=await securePostData(`pharmacy/sell`,data);
-            if(response.success){
+            const response = await securePostData(`pharmacy/sell`, data);
+            if (response.success) {
                 toast.success(response.message)
                 navigate("/sell")
-            }else{
+            } else {
                 toast.error(response.message)
             }
         } catch (error) {
-            
+
         }
     }
     return (
@@ -252,7 +260,7 @@ function AddManually() {
                                                 type="file"
                                                 className="d-none"
                                                 id="fileInput1"
-                                                onChange={(e)=>setFormData({...formData,prescriptionFile:e.target.files[0]})}
+                                                onChange={(e) => setFormData({ ...formData, prescriptionFile: e.target.files[0] })}
                                                 accept=".png,.jpg,.jpeg"
                                             />
 
@@ -299,29 +307,29 @@ function AddManually() {
                                     <div className="col-lg-4 col-md-4 col-sm-12">
                                         <div className="custom-frm-bx">
                                             <label htmlFor="">Quantity</label>
-                                            <input type="number" 
-                                            value={product?.quantity}
-                                            name="quantity"
-                                            onChange={(e)=>handleProductQuantityChange(index,e)}
-                                            className="form-control nw-frm-select " placeholder="Enter Quantity" />
+                                            <input type="number"
+                                                value={product?.quantity}
+                                                name="quantity"
+                                                onChange={(e) => handleProductQuantityChange(index, e)}
+                                                className="form-control nw-frm-select " placeholder="Enter Quantity" />
                                         </div>
                                     </div>
                                     <div className="col-lg-4 col-md-4 col-sm-12 d-flex align-items-center">
-                                        <div className="custom-frm-bx mb-0">
+                                        {index == formData?.products?.length - 1 && <div className="custom-frm-bx mb-0">
                                             <button className="text-danger"
                                                 onClick={() => removeProduct(index)}
                                             ><FontAwesomeIcon icon={faTrash} /></button>
+                                        </div>}
+
+                                        <div className="text-end">
+                                            <button
+                                                type="button"
+                                                className="reprting-name"
+                                                onClick={addProduct}
+                                            >
+                                                <FaPlusCircle />
+                                            </button>
                                         </div>
-                                        {index == formData?.products?.length - 1 &&
-                                            <div className="text-end">
-                                                <button
-                                                    type="button"
-                                                    className="reprting-name"
-                                                    onClick={addProduct}
-                                                >
-                                                    <FaPlusCircle />
-                                                </button>
-                                            </div>}
                                     </div>
                                 </div>))}
 
@@ -333,8 +341,10 @@ function AddManually() {
                                         <img src="/bill.svg" alt="" />
                                         <p className="py-2">Please Generate PrescriptionsBill </p>
                                         <button
-                                        disabled={formData?.products[0].inventoryId==null}
-                                         className="nw-thm-btn outline rounded-5" data-bs-toggle="modal" data-bs-target="#bill-Generate">Generate Bill</button>
+                                            disabled={formData?.products[0].inventoryId == null}
+                                            type="button"
+                                            className="nw-thm-btn outline rounded-5" data-bs-toggle="modal"
+                                            data-bs-target="#bill-Generate">Generate Bill</button>
                                     </div>
                                 </div>
                             </div>
@@ -343,10 +353,10 @@ function AddManually() {
                                 <div className="permission-check-main-bx">
 
                                     <div className="form-check custom-check d-inline-block">
-                                        <input className="form-check-input" type="checkbox" 
-                                        checked={formData?.paymentStatus==="Completed"}
-                                        onChange={(e)=>setFormData({...formData,paymentStatus:e.target.checked?"Completed":"Pending"})}
-                                         id="chat" />
+                                        <input className="form-check-input" type="checkbox"
+                                            checked={formData?.paymentStatus === "Completed"}
+                                            onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.checked ? "Completed" : "Pending" })}
+                                            id="chat" />
                                         <label className="form-check-label" for="chat">
                                             Payment Done
                                         </label>
@@ -431,17 +441,17 @@ function AddManually() {
                                             <div className="custom-frm-bx">
                                                 <label htmlFor="">Amount($)</label>
                                                 <input type="text"
-                                                name="price"
-                                                value={product?.price} 
-                                                onChange={(e)=>handleProductPriceChange(index,e)}
-                                                className="form-control nw-frm-select " placeholder="Enter Amount" />
+                                                    name="price"
+                                                    value={product?.price}
+                                                    onChange={(e) => handleProductPriceChange(index, e)}
+                                                    className="form-control nw-frm-select " placeholder="Enter Amount" />
                                             </div>
                                         </div>
                                     </div>)}
 
                                 <div className="col-lg-12">
                                     <div className="text-center mt-4">
-                                        <button className="nw-thm-btn rounded-2 w-75" >Submit</button>
+                                        <button className="nw-thm-btn rounded-2 w-75" type="button" data-bs-dismiss="modal">Submit</button>
                                     </div>
                                 </div>
 

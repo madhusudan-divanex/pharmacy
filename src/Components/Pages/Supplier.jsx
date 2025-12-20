@@ -103,7 +103,7 @@ function Supplier() {
             setLoading(false)
         }
     }
-    
+
     const deleteSupplier = async (id) => {
         try {
             const response = await deleteApiData(`pharmacy/supplier/${id}`);
@@ -118,11 +118,8 @@ function Supplier() {
         }
     }
     useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchSupplier()
-        }, 800)
-        return () => clearTimeout(timer)
-    }, [name,userId, currentPage, status])
+        fetchSupplier()
+    }, [userId, currentPage, status])
     return (
         <>
             {loading ?
@@ -176,7 +173,7 @@ function Supplier() {
                                             required
                                         />
                                         <div className="adm-search-bx">
-                                            <button className="tp-search-btn">
+                                            <button onClick={()=>fetchSupplier()} className="tp-search-btn">
                                                 <FontAwesomeIcon icon={faSearch} />
                                             </button>
                                         </div>
@@ -195,7 +192,7 @@ function Supplier() {
                                         <button className="nw-thm-btn">Filter</button>
                                     </div>
                                 </div>
-                                {totalPage &&<div className="page-selector d-flex align-items-center mb-2 mb-md-0">
+                                {totalPage && <div className="page-selector d-flex align-items-center mb-2 mb-md-0">
                                     <select
                                         value={currentPage}
                                         onChange={(e) => setCurrentPage(e.target.value)}

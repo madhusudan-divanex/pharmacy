@@ -1,9 +1,55 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faDroplet, faEnvelope, faEye, faLocationDot, faPerson, faPhone, faPrint } from "@fortawesome/free-solid-svg-icons";
-import { TbGridDots } from "react-icons/tb";
-import { NavLink } from "react-router-dom";
+import { TbGridDots, TbHelpHexagon } from "react-icons/tb";
+import { NavLink, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getSecureApiData } from "../../Services/api";
+import { toast } from "react-toastify";
+import base_url from "../../baseUrl";
+import Barcode from "react-barcode";
 
 function PrescriptionsBar() {
+    const params = useParams()
+    const patientId = params.id;
+    const [ptData, setPtData] = useState()
+    const [medicalHistory, setMedicalHistory] = useState()
+    const [demographicData, setDemographicData] = useState()
+    const [prescriptionData, setPrescriptionData] = useState([])
+    const [patientPrescription, setPatientPrescription] = useState([])
+    async function fetchPrescriptionDetails() {
+        try {
+            const response = await getSecureApiData(`pharmacy/patient-prescription/${patientId}`);
+            if (response.success) {
+                setPtData(response.user)
+                setMedicalHistory(response.medicalHistory)
+                setDemographicData(response.demographic)
+                setPrescriptionData(response.prescription)
+                setPatientPrescription(response.patientPrescription.prescriptions)
+            } else {
+                toast.error("Failed to fetch sell details");
+            }
+
+        } catch (error) {
+            console.error("Error fetching sell details:", error);
+        }
+    }
+    useEffect(() => {
+        fetchPrescriptionDetails();
+    }, [patientId]);
+    const calculateAge = (dob) => {
+        if (!dob) return "";
+
+        const birthDate = new Date(dob);
+        const today = new Date();
+
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const dayDiff = today.getDate() - birthDate.getDate();
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            age--; // haven't had birthday yet this year
+        }
+        return age;
+    };
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -43,10 +89,10 @@ function PrescriptionsBar() {
                             <div className="view-employee-bx patients-personal-info-card">
                                 <div>
                                     <div className="view-avatr-bio-bx text-center">
-                                        <img src="/view-avatr.png" alt="" />
-                                        <h4>Ravi Kumar</h4>
-                                        <p><span className="vw-id">ID:</span> STC7654</p>
-                                        <h6 className="vw-activ">Active</h6>
+                                        <img src={ptData?.profileImage ? `${base_url}/${ptData?.profileImage}` : "/view-avatr.png"} alt="" />
+                                        <h4>{ptData?.name}</h4>
+                                        <p><span className="vw-id">ID:</span> {ptData?.customId}</p>
+                                        <h6 className="vw-activ text-capitalize">{ptData?.status}</h6>
 
                                     </div>
 
@@ -56,7 +102,7 @@ function PrescriptionsBar() {
                                                 <span className="vw-info-icon"><FontAwesomeIcon icon={faPerson} /></span>
                                                 <div>
                                                     <p className="vw-info-title">Age</p>
-                                                    <p className="vw-info-value">20 Year</p>
+                                                    <p className="vw-info-value">{calculateAge(demographicData?.dob)} Year</p>
                                                 </div>
                                             </li>
 
@@ -64,7 +110,7 @@ function PrescriptionsBar() {
                                                 <span className="vw-info-icon"><FontAwesomeIcon icon={faCalendar} /></span>
                                                 <div>
                                                     <p className="vw-info-title">Gender </p>
-                                                    <p className="vw-info-value">Male</p>
+                                                    <p className="vw-info-value text-capitalize">{ptData?.gender}</p>
                                                 </div>
                                             </li>
 
@@ -72,15 +118,14 @@ function PrescriptionsBar() {
                                                 <span className="vw-info-icon"><FontAwesomeIcon icon={faDroplet} /></span>
                                                 <div>
                                                     <p className="vw-info-title">Blood  Group </p>
-                                                    <p className="vw-info-value">A+</p>
+                                                    <p className="vw-info-value">{demographicData?.bloodGroup}</p>
                                                 </div>
                                             </li>
-
                                             <li className="vw-info-item">
                                                 <span className="vw-info-icon"><FontAwesomeIcon icon={faEnvelope} /></span>
                                                 <div>
                                                     <p className="vw-info-title">Email </p>
-                                                    <p className="vw-info-value">david.patel @medixpro.com</p>
+                                                    <p className="vw-info-value ">{ptData?.name} {ptData?.email}</p>
                                                 </div>
                                             </li>
 
@@ -88,11 +133,11 @@ function PrescriptionsBar() {
                                                 <span className="vw-info-icon"><FontAwesomeIcon icon={faPhone} /></span>
                                                 <div>
                                                     <p className="vw-info-title">Phone </p>
-                                                    <p className="vw-info-value">+91-9876543210</p>
+                                                    <p className="vw-info-value">{ptData?.contactNumber}</p>
                                                 </div>
                                             </li>
 
-                                            <li className="vw-info-item">
+                                            {/* <li className="vw-info-item">
                                                 <span className="vw-info-icon"><FontAwesomeIcon icon={faPhone} /></span>
                                                 <div>
                                                     <p className="vw-info-title">Emergency Contact Name </p>
@@ -106,7 +151,7 @@ function PrescriptionsBar() {
                                                     <p className="vw-info-title">Address</p>
                                                     <p className="vw-info-value">23 Medical Center Blvd, Suite 45,  jaipur,  india</p>
                                                 </div>
-                                            </li>
+                                            </li> */}
 
                                         </ul>
 
@@ -153,161 +198,77 @@ function PrescriptionsBar() {
                                                 role="tabpanel"
                                             >
                                                 <div className="row">
-                                                    <div className="col-lg-12 mb-3">
-                                                        <div className="new-pharmacy-detail-card">
-                                                            <div className="admin-table-bx d-flex align-items-center justify-content-between nw-pharmacy-details">
-                                                                <div className="">
-                                                                    <div className="admin-table-sub-details d-flex align-items-center gap-2">
-                                                                        <img src="/prescriptions.png" alt="" />
-                                                                        <div>
-                                                                            <h6 className="fs-16 fw-600 text-black">Prescriptions</h6>
-                                                                            <p className="fs-14 fw-500">25-11-03</p>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-
-                                                                <div className="admin-table-bx">
-                                                                    <div className="">
-                                                                        <div className="admin-table-sub-details d-flex align-items-center gap-2 doctor-title ">
-                                                                            <img src="/doctor-avatr.png" alt="" />
-                                                                            <div>
-                                                                                <h6>Dr. David Patel </h6>
-                                                                                <p className="fs-14 fw-500">DO-4001</p>
+                                                    {prescriptionData?.length > 0 &&
+                                                        prescriptionData?.map((item, key) =>
+                                                            <div className="col-lg-12 mb-3" key={key}>
+                                                                <div className="new-pharmacy-detail-card">
+                                                                    <div className="admin-table-bx d-flex align-items-center justify-content-between nw-pharmacy-details">
+                                                                        <div className="">
+                                                                            <div className="admin-table-sub-details d-flex align-items-center gap-2">
+                                                                                <img src={item?.status ? "/prescriptions.png" : "/in-active.png"} alt="" />
+                                                                                <div>
+                                                                                    <h6 className="fs-16 fw-600 text-black">Prescriptions</h6>
+                                                                                    <p className="fs-14 fw-500">{new Date(item?.createdAt).toLocaleDateString('en-GB', {
+                                                                                        day: '2-digit',
+                                                                                        month: 'short',
+                                                                                        year: 'numeric'
+                                                                                    })}</p>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="d-flex align-items gap-2">
-                                                                    <div>
-                                                                        <span className="approved rounded-5 py-1">Active</span>
-                                                                    </div>
-
-                                                                    <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faPrint} /></button>
-                                                                    <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faEye} /></button>
-                                                                </div>
-
-
-
-                                                            </div>
-
-                                                            <div className="prescription-check-bx">
-                                                                <div className="mt-3">
-                                                                    <div className="barcd-scannr barcde-scnnr-card ms-0">
-                                                                        <div className="barcd-content">
-                                                                            <h4>SP-9879</h4>
-                                                                            <img src="/barcode.png" alt="" />
-                                                                        </div>
-
-                                                                        <div className="barcode-id-details">
-                                                                            <div>
-                                                                                <h6>Patient Id </h6>
-                                                                                <p>PS-9001</p>
-                                                                            </div>
-
-
-                                                                            <div>
-                                                                                <h6>Appointment ID </h6>
-                                                                                <p>OID-8876</p>
+                                                                        <div className="admin-table-bx">
+                                                                            <div className="">
+                                                                                <div className="admin-table-sub-details d-flex align-items-center gap-2 doctor-title ">
+                                                                                    <img src={item?.doctorId?.profileImage ?
+                                                                                        `${base_url}/${item?.doctorId?.profileImage}` : "/doctor-avatr.png"} alt="" />
+                                                                                    <div>
+                                                                                        <h6>{item?.doctorId?.name} </h6>
+                                                                                        <p className="fs-14 fw-500">{item?.doctorId?.customId}</p>
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-
-                                                                    </div>
-
-
-                                                                </div>
-
-                                                                <NavLink to="/prescriptions-detail">
-                                                                    <div className="form-check custom-check nw-thm-btn ps-5">
-                                                                        <input className="form-check-input bg-transparent" type="checkbox" value="" id="addTests" />
-                                                                        <label className="form-check-label text-white fw-700" for="addTests" >
-                                                                            Select
-                                                                        </label>
-                                                                    </div>
-                                                                </NavLink>
-                                                            </div>
-
-                                                        </div>
-
-                                                    </div>
-
-
-                                                    <div className="col-lg-12 mb-3">
-                                                        <div className="new-pharmacy-detail-card">
-                                                            <div className="admin-table-bx d-flex align-items-center justify-content-between nw-pharmacy-details">
-                                                                <div className="">
-                                                                    <div className="admin-table-sub-details d-flex align-items-center gap-2">
-                                                                        <img src="/in-active.png" alt="" />
-                                                                        <div>
-                                                                            <h6 className="fs-16 fw-600 text-black">Prescriptions</h6>
-                                                                            <p className="fs-14 fw-500">25-11-03</p>
+                                                                        <div className="d-flex align-items gap-2">
+                                                                            <div>
+                                                                                <span className="approved rounded-5 py-1">{item?.status ? 'Active' : 'Inactive'}</span>
+                                                                            </div>
+                                                                            <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faPrint} /></button>
+                                                                            <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faEye} /></button>
                                                                         </div>
                                                                     </div>
-
-                                                                </div>
-
-                                                                <div className="admin-table-bx">
-                                                                    <div className="">
-                                                                        <div className="admin-table-sub-details d-flex align-items-center gap-2 doctor-title ">
-                                                                            <img src="/doctor-avatr.png" alt="" />
-                                                                            <div>
-                                                                                <h6>Dr. David Patel </h6>
-                                                                                <p className="fs-14 fw-500">DO-4001</p>
+                                                                    <div className="prescription-check-bx w-100">
+                                                                        <div className="mt-3">
+                                                                            <div className="barcd-scannr barcde-scnnr-card ms-0">
+                                                                                <div className="barcd-content">
+                                                                                    <h4>{item?.customId}</h4>
+                                                                                    <Barcode value={item?.customId} width={2} displayValue={false}
+                                                                                        height={80} />
+                                                                                </div>
+                                                                                <div className="barcode-id-details">
+                                                                                    <div>
+                                                                                        <h6>Patient Id </h6>
+                                                                                        <p>{ptData?.customId}</p>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <h6>Appointment ID </h6>
+                                                                                        <p>{item?.appointmentId?.customId}</p>
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-
+                                                                        {item?.status && <NavLink to={`/prescriptions-detail/${item?._id}`} className="text-decoration-none">
+                                                                            <div className="form-check custom-check nw-thm-btn ps-5">
+                                                                                <input className="form-check-input bg-transparent" type="checkbox" value="" id="addTests" />
+                                                                                <label className="form-check-label text-white fw-700" for="addTests" >
+                                                                                    Select
+                                                                                </label>
+                                                                            </div>
+                                                                        </NavLink>}
                                                                     </div>
                                                                 </div>
-
-                                                                <div className="d-flex align-items gap-2">
-                                                                    <div>
-                                                                        <span className="approved rounded-5 in-active py-1">Inactive</span>
-                                                                    </div>
-
-                                                                    <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faPrint} /></button>
-                                                                    <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faEye} /></button>
-                                                                </div>
-
-
-
-                                                            </div>
-
-                                                            <div className="mt-3">
-                                                                <div className="barcd-scannr barcde-scnnr-card ms-0">
-                                                                    <div className="barcd-content">
-                                                                        <h4>SP-9879</h4>
-                                                                        <img src="/barcode.png" alt="" />
-                                                                    </div>
-
-                                                                    <div className="barcode-id-details">
-                                                                        <div>
-                                                                            <h6>Patient Id </h6>
-                                                                            <p>PS-9001</p>
-                                                                        </div>
-
-
-                                                                        <div>
-                                                                            <h6>Appointment ID </h6>
-                                                                            <p>OID-8876</p>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-
-
-                                                            </div>
-
-                                                        </div>
-
-                                                    </div>
-
-
-
+                                                            </div>)}
                                                 </div>
                                             </div>
-
                                             <div className="tab-pane fade" id="contact" role="tabpanel">
                                                 <div className="row">
                                                     <div className="col-lg-12">
@@ -316,33 +277,25 @@ function PrescriptionsBar() {
                                                                 <h4 className="new_title">Medical History</h4>
                                                                 {/* <p className="">Robert Davis is a board-certified cardiologist with over 8 years of experience in diagnosing and treating heart conditions. She specializes in preventive cardiology and heart failure management.</p> */}
                                                             </div>
-
                                                             <div className="medical-history-content">
                                                                 <div>
                                                                     <h4 className="fz-16 fw-700">Do you have any chronic conditions?</h4>
-                                                                    <h5 className="hearth-disese">Heart Disease</h5>
+                                                                    <h5 className="hearth-disese">{medicalHistory?.chronicCondition}</h5>
                                                                 </div>
-
                                                                 <div className="mt-3">
                                                                     <h4 className="fz-16 fw-700">Are you currently on any medications?</h4>
-                                                                    <h5 className="hearth-disese">Yes</h5>
+                                                                    <h5 className="hearth-disese">{medicalHistory?.onMedication ? 'Yes' : 'No'}</h5>
                                                                 </div>
-
                                                             </div>
-
                                                             <div className="medical-history-content my-3">
                                                                 <div>
                                                                     <h4 className="fz-16 fw-700">Medication Details</h4>
-                                                                    <p>ACE Inhibitors (Twice daily)</p>
-                                                                    <p>Beta Blockers  (Once daily)</p>
+                                                                    <p>{medicalHistory?.medicationDetail}</p>
                                                                 </div>
-
                                                                 <div className="mt-3">
                                                                     <h4 className="fz-16 fw-700">Allergies</h4>
-                                                                    <p>Penicillin</p>
-                                                                    <p>Peanuts</p>
+                                                                    <p>{medicalHistory?.allergies}</p>
                                                                 </div>
-
                                                             </div>
 
                                                             <div className="ovrview-bx mb-3">
@@ -351,16 +304,16 @@ function PrescriptionsBar() {
                                                             <div className="medical-history-content my-3">
                                                                 <div>
                                                                     <h4 className="fz-16 fw-700">Any family history of chronic disease?</h4>
-                                                                    <h5 className="hearth-disese">Yes</h5>
+                                                                    <h5 className="hearth-disese">{medicalHistory?.familyHistory?.chronicHistory}</h5>
 
                                                                 </div>
 
                                                                 <div className="mt-3">
                                                                     <h4 className="fz-16 fw-700">Chronic Diseases in Family</h4>
-                                                                    <p> Father: Hypertension, Type 2 Diabetes</p>
-                                                                    <p>Mother: Osteoarthritis</p>
+                                                                    <p> {medicalHistory?.familyHistory?.diseasesInFamiy}</p>
+                                                                    {/* <p>Mother: Osteoarthritis</p>
                                                                     <p>Maternal Grandfather: Heart Disease</p>
-                                                                    <p>Paternal Grandmother: Stroke</p>
+                                                                    <p>Paternal Grandmother: Stroke</p> */}
                                                                 </div>
 
                                                             </div>
@@ -370,25 +323,28 @@ function PrescriptionsBar() {
                                                             </div>
 
                                                             <div className="row">
-                                                                <div className="col-lg-6 mb-3">
-                                                                    <div className="prescription-patients-card">
-                                                                        <div className="prescription-patients-picture">
-                                                                            <img src="/patient-card-one.png" alt="" />
-                                                                        </div>
-                                                                        <div className="card-details-bx">
-                                                                            <div className="card-info-title">
-                                                                                <h3>CBC Report 8/21/2025</h3>
-                                                                                <p>8/21/2025</p>
+                                                                {patientPrescription?.length > 0 &&
+                                                                    patientPrescription?.map((item, key) =>
+                                                                        <div className="col-lg-6 mb-3" key={key}>
+                                                                            <div className="prescription-patients-card">
+                                                                                <div className="prescription-patients-picture">
+                                                                                    <img src={item?.fileUrl ?
+                                                                                        `${base_url}/${item?.fileUrl}` : '/patient-card-two.png'} alt=""
+                                                                                        style={{ width: '600px', height: '200px', objectFit: 'cover' }} />
+                                                                                </div>
+                                                                                <div className="card-details-bx">
+                                                                                    <div className="card-info-title">
+                                                                                        <h3>{item?.diagnosticName}</h3>
+                                                                                        <p>{item?.name}</p>
+                                                                                    </div>
+                                                                                    <div className="">
+                                                                                        <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faEye} /></button>
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
 
-                                                                            <div className="">
-                                                                                <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faEye} /></button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-
+                                                                        </div>)}
+                                                                {/* 
                                                                 <div className="col-lg-6">
                                                                     <div className="prescription-patients-card">
                                                                         <div className="prescription-patients-picture">
@@ -406,7 +362,7 @@ function PrescriptionsBar() {
                                                                         </div>
                                                                     </div>
 
-                                                                </div>
+                                                                </div> */}
                                                             </div>
                                                         </div>
                                                     </div>

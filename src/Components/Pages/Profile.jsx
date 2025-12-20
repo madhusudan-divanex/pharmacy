@@ -247,7 +247,7 @@ function Profile() {
                                   </div>
                                   <QRCodeCanvas
                                     // value={String(userId)}
-                                    value="693fa2fe0e25c19097d673e1"
+                                    value="PAT-0001"
                                     size={256}
                                     className="qr-code"
                                     style={{ height: "auto", maxWidth: "100%", width: "20%" }}

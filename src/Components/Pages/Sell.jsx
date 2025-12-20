@@ -102,7 +102,7 @@ function Sell() {
                 </div>
 
                 <div className='new-mega-card'>
-                    
+
 
                     <div className="row">
                         <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details flex-wrap gap-2">
@@ -128,7 +128,7 @@ function Sell() {
                                     <div className="filters">
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
                                             <label className="label">Sort By :</label>
-                                            <select className="" value={sort} onChange={(e)=>setSort(e.target.value)}>
+                                            <select className="" value={sort} onChange={(e) => setSort(e.target.value)}>
                                                 <option value="newest" >Newest</option>
                                                 <option value="oldest">Oldest</option>
                                             </select>
@@ -150,7 +150,7 @@ function Sell() {
                                     </div>
 
                                     <div>
-                                        <button className="nw-thm-btn" onClick={()=>fetchSellData()}>Filter</button>
+                                        <button className="nw-thm-btn" onClick={() => fetchSellData()}>Filter</button>
                                     </div>
                                 </div>
 
@@ -158,10 +158,13 @@ function Sell() {
 
                             <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
                                 <div>
-                                    <select className="form-select custom-page-dropdown nw-custom-page">
-                                        <option value="1" selected>100</option>
-                                        <option value="2">1</option>
-                                        <option value="3">2</option>
+                                    <select
+                                        value={currentPage}
+                                        onChange={(e) => setCurrentPage(e.target.value)}
+                                        className="form-select custom-page-dropdown nw-custom-page ">
+                                        {Array.from({ length: totalPage }, (_, i) => (
+                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                        ))}
                                     </select>
                                 </div>
 
@@ -242,7 +245,7 @@ function Sell() {
                                                                             </NavLink>
                                                                         </li>
                                                                         <li className="prescription-item">
-                                                                            <NavLink to="/prescriptions-bar" className="prescription-nav" href="#" >
+                                                                            <NavLink to={`/prescriptions-detail/${item?._id}`} className="prescription-nav" href="#" >
                                                                                 Edit
                                                                             </NavLink>
                                                                         </li>
@@ -319,10 +322,10 @@ function Sell() {
             {/*Payment Status Popup Start  */}
             {/* data-bs-toggle="modal" data-bs-target="#scanner-Request" */}
             {scannerOpen && <div className="modal fade show step-modal"
-          id="scanner-Request"
-          style={{ display: "block", background: "#00000080" }}
-          data-bs-backdrop="static"
-          data-bs-keyboard="false">
+                id="scanner-Request"
+                style={{ display: "block", background: "#00000080" }}
+                data-bs-backdrop="static"
+                data-bs-keyboard="false">
                 <div className="modal-dialog modal-dialog-centered modal-md">
                     <div className="modal-content rounded-5">
                         <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
@@ -330,8 +333,8 @@ function Sell() {
                                 <h6 className="lg_title mb-0 fz-20">Scan NeoHealthCard / Prescription </h6>
                             </div>
                             <div>
-                                <button type="button" onClick={closeScanner}  
-                                 className="fz-18"  style={{ color: "#00000040" }}>
+                                <button type="button" onClick={closeScanner}
+                                    className="fz-18" style={{ color: "#00000040" }}>
                                     <FontAwesomeIcon icon={faCircleXmark} />
                                 </button>
                             </div>
