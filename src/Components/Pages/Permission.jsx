@@ -47,9 +47,9 @@ function Permission() {
             try {
                 const response = await updateApiData(`pharmacy/permission`, data);
                 if (response.success) {
+                    fetchPharPermission()
                     setName('')
                     setEditId(null)
-                    fetchPharPermission()
                     toast.success("Permission updated")
                 } else {
                     toast.error(response.message)
@@ -63,6 +63,7 @@ function Permission() {
             try {
                 const response = await securePostData(`pharmacy/permission`, data);
                 if (response.success) {
+                    fetchPharPermission()
                     setName('')
                     toast.success("Permission created")
                 } else {

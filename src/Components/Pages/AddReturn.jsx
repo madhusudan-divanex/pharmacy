@@ -5,8 +5,10 @@ import { FaPlusSquare } from "react-icons/fa";
 import { getSecureApiData, securePostData } from "../../Services/api";
 import { toast } from "react-toastify";
 import Select from "react-select";
+import { useNavigate } from "react-router-dom";
 
 function AddReturn() {
+    const navigate=useNavigate()
     const userId = localStorage.getItem('userId')
     const [inventoryList, setInventoryList] = useState([])
     const [suppliers, setSuppliers] = useState([])
@@ -60,6 +62,7 @@ function AddReturn() {
         try {
             const response = await securePostData('pharmacy/return', formData)
             if (response.success) {
+                navigate('/returns')
                 toast.success('Return created')
             } else {
                 toast.error(response.message)

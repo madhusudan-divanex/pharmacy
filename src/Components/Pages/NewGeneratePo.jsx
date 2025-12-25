@@ -49,9 +49,8 @@ function NewGeneratePo() {
             const payload = { ...formData, pharId: userId };
             const response = await securePostData("pharmacy/supplier", payload); // adjust API URL
             if (response.success) {
-                toast.success("Purhcase order created")
+                toast.success("Supplier  created")
                 fetchSupplier()
-                navigate('/generate-list')
                 setPurchaseData({...purchaseData,supplierId:response.supplier?._id})
                 setFormData({
                     name: "",
@@ -125,6 +124,7 @@ function NewGeneratePo() {
             const payload = { ...purchaseData, pharId: userId };
             const response = await securePostData("pharmacy/purchase-order", payload);
             if (response.success) {
+                toast.success("Purcase order created")
                 setPurchaseData({
                     supplierId: "",
                     deliveryDate:null,

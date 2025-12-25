@@ -506,8 +506,8 @@ function InventoryList() {
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Margin Type</option>
-                                                    <option value="percentage">Percentage</option>
-                                                    <option value="fixed">Fixed</option>
+                                                    <option value="Percentage">Percentage</option>
+                                                    <option value="Fixed">Fixed</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -720,8 +720,8 @@ function InventoryList() {
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Margin Type</option>
-                                                    <option value="percentage">Percentage</option>
-                                                    <option value="fixed">Fixed</option>
+                                                    <option value="Percentage">Percentage</option>
+                                                    <option value="Fixed">Fixed</option>
                                                 </select>
                                             </div>
                                         </div>

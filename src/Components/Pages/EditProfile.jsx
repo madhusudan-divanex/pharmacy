@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { fetchUserDetail } from "../../redux/feature/userSlice";
-import { postApiData, securePostData } from "../../Services/api";
+import { getApiData, postApiData, securePostData } from "../../Services/api";
 import base_url from "../../baseUrl";
 import Loader from "../Layouts/Loader";
 
@@ -21,10 +21,14 @@ import Loader from "../Layouts/Loader";
 function EditProfile() {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const [show,setShow] = useState(false)
+    const [show, setShow] = useState(false)
+    const [countries, setCountries] = useState([])
+    const [states, setStates] = useState([])
+    const [cities, setCities] = useState([])
+    const [loading, setLoading] = useState(false)
     const userId = localStorage.getItem("userId")
     const { profiles, pharPerson, pharAddress, pharImg,
-        rating, avgRating, pharLicense, isRequest,loading } = useSelector(state => state.user)
+        rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
 
     //   Lab Data 
     const [pharData, setPharData] = useState({
@@ -189,9 +193,9 @@ function EditProfile() {
     //   Address
     const [addressData, setAddressData] = useState({
         fullAddress: "",
-        country: "",
-        state: "",
-        city: "",
+        countryId: "",
+        stateId: "",
+        cityId: "",
         pinCode: "",
         userId
     });
@@ -207,6 +211,14 @@ function EditProfile() {
                 ...prev,
                 [name]: value
             }));
+        }
+        if (name === 'countryId' && value) {
+            const data = countries?.filter(item => item?._id === value)
+            fetchStates(data[0].isoCode);
+        }
+        if (name === 'stateId' && value) {
+            const data = states?.filter(item => item?._id === value)
+            fetchCities(data[0].isoCode);
         }
     };
     const addressSubmit = async (e) => {
@@ -339,7 +351,10 @@ function EditProfile() {
             setPharData(profiles)
         }
         if (pharAddress) {
-            setAddressData(pharAddress)
+            fetchStates(pharAddress?.countryId?.isoCode)
+            fetchCities(pharAddress?.stateId?.isoCode)
+            setAddressData({...pharAddress,stateId:pharAddress?.stateId?._id,cityId:pharAddress?.cityId?._id,countryId:pharAddress?.countryId?._id})
+           
         }
         if (pharImg) {
             setPharImages(pharImg)
@@ -384,244 +399,283 @@ function EditProfile() {
             pharImg: prev.pharImg?.filter((_, i) => i !== index)
         }));
     };
+    async function fetchCountries() {
+        setLoading(true)
+        try {
+            const response = await getApiData('api/location/countries')
+            const data = await response
+            setCountries(data)
+        } catch (error) {
+
+        } finally {
+            setLoading(false)
+        }
+    }
+    useEffect(() => {
+        fetchCountries()
+    }, [])
+    async function fetchStates(value) {
+        setLoading(true)
+        try {
+            const response = await getApiData(`api/location/states/${value}`)
+            const data = await response
+            setStates(data)
+        } catch (error) {
+
+        } finally {
+            setLoading(false)
+        }
+    }
+    async function fetchCities(value) {
+        setLoading(true)
+        try {
+            const response = await getApiData(`api/location/cities/${value}`)
+            const data = await response
+            setCities(data)
+        } catch (error) {
+
+        } finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <>
-            {loading ? <Loader/>
-            :<div className="main-content flex-grow-1 p-3 overflow-auto">
-                <div className="row mb-3">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h3 className="innr-title mb-2">Edit Profile</h3>
-                            <div className="admin-breadcrumb">
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb custom-breadcrumb">
-                                        <li className="breadcrumb-item">
-                                            <a href="#" className="breadcrumb-link">
-                                                Dashboard
-                                            </a>
-                                        </li>
-                                        <li className="breadcrumb-item">
-                                            <a href="#" className="breadcrumb-link">
-                                                Edit Profile
-                                            </a>
-                                        </li>
-                                        <li
-                                            className="breadcrumb-item active"
-                                            aria-current="page"
-                                        >
-                                            Profile
-                                        </li>
-                                    </ol>
-                                </nav>
+            {loading ? <Loader />
+                : <div className="main-content flex-grow-1 p-3 overflow-auto">
+                    <div className="row mb-3">
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h3 className="innr-title mb-2">Edit Profile</h3>
+                                <div className="admin-breadcrumb">
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb custom-breadcrumb">
+                                            <li className="breadcrumb-item">
+                                                <a href="#" className="breadcrumb-link">
+                                                    Dashboard
+                                                </a>
+                                            </li>
+                                            <li className="breadcrumb-item">
+                                                <a href="#" className="breadcrumb-link">
+                                                    Edit Profile
+                                                </a>
+                                            </li>
+                                            <li
+                                                className="breadcrumb-item active"
+                                                aria-current="page"
+                                            >
+                                                Profile
+                                            </li>
+                                        </ol>
+                                    </nav>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="lab-chart-crd">
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <div className="lab-tp-title patient-bio-tab">
-                                <div>
-                                    <h6 className="mb-0 text-black fw-600 fz-22">Edit Profile</h6>
+                    <div className="lab-chart-crd">
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="lab-tp-title patient-bio-tab">
+                                    <div>
+                                        <h6 className="mb-0 text-black fw-600 fz-22">Edit Profile</h6>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="patient-bio-tab patient-edit-bio-tab">
-                                <ul className="nav nav-tabs gap-3" id="myTab" role="tablist">
-                                    <li className="nav-item" role="presentation">
-                                        <a
-                                            className="nav-link active"
-                                            id="home-tab"
-                                            data-bs-toggle="tab"
-                                            href="#home"
-                                            role="tab"
-                                        >
-                                            Pharmacy Profile
-                                        </a>
-                                    </li>
+                                <div className="patient-bio-tab patient-edit-bio-tab">
+                                    <ul className="nav nav-tabs gap-3" id="myTab" role="tablist">
+                                        <li className="nav-item" role="presentation">
+                                            <a
+                                                className="nav-link active"
+                                                id="home-tab"
+                                                data-bs-toggle="tab"
+                                                href="#home"
+                                                role="tab"
+                                            >
+                                                Pharmacy Profile
+                                            </a>
+                                        </li>
 
-                                    <li className="nav-item" role="presentation">
-                                        <a
-                                            className="nav-link"
-                                            id="profile-tab"
-                                            data-bs-toggle="tab"
-                                            href="#profile"
-                                            role="tab"
-                                        >
-                                            Pharmacy Images
-                                        </a>
-                                    </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a
+                                                className="nav-link"
+                                                id="profile-tab"
+                                                data-bs-toggle="tab"
+                                                href="#profile"
+                                                role="tab"
+                                            >
+                                                Pharmacy Images
+                                            </a>
+                                        </li>
 
-                                    <li className="nav-item" role="presentation">
-                                        <a
-                                            className="nav-link"
-                                            id="contact-tab"
-                                            data-bs-toggle="tab"
-                                            href="#contact"
-                                            role="tab"
-                                        >
-                                            Pharmacy Address
-                                        </a>
-                                    </li>
-                                    <li className="nav-item" role="presentation">
-                                        <a
-                                            className="nav-link"
-                                            id="upload-tab"
-                                            data-bs-toggle="tab"
-                                            href="#upload"
-                                            role="tab"
-                                        >
-                                            Upload License
-                                        </a>
-                                    </li>
-                                    <li className="nav-item" role="presentation">
-                                        <a
-                                            className="nav-link"
-                                            id="person-tab"
-                                            data-bs-toggle="tab"
-                                            href="#person"
-                                            role="tab"
-                                        >
-                                            Contact Person
-                                        </a>
-                                    </li>
-                                </ul>
+                                        <li className="nav-item" role="presentation">
+                                            <a
+                                                className="nav-link"
+                                                id="contact-tab"
+                                                data-bs-toggle="tab"
+                                                href="#contact"
+                                                role="tab"
+                                            >
+                                                Pharmacy Address
+                                            </a>
+                                        </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a
+                                                className="nav-link"
+                                                id="upload-tab"
+                                                data-bs-toggle="tab"
+                                                href="#upload"
+                                                role="tab"
+                                            >
+                                                Upload License
+                                            </a>
+                                        </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a
+                                                className="nav-link"
+                                                id="person-tab"
+                                                data-bs-toggle="tab"
+                                                href="#person"
+                                                role="tab"
+                                            >
+                                                Contact Person
+                                            </a>
+                                        </li>
+                                    </ul>
 
-                                <div className="tab-content mt-4" id="myTabContent">
-                                    <div
-                                        className="tab-pane fade show active"
-                                        id="home"
-                                        role="tabpanel"
-                                    >
-                                        <div className="sub-tab-brd">
-                                            <form onSubmit={pharSubmit}>
-                                                <div className="row">
-                                                    <div className="col-lg-12">
-                                                        <div className="lab-profile-mega-bx ">
-                                                            <div className="lab-profile-avatr-bx position-relative">
-                                                                <img
-                                                                    src={
-                                                                        pharData?.logo
-                                                                            ? typeof pharData.logo === "string"
-                                                                                ? (pharData.logo.startsWith("uploads")
-                                                                                    ? `${base_url}/${pharData.logo}`
-                                                                                    : pharData.logo
-                                                                                )
-                                                                                : URL.createObjectURL(pharData.logo)
-                                                                            : "/pharmacy-logo.png"
-                                                                    }
-                                                                    alt=""
-                                                                    className="border"
-                                                                />
+                                    <div className="tab-content mt-4" id="myTabContent">
+                                        <div
+                                            className="tab-pane fade show active"
+                                            id="home"
+                                            role="tabpanel"
+                                        >
+                                            <div className="sub-tab-brd">
+                                                <form onSubmit={pharSubmit}>
+                                                    <div className="row">
+                                                        <div className="col-lg-12">
+                                                            <div className="lab-profile-mega-bx ">
+                                                                <div className="lab-profile-avatr-bx position-relative">
+                                                                    <img
+                                                                        src={
+                                                                            pharData?.logo
+                                                                                ? typeof pharData.logo === "string"
+                                                                                    ? (pharData.logo.startsWith("uploads")
+                                                                                        ? `${base_url}/${pharData.logo}`
+                                                                                        : pharData.logo
+                                                                                    )
+                                                                                    : URL.createObjectURL(pharData.logo)
+                                                                                : "/pharmacy-logo.png"
+                                                                        }
+                                                                        alt=""
+                                                                        className="border"
+                                                                    />
 
-                                                                <div className="lab-profile-edit-avatr">
-                                                                    <a
-                                                                        href="javascript:void(0)"
-                                                                        className="edit-btn cursor-pointer"
-                                                                    >
-                                                                        <FontAwesomeIcon icon={faPen} />
-                                                                    </a>
+                                                                    <div className="lab-profile-edit-avatr">
+                                                                        <a
+                                                                            href="javascript:void(0)"
+                                                                            className="edit-btn cursor-pointer"
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faPen} />
+                                                                        </a>
+                                                                    </div>
+
+                                                                    <input
+                                                                        type="file"
+                                                                        accept="image/*"
+                                                                        className="lab-profile-file-input"
+                                                                        name="logo"
+                                                                        onChange={pharChange}
+                                                                    />
                                                                 </div>
 
+                                                                <div>
+                                                                    <h4 className="lg_title ">{pharData?.name || "World Pharmacy"}</h4>
+                                                                    <p className="first_para">ID : #{pharData?.customId || "94969548"}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>Pharmacy Name</label>
                                                                 <input
-                                                                    type="file"
-                                                                    accept="image/*"
-                                                                    className="lab-profile-file-input"
-                                                                    name="logo"
+                                                                    type="text"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="name"
                                                                     onChange={pharChange}
+                                                                    value={pharData?.name}
+                                                                    required
                                                                 />
                                                             </div>
+                                                        </div>
 
-                                                            <div>
-                                                                <h4 className="lg_title ">{pharData?.name || "World Pharmacy"}</h4>
-                                                                <p className="first_para">ID : #{pharData?.customId || "94969548"}</p>
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>Mobile Number</label>
+                                                                <input
+                                                                    type="number"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="contactNumber"
+                                                                    onChange={pharChange}
+                                                                    value={pharData?.contactNumber}
+                                                                    required
+                                                                />
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>Pharmacy Name</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                name="name"
-                                                                onChange={pharChange}
-                                                                value={pharData?.name}
-                                                                required
-                                                            />
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>Email</label>
+                                                                <input
+                                                                    type="email"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="email"
+                                                                    onChange={pharChange}
+                                                                    value={pharData?.email}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>GST Number</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="gstNumber"
+                                                                    onChange={pharChange}
+                                                                    value={pharData?.gstNumber}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-12">
+                                                            <div className="custom-frm-bx">
+                                                                <label>About</label>
+                                                                <textarea
+                                                                    className="form-control nw-frm-select"
+                                                                    name="about"
+                                                                    onChange={pharChange}
+                                                                    value={pharData?.about}
+                                                                    required
+                                                                ></textarea>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="d-flex justify-content-end gap-3">
+                                                            <button type="button" onClick={() => navigate('/approve-profile')} className="nw-filtr-thm-btn outline">
+                                                                Cancel
+                                                            </button>
+                                                            <button type="submit" className="nw-filtr-thm-btn">
+                                                                Save
+                                                            </button>
                                                         </div>
                                                     </div>
+                                                </form>
 
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>Mobile Number</label>
-                                                            <input
-                                                                type="number"
-                                                                className="form-control nw-frm-select"
-                                                                name="contactNumber"
-                                                                onChange={pharChange}
-                                                                value={pharData?.contactNumber}
-                                                                required
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>Email</label>
-                                                            <input
-                                                                type="email"
-                                                                className="form-control nw-frm-select"
-                                                                name="email"
-                                                                onChange={pharChange}
-                                                                value={pharData?.email}
-                                                                required
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>GST Number</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                name="gstNumber"
-                                                                onChange={pharChange}
-                                                                value={pharData?.gstNumber}
-                                                                required
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-lg-12">
-                                                        <div className="custom-frm-bx">
-                                                            <label>About</label>
-                                                            <textarea
-                                                                className="form-control nw-frm-select"
-                                                                name="about"
-                                                                onChange={pharChange}
-                                                                value={pharData?.about}
-                                                                required
-                                                            ></textarea>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="d-flex justify-content-end gap-3">
-                                                        <button type="button" onClick={() => navigate('/approve-profile')} className="nw-filtr-thm-btn outline">
-                                                            Cancel
-                                                        </button>
-                                                        <button type="submit" className="nw-filtr-thm-btn">
-                                                            Save
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </form>
-
-                                            {/* <form action="">
+                                                {/* <form action="">
                                                 <div className="row">
                                                     <div className="col-lg-12">
                                                         <div className="lab-profile-mega-bx ">
@@ -712,555 +766,546 @@ function EditProfile() {
 
                                                 </div>
                                             </form> */}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="tab-pane fade" id="profile" role="tabpanel">
-                                        <div className="sub-tab-brd lab-thumb-bx">
-                                            <form onSubmit={imageSubmit}>
-                                                <div className="row justify-content-between">
-                                                    <div className="col-lg-5">
-                                                        <div className="custom-frm-bx">
-                                                            <label htmlFor="">Upload  Thumbnail image</label>
-                                                            <div className="upload-box nw-upload-bx  p-3 justify-content-center">
-                                                                <div className="upload-icon mb-2">
-                                                                    <IoCloudUploadOutline />
-                                                                </div>
-                                                                <div>
-                                                                    <p className="fw-semibold mb-1">
-                                                                        <label htmlFor="fileInput1" className="file-label file-select-label">
-                                                                            Choose a file or drag & drop here
-                                                                        </label>
-                                                                    </p>
-
-                                                                    <small className="format-title">JPEG Format</small>
-
-
-                                                                    <div className="mt-3">
-                                                                        <label htmlFor="fileInput1" className="browse-btn">
-                                                                            Browse File
-                                                                        </label>
+                                        <div className="tab-pane fade" id="profile" role="tabpanel">
+                                            <div className="sub-tab-brd lab-thumb-bx">
+                                                <form onSubmit={imageSubmit}>
+                                                    <div className="row justify-content-between">
+                                                        <div className="col-lg-5">
+                                                            <div className="custom-frm-bx">
+                                                                <label htmlFor="">Upload  Thumbnail image</label>
+                                                                <div className="upload-box nw-upload-bx  p-3 justify-content-center">
+                                                                    <div className="upload-icon mb-2">
+                                                                        <IoCloudUploadOutline />
                                                                     </div>
-
-                                                                    <input
-                                                                        type="file"
-                                                                        className="d-none"
-                                                                        id="fileInput1"
-                                                                        name="thumbnail"
-                                                                        onChange={handleThumbnailChange}
-                                                                        accept=".png,jpg,.jpeg"
-                                                                    />
-
-                                                                    {previewThumb && <div id="filePreviewWrapper" className=" mt-3">
-                                                                        <img src={previewThumb} alt="Preview" className="img-thumbnail" />
-                                                                    </div>}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        {(pharImages?.thumbnail || pharImg?.thumbnail) && <div className="custom-frm-bx ">
-                                                            <div className="form-control lablcense-frm-control align-content-center border-0">
-                                                                <div className="lablcense-bx">
                                                                     <div>
-                                                                        <h6><FontAwesomeIcon icon={faImage} />
-                                                                            {thumbnail?.name || pharImg?.thumbnail?.split("\\").pop().split("-").slice(1).join("-")}</h6>
-                                                                    </div>
-                                                                    <div className="">
-                                                                        <button type="button" onClick={() => handleDeleteImg(pharImages.thumbnail, 'thumbnail')} className="text-black"><FontAwesomeIcon icon={faTrash} /></button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>}
-                                                    </div>
+                                                                        <p className="fw-semibold mb-1">
+                                                                            <label htmlFor="fileInput1" className="file-label file-select-label">
+                                                                                Choose a file or drag & drop here
+                                                                            </label>
+                                                                        </p>
 
-                                                    <div className="col-lg-5">
-                                                        <div className="custom-frm-bx">
-                                                            <label htmlFor="">Upload  Pharmacy images(max 3 images)</label>
-                                                            <div className="upload-box p-3 nw-upload-bx   justify-content-center ">
-                                                                <div className="upload-icon mb-2">
-                                                                    <IoCloudUploadOutline />
-                                                                </div>
-
-                                                                <div>
-                                                                    <p className="fw-semibold mb-1">
-                                                                        <label htmlFor="fileInput2" className="file-label file-select-label">
-                                                                            Choose a file or drag & drop here
-                                                                        </label>
-                                                                    </p>
-
-                                                                    <small className="format-title">JPEG Format</small>
+                                                                        <small className="format-title">JPEG Format</small>
 
 
-                                                                    <div className="mt-3">
-                                                                        <label htmlFor="fileInput2" className="browse-btn">
-                                                                            Browse File
-                                                                        </label>
-                                                                    </div>
-
-                                                                    <input
-                                                                        type="file"
-                                                                        className="d-none"
-                                                                        id="fileInput2"
-                                                                        name="pharImg"
-                                                                        multiple
-                                                                        disabled={pharImages?.pharImg?.length ===3}
-                                                                        onChange={handlePharImagesChange}
-                                                                        max={3 -pharImages?.pharImg?.length}
-                                                                        accept=".png,.jpg,.jpeg"
-                                                                    />
-
-                                                                    <div id="filePreviewWrapper" className="d-none mt-3">
-                                                                        <img src={previewPharImages} alt="Preview" className="img-thumbnail" />
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <ul>
-                                                            {previewPharImages.map((src, idx) => (
-                                                                <div key={idx} style={{ display: "inline-block", position: "relative", marginRight: "10px" }}>
-                                                                    <img
-                                                                        src={src}
-                                                                        alt={`Lab Preview ${idx}`}
-                                                                        width={100}
-                                                                        style={{ marginRight: '10px' }}
-                                                                    />
-                                                                    <button
-                                                                        className="btn-close"
-                                                                        type="button"
-                                                                        onClick={() => handleRemovePreview(idx)}
-                                                                        style={{ position: "absolute", top: 0, right: 0 }}
-                                                                    ></button>
-                                                                </div>
-                                                            ))}
-
-                                                            {pharImg?.pharImg?.length > 0 && pharImg?.pharImg?.map((item, key) =>
-                                                                <li key={key}>
-                                                                    <div className="custom-frm-bx ">
-                                                                        <div className="form-control lablcense-frm-control align-content-center border-0">
-                                                                            <div className="lablcense-bx">
-                                                                                <div>
-                                                                                    <h6 ><FontAwesomeIcon icon={faImage} /> {item?.split("\\").pop().split("-").slice(1).join("-")}</h6>
-                                                                                </div>
-                                                                                <div className="">
-                                                                                    <button type="button" onClick={() => handleDeleteImg(item, 'pharImg')} className="text-black"><FontAwesomeIcon icon={faTrash} /></button>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>)}
-                                                        </ul>
-
-                                                    </div>
-
-                                                    <div className="d-flex justify-content-end gap-3">
-                                                        <button type="button" className="nw-filtr-thm-btn outline">Cancel</button>
-                                                        <button type="submit" className="nw-filtr-thm-btn">Save</button>
-                                                    </div>
-
-                                                </div>
-                                            </form>
-
-                                        </div>
-                                    </div>
-
-                                    <div className="tab-pane fade" id="contact" role="tabpanel">
-                                        <div className="sub-tab-brd ">
-                                            <form onSubmit={addressSubmit}>
-                                                <div className="row">
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label htmlFor="">Full Address</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                placeholder=""
-                                                                required
-                                                                name="fullAddress"
-                                                                onChange={addressChange}
-                                                                value={addressData?.fullAddress}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label htmlFor="">Country</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                placeholder=""
-                                                                required
-                                                                name="country"
-                                                                onChange={addressChange}
-                                                                value={addressData?.country}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label htmlFor="">State</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                required
-                                                                name="state"
-                                                                onChange={addressChange}
-                                                                value={addressData?.state}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label htmlFor="">City</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                required
-                                                                name="city"
-                                                                onChange={addressChange}
-                                                                value={addressData?.city}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label htmlFor="">Pin Code</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                required
-                                                                name="pinCode"
-                                                                onChange={addressChange}
-                                                                value={addressData?.pinCode}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div className="d-flex justify-content-end gap-3">
-                                                        <button type="button" className="nw-filtr-thm-btn outline">Cancel</button>
-                                                        <button type="submit" className="nw-filtr-thm-btn">Save</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-
-                                    <div className="tab-pane fade" id="upload" role="tabpanel">
-                                        
-                                         <div className="sub-tab-brd lab-thumb-bx edit-thumb">
-                                            <div className="mb-3">
-                                                <h5 className="fz-18">License</h5>
-                                                <div className="border border-black p-3">
-                                                    <form onSubmit={licenseSubmit}>
-                                                        <div className="row">
-
-                                                            <div className="col-lg-5">
-                                                                <div className="custom-frm-bx">
-                                                                    <label htmlFor="">Lab License Number</label>
-                                                                    <input
-                                                                        type="text"
-                                                                        className="form-control nw-frm-select"
-                                                                        placeholder=""
-                                                                        value={licenseData?.pharLicenseNumber}
-                                                                        name="pharLicenseNumber"
-                                                                        required
-                                                                        onChange={handleLicenseInput}
-                                                                    />
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="col-lg-5">
-                                                                <div className="custom-frm-bx">
-                                                                    <label htmlFor="">Upload License</label>
-                                                                    <div className="upload-box p-3 nw-upload-bx  justify-content-center">
-                                                                        <div className="upload-icon mb-2">
-                                                                            {licencePreview ? <img style={{ borderRadius: '50%', objectFit: 'cover', height: '70px' }} src={licencePreview} /> : <IoCloudUploadOutline />}
+                                                                        <div className="mt-3">
+                                                                            <label htmlFor="fileInput1" className="browse-btn">
+                                                                                Browse File
+                                                                            </label>
                                                                         </div>
 
+                                                                        <input
+                                                                            type="file"
+                                                                            className="d-none"
+                                                                            id="fileInput1"
+                                                                            name="thumbnail"
+                                                                            onChange={handleThumbnailChange}
+                                                                            accept=".png,jpg,.jpeg"
+                                                                        />
+
+                                                                        {previewThumb && <div id="filePreviewWrapper" className=" mt-3">
+                                                                            <img src={previewThumb} alt="Preview" className="img-thumbnail" />
+                                                                        </div>}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            {(pharImages?.thumbnail || pharImg?.thumbnail) && <div className="custom-frm-bx ">
+                                                                <div className="form-control lablcense-frm-control align-content-center border-0">
+                                                                    <div className="lablcense-bx">
                                                                         <div>
-                                                                            <p className="fw-semibold mb-1">
-                                                                                <label htmlFor="fileInput3" className="file-label file-select-label">
-                                                                                    Choose a file or drag & drop here
-                                                                                </label>
-                                                                            </p>
+                                                                            <h6><FontAwesomeIcon icon={faImage} />
+                                                                                {thumbnail?.name || pharImg?.thumbnail?.split("\\").pop().split("-").slice(1).join("-")}</h6>
+                                                                        </div>
+                                                                        <div className="">
+                                                                            <button type="button" onClick={() => handleDeleteImg(pharImages.thumbnail, 'thumbnail')} className="text-black"><FontAwesomeIcon icon={faTrash} /></button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>}
+                                                        </div>
 
-                                                                            <small className="format-title">JPEG Format</small>
+                                                        <div className="col-lg-5">
+                                                            <div className="custom-frm-bx">
+                                                                <label htmlFor="">Upload  Pharmacy images(max 3 images)</label>
+                                                                <div className="upload-box p-3 nw-upload-bx   justify-content-center ">
+                                                                    <div className="upload-icon mb-2">
+                                                                        <IoCloudUploadOutline />
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <p className="fw-semibold mb-1">
+                                                                            <label htmlFor="fileInput2" className="file-label file-select-label">
+                                                                                Choose a file or drag & drop here
+                                                                            </label>
+                                                                        </p>
+
+                                                                        <small className="format-title">JPEG Format</small>
 
 
-                                                                            <div className="mt-3">
-                                                                                <label htmlFor="fileInput3" className="browse-btn">
-                                                                                    Browse File
-                                                                                </label>
+                                                                        <div className="mt-3">
+                                                                            <label htmlFor="fileInput2" className="browse-btn">
+                                                                                Browse File
+                                                                            </label>
+                                                                        </div>
+
+                                                                        <input
+                                                                            type="file"
+                                                                            className="d-none"
+                                                                            id="fileInput2"
+                                                                            name="pharImg"
+                                                                            multiple
+                                                                            disabled={pharImages?.pharImg?.length === 3}
+                                                                            onChange={handlePharImagesChange}
+                                                                            max={3 - pharImages?.pharImg?.length}
+                                                                            accept=".png,.jpg,.jpeg"
+                                                                        />
+
+                                                                        <div id="filePreviewWrapper" className="d-none mt-3">
+                                                                            <img src={previewPharImages} alt="Preview" className="img-thumbnail" />
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <ul>
+                                                                {previewPharImages.map((src, idx) => (
+                                                                    <div key={idx} style={{ display: "inline-block", position: "relative", marginRight: "10px" }}>
+                                                                        <img
+                                                                            src={src}
+                                                                            alt={`Lab Preview ${idx}`}
+                                                                            width={100}
+                                                                            style={{ marginRight: '10px' }}
+                                                                        />
+                                                                        <button
+                                                                            className="btn-close"
+                                                                            type="button"
+                                                                            onClick={() => handleRemovePreview(idx)}
+                                                                            style={{ position: "absolute", top: 0, right: 0 }}
+                                                                        ></button>
+                                                                    </div>
+                                                                ))}
+
+                                                                {pharImg?.pharImg?.length > 0 && pharImg?.pharImg?.map((item, key) =>
+                                                                    <li key={key}>
+                                                                        <div className="custom-frm-bx ">
+                                                                            <div className="form-control lablcense-frm-control align-content-center border-0">
+                                                                                <div className="lablcense-bx">
+                                                                                    <div>
+                                                                                        <h6 ><FontAwesomeIcon icon={faImage} /> {item?.split("\\").pop().split("-").slice(1).join("-")}</h6>
+                                                                                    </div>
+                                                                                    <div className="">
+                                                                                        <button type="button" onClick={() => handleDeleteImg(item, 'pharImg')} className="text-black"><FontAwesomeIcon icon={faTrash} /></button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </li>)}
+                                                            </ul>
+
+                                                        </div>
+
+                                                        <div className="d-flex justify-content-end gap-3">
+                                                            <button type="button" className="nw-filtr-thm-btn outline">Cancel</button>
+                                                            <button type="submit" className="nw-filtr-thm-btn">Save</button>
+                                                        </div>
+
+                                                    </div>
+                                                </form>
+
+                                            </div>
+                                        </div>
+
+                                        <div className="tab-pane fade" id="contact" role="tabpanel">
+                                            <div className="sub-tab-brd ">
+                                                <form onSubmit={addressSubmit}>
+                                                    <div className="row">
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label htmlFor="">Full Address</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control nw-frm-select"
+                                                                    placeholder=""
+                                                                    required
+                                                                    name="fullAddress"
+                                                                    onChange={addressChange}
+                                                                    value={addressData?.fullAddress}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label htmlFor="">Country</label>
+                                                                 <select name="countryId" value={addressData.countryId} onChange={addressChange} id="" className="form-select nw-frm-select">
+                                                                <option value="">---Select Country---</option>
+                                                                {countries?.map((item, key) =>
+                                                                    <option value={item?._id} key={key}>{item?.name}</option>)}
+                                                            </select>
+                                                              
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label htmlFor="">State</label>
+                                                                <select name="stateId" value={addressData.stateId} onChange={addressChange} id="" className="form-select nw-frm-select">
+                                                                <option value="">---Select State---</option>
+                                                                {states?.map((item, key) =>
+                                                                    <option value={item?._id} key={key}>{item?.name}</option>)}
+                                                            </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label htmlFor="">City</label>
+                                                                <select name="cityId" value={addressData.cityId} onChange={addressChange} id="" className="form-select nw-frm-select">
+                                                                <option value="">---Select City---</option>
+                                                                {cities?.map((item, key) =>
+                                                                    <option value={item?._id} key={key}>{item?.name}</option>)}
+                                                            </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label htmlFor="">Pin Code</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control nw-frm-select"
+                                                                    required
+                                                                    name="pinCode"
+                                                                    onChange={addressChange}
+                                                                    value={addressData?.pinCode}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="d-flex justify-content-end gap-3">
+                                                            <button type="button" className="nw-filtr-thm-btn outline">Cancel</button>
+                                                            <button type="submit" className="nw-filtr-thm-btn">Save</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div className="tab-pane fade" id="upload" role="tabpanel">
+
+                                            <div className="sub-tab-brd lab-thumb-bx edit-thumb">
+                                                <div className="mb-3">
+                                                    <h5 className="fz-18">License</h5>
+                                                    <div className="border border-black p-3">
+                                                        <form onSubmit={licenseSubmit}>
+                                                            <div className="row">
+
+                                                                <div className="col-lg-5">
+                                                                    <div className="custom-frm-bx">
+                                                                        <label htmlFor="">Lab License Number</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="form-control nw-frm-select"
+                                                                            placeholder=""
+                                                                            value={licenseData?.pharLicenseNumber}
+                                                                            name="pharLicenseNumber"
+                                                                            required
+                                                                            onChange={handleLicenseInput}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="col-lg-5">
+                                                                    <div className="custom-frm-bx">
+                                                                        <label htmlFor="">Upload License</label>
+                                                                        <div className="upload-box p-3 nw-upload-bx  justify-content-center">
+                                                                            <div className="upload-icon mb-2">
+                                                                                {licencePreview ? <img style={{ borderRadius: '50%', objectFit: 'cover', height: '70px' }} src={licencePreview} /> : <IoCloudUploadOutline />}
                                                                             </div>
 
-                                                                            <input
-                                                                                type="file"
-                                                                                className="d-none"
-                                                                                id="fileInput3"
-                                                                                onChange={handleLicenseFile}
-                                                                                name="licenseFile"
-                                                                                accept=".png,.jpg,.jpeg"
-                                                                            />
+                                                                            <div>
+                                                                                <p className="fw-semibold mb-1">
+                                                                                    <label htmlFor="fileInput3" className="file-label file-select-label">
+                                                                                        Choose a file or drag & drop here
+                                                                                    </label>
+                                                                                </p>
 
-                                                                            {/* {licencePreview &&
+                                                                                <small className="format-title">JPEG Format</small>
+
+
+                                                                                <div className="mt-3">
+                                                                                    <label htmlFor="fileInput3" className="browse-btn">
+                                                                                        Browse File
+                                                                                    </label>
+                                                                                </div>
+
+                                                                                <input
+                                                                                    type="file"
+                                                                                    className="d-none"
+                                                                                    id="fileInput3"
+                                                                                    onChange={handleLicenseFile}
+                                                                                    name="licenseFile"
+                                                                                    accept=".png,.jpg,.jpeg"
+                                                                                />
+
+                                                                                {/* {licencePreview &&
                                                                             <div id="filePreviewWrapper position-relative display-inline" className=" mt-3">
                                                                                 <img src={licencePreview} alt="Preview" className="img-thumbnail" />
                                                                                 <button style={{ position: "absolute", top: 0, right: 0 }} onClick={()=>{setLicenseData({...licenseData,licenseFile:labLicense.licenceFile})
                                                                                     setLicensePreview(null)}} className="btn-close" type="button"></button>
                                                                             </div>} */}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                {!licencePreview && <div className="custom-frm-bx ">
-                                                                    <div className="form-control lablcense-frm-control align-content-center border-0">
-                                                                        <div className="lablcense-bx">
-                                                                            <div>
-                                                                                <h6 ><FontAwesomeIcon icon={faImage} /> {pharLicense?.licenseFile.split("\\").pop().split("-").slice(1).join("-")}</h6>
-                                                                            </div>
-                                                                            <div className="">
-                                                                                <a href="javascript:void(0)" className="text-black"><FontAwesomeIcon icon={faTrash} /></a>
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>}
-                                                            </div>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
 
-                                            <div className="mb-3">
-                                                <h5 className="fz-18 my-3">Certificate</h5>
-                                                <div className="border edit-licence-tp-box border-black p-3">
-                                                    <form action="">
-                                                        {licenseData?.pharCert?.length > 0 &&
-                                                            licenseData?.pharCert?.map((item, key) =>
-                                                                <div className="row" key={key}>
-
-                                                                    <div className="col-lg-5">
-                                                                        <div className="custom-frm-bx">
-                                                                            <label htmlFor="">Certified Name</label>
-                                                                            <input
-                                                                                type="text"
-                                                                                className="form-control nw-frm-select"
-                                                                                placeholder=""
-                                                                                value={item?.certName}
-                                                                                name="certName"
-                                                                                required
-                                                                                onChange={(e) => handleCertChange(key, e)}
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="col-lg-5">
-                                                                        <div className="custom-frm-bx">
-                                                                            <label htmlFor="">Upload License</label>
-                                                                            <div className="upload-box p-3 nw-upload-bx  justify-content-center">
-                                                                                <div className="upload-icon mb-2">
-                                                                                    <IoCloudUploadOutline />
-
-                                                                                </div>
-
+                                                                    {!licencePreview && <div className="custom-frm-bx ">
+                                                                        <div className="form-control lablcense-frm-control align-content-center border-0">
+                                                                            <div className="lablcense-bx">
                                                                                 <div>
-                                                                                    <p className="fw-semibold mb-1">
-                                                                                        <label htmlFor={`certInput${key}`} className="file-label file-select-label">
-                                                                                            Choose a file or drag & drop here
-                                                                                        </label>
-                                                                                    </p>
-
-                                                                                    <small className="format-title">JPEG Format</small>
-
-
-                                                                                    <div className="mt-3">
-                                                                                        <label htmlFor={`certInput${key}`} className="browse-btn">
-                                                                                            Browse File
-                                                                                        </label>
-                                                                                    </div>
-
-                                                                                    <input
-                                                                                        type="file"
-                                                                                        className="d-none"
-                                                                                        id={`certInput${key}`}
-                                                                                        name="certFile"
-                                                                                        required
-                                                                                        onChange={(e) => handleCertFile(key, e)}
-                                                                                        accept=".png,.jpg,.jpeg"
-                                                                                    />
-
-                                                                                    <div id="filePreviewWrapper" className="d-none mt-3">
-                                                                                        <img src="" alt="Preview" className="img-thumbnail" />
-                                                                                    </div>
-                                                                                    {certPreviews[key] && (
-                                                                                        <img
-                                                                                            src={certPreviews[key]}
-                                                                                            alt="Certificate Preview"
-                                                                                            style={{ height: '70px', marginTop: '10px' }}
-                                                                                        />
-                                                                                    )}
+                                                                                    <h6 ><FontAwesomeIcon icon={faImage} /> {pharLicense?.licenseFile.split("\\").pop().split("-").slice(1).join("-")}</h6>
+                                                                                </div>
+                                                                                <div className="">
+                                                                                    <a href="javascript:void(0)" className="text-black"><FontAwesomeIcon icon={faTrash} /></a>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-
-                                                                        {item?.certFile && <div className="custom-frm-bx ">
-                                                                            <div className="form-control lablcense-frm-control align-content-center border-0">
-                                                                                <div className="lablcense-bx">
-                                                                                    <div>
-                                                                                        <h6 ><FontAwesomeIcon icon={faImage}  />
-                                                                                            {item?.certFile instanceof File ? item?.certFile.name
-                                                                                                : item?.certFile?.split("\\").pop().split("-").slice(1).join("-")}</h6>
-                                                                                    </div>
-                                                                                    <div className="">
-                                                                                        <a href="javascript:void(0)" className="text-black"><FontAwesomeIcon icon={faTrash} /></a>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>}
-                                                                    </div>
-
-                                                                    <div className="col-lg-2 d-flex align-items-center justify-content-end">
-                                                                        <div className="d-flex flex-column">
-                                                                            {licenseData.pharCert?.length !== 1 && <button type="button" onClick={() => removeCertificate(key)} className="text-danger"><FontAwesomeIcon icon={faTrash} /></button>}
-                                                                            {key == licenseData.pharCert?.length - 1 && <button type="button" onClick={() => addCertificate()} className=""><FaPlusCircle style={{ color: "#34A853", fontSize: "20px" }} /></button>}
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>)}
-                                                    </form>
-                                                </div>
-                                            </div>
-
-                                            <div className="d-flex justify-content-end gap-3">
-                                                <button type="button" className="nw-filtr-thm-btn outline">Cancel</button>
-                                                <button type="button" onClick={(e) => licenseSubmit(e)} className="nw-filtr-thm-btn">Save</button>
-                                            </div>
-
-                                        </div>
-                                    </div>
-
-                                    <div className="tab-pane fade" id="person" role="tabpanel">
-                                        <div className="sub-tab-brd">
-                                            <form onSubmit={personSubmit}>
-                                                <div className="row">
-                                                    <div className="col-lg-12">
-                                                        <div className="lab-profile-mega-bx">
-                                                            <div className="lab-profile-avatr-bx lab-contact-prson position-relative rounded-circle">
-                                                                <img
-                                                                    src={
-                                                                        personData?.photo
-                                                                            ? typeof personData.photo === "string"
-                                                                                ? (personData.photo.startsWith("uploads")
-                                                                                    ? `${base_url}/${personData.photo}`
-                                                                                    : personData.photo
-                                                                                )
-                                                                                : URL.createObjectURL(personData.photo)
-                                                                            : "/user-avatar.png"
-                                                                    }
-                                                                    alt=""
-                                                                />
-
-                                                                <div className="lab-profile-edit-avatr">
-                                                                    <a href="javascript:void(0)" className="edit-btn cursor-pointer">
-                                                                        <FontAwesomeIcon icon={faPen} />
-                                                                    </a>
+                                                                    </div>}
                                                                 </div>
-
-                                                                <input
-                                                                    type="file"
-                                                                    accept="image/*"
-                                                                    name="photo"
-                                                                    onChange={personChange}
-                                                                    className="lab-profile-file-input"
-                                                                />
                                                             </div>
-
-                                                            <div>
-                                                                <h4 className="lg_title ">{personData?.name || "John Smith"}</h4>
-                                                            </div>
-                                                        </div>
+                                                        </form>
                                                     </div>
+                                                </div>
 
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>Name</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                name="name"
-                                                                onChange={personChange}
-                                                                value={personData?.name}
-                                                                required
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                <div className="mb-3">
+                                                    <h5 className="fz-18 my-3">Certificate</h5>
+                                                    <div className="border edit-licence-tp-box border-black p-3">
+                                                        <form action="">
+                                                            {licenseData?.pharCert?.length > 0 &&
+                                                                licenseData?.pharCert?.map((item, key) =>
+                                                                    <div className="row" key={key}>
 
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>Mobile Number</label>
-                                                            <input
-                                                                type="number"
-                                                                className="form-control nw-frm-select"
-                                                                name="contactNumber"
-                                                                onChange={personChange}
-                                                                value={personData?.contactNumber}
-                                                                required
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                                        <div className="col-lg-5">
+                                                                            <div className="custom-frm-bx">
+                                                                                <label htmlFor="">Certified Name</label>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control nw-frm-select"
+                                                                                    placeholder=""
+                                                                                    value={item?.certName}
+                                                                                    name="certName"
+                                                                                    required
+                                                                                    onChange={(e) => handleCertChange(key, e)}
+                                                                                />
+                                                                            </div>
+                                                                        </div>
 
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>Email</label>
-                                                            <input
-                                                                type="email"
-                                                                className="form-control nw-frm-select"
-                                                                name="email"
-                                                                onChange={personChange}
-                                                                value={personData?.email}
-                                                                required
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                                        <div className="col-lg-5">
+                                                                            <div className="custom-frm-bx">
+                                                                                <label htmlFor="">Upload License</label>
+                                                                                <div className="upload-box p-3 nw-upload-bx  justify-content-center">
+                                                                                    <div className="upload-icon mb-2">
+                                                                                        <IoCloudUploadOutline />
 
-                                                    <div className="col-lg-6">
-                                                        <div className="custom-frm-bx">
-                                                            <label>Gender</label>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control nw-frm-select"
-                                                                name="gender"
-                                                                onChange={personChange}
-                                                                value={personData?.gender}
-                                                                required
-                                                            />
-                                                        </div>
+                                                                                    </div>
+
+                                                                                    <div>
+                                                                                        <p className="fw-semibold mb-1">
+                                                                                            <label htmlFor={`certInput${key}`} className="file-label file-select-label">
+                                                                                                Choose a file or drag & drop here
+                                                                                            </label>
+                                                                                        </p>
+
+                                                                                        <small className="format-title">JPEG Format</small>
+
+
+                                                                                        <div className="mt-3">
+                                                                                            <label htmlFor={`certInput${key}`} className="browse-btn">
+                                                                                                Browse File
+                                                                                            </label>
+                                                                                        </div>
+
+                                                                                        <input
+                                                                                            type="file"
+                                                                                            className="d-none"
+                                                                                            id={`certInput${key}`}
+                                                                                            name="certFile"
+                                                                                            required
+                                                                                            onChange={(e) => handleCertFile(key, e)}
+                                                                                            accept=".png,.jpg,.jpeg"
+                                                                                        />
+
+                                                                                        <div id="filePreviewWrapper" className="d-none mt-3">
+                                                                                            <img src="" alt="Preview" className="img-thumbnail" />
+                                                                                        </div>
+                                                                                        {certPreviews[key] && (
+                                                                                            <img
+                                                                                                src={certPreviews[key]}
+                                                                                                alt="Certificate Preview"
+                                                                                                style={{ height: '70px', marginTop: '10px' }}
+                                                                                            />
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {item?.certFile && <div className="custom-frm-bx ">
+                                                                                <div className="form-control lablcense-frm-control align-content-center border-0">
+                                                                                    <div className="lablcense-bx">
+                                                                                        <div>
+                                                                                            <h6 ><FontAwesomeIcon icon={faImage} />
+                                                                                                {item?.certFile instanceof File ? item?.certFile.name
+                                                                                                    : item?.certFile?.split("\\").pop().split("-").slice(1).join("-")}</h6>
+                                                                                        </div>
+                                                                                        <div className="">
+                                                                                            <a href="javascript:void(0)" className="text-black"><FontAwesomeIcon icon={faTrash} /></a>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>}
+                                                                        </div>
+
+                                                                        <div className="col-lg-2 d-flex align-items-center justify-content-end">
+                                                                            <div className="d-flex flex-column">
+                                                                                {licenseData.pharCert?.length !== 1 && <button type="button" onClick={() => removeCertificate(key)} className="text-danger"><FontAwesomeIcon icon={faTrash} /></button>}
+                                                                                {key == licenseData.pharCert?.length - 1 && <button type="button" onClick={() => addCertificate()} className=""><FaPlusCircle style={{ color: "#34A853", fontSize: "20px" }} /></button>}
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>)}
+                                                        </form>
                                                     </div>
                                                 </div>
 
                                                 <div className="d-flex justify-content-end gap-3">
                                                     <button type="button" className="nw-filtr-thm-btn outline">Cancel</button>
-                                                    <button type="submit" className="nw-filtr-thm-btn" >
-                                                        Save
-                                                    </button>
+                                                    <button type="button" onClick={(e) => licenseSubmit(e)} className="nw-filtr-thm-btn">Save</button>
                                                 </div>
-                                            </form>
+
+                                            </div>
+                                        </div>
+
+                                        <div className="tab-pane fade" id="person" role="tabpanel">
+                                            <div className="sub-tab-brd">
+                                                <form onSubmit={personSubmit}>
+                                                    <div className="row">
+                                                        <div className="col-lg-12">
+                                                            <div className="lab-profile-mega-bx">
+                                                                <div className="lab-profile-avatr-bx lab-contact-prson position-relative rounded-circle">
+                                                                    <img
+                                                                        src={
+                                                                            personData?.photo
+                                                                                ? typeof personData.photo === "string"
+                                                                                    ? (personData.photo.startsWith("uploads")
+                                                                                        ? `${base_url}/${personData.photo}`
+                                                                                        : personData.photo
+                                                                                    )
+                                                                                    : URL.createObjectURL(personData.photo)
+                                                                                : "/user-avatar.png"
+                                                                        }
+                                                                        alt=""
+                                                                    />
+
+                                                                    <div className="lab-profile-edit-avatr">
+                                                                        <a href="javascript:void(0)" className="edit-btn cursor-pointer">
+                                                                            <FontAwesomeIcon icon={faPen} />
+                                                                        </a>
+                                                                    </div>
+
+                                                                    <input
+                                                                        type="file"
+                                                                        accept="image/*"
+                                                                        name="photo"
+                                                                        onChange={personChange}
+                                                                        className="lab-profile-file-input"
+                                                                    />
+                                                                </div>
+
+                                                                <div>
+                                                                    <h4 className="lg_title ">{personData?.name || "John Smith"}</h4>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>Name</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="name"
+                                                                    onChange={personChange}
+                                                                    value={personData?.name}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>Mobile Number</label>
+                                                                <input
+                                                                    type="number"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="contactNumber"
+                                                                    onChange={personChange}
+                                                                    value={personData?.contactNumber}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>Email</label>
+                                                                <input
+                                                                    type="email"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="email"
+                                                                    onChange={personChange}
+                                                                    value={personData?.email}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-lg-6">
+                                                            <div className="custom-frm-bx">
+                                                                <label>Gender</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control nw-frm-select"
+                                                                    name="gender"
+                                                                    onChange={personChange}
+                                                                    value={personData?.gender}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="d-flex justify-content-end gap-3">
+                                                        <button type="button" className="nw-filtr-thm-btn outline">Cancel</button>
+                                                        <button type="submit" className="nw-filtr-thm-btn" >
+                                                            Save
+                                                        </button>
+                                                    </div>
+                                                </form>
 
 
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>}
+                </div>}
 
             {/*Edit Profile Popup Start  */}
             {/* data-bs-toggle="modal" data-bs-target="#edit-Request" */}
-            {show &&<div className="modal step-modal" id="edit-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            {show && <div className="modal step-modal" id="edit-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-md">
                     <div className="modal-content edit-modal-content rounded-5 p-5">

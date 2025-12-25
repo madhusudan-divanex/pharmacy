@@ -382,7 +382,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.country}
+                                value={pharAddress?.countryId?.name}
                               />
                             </div>
                           </div>
@@ -394,7 +394,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.state}
+                                value={pharAddress?.stateId?.name}
                               />
                             </div>
                           </div>
@@ -406,7 +406,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.city}
+                                value={pharAddress?.cityId?.name}
                               />
                             </div>
                           </div>

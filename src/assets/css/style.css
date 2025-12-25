@@ -2633,8 +2633,8 @@ min-height: 100vh; */
 }
 
 .edit-modal-content {
-    background-color: #052F59;
-    border: 1px solid #999999;
+    background-color: #052F59 !important;
+    border: 1px solid #999999 !important;
 }
 
 .submit-document-bx {

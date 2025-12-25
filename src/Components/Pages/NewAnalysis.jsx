@@ -36,6 +36,7 @@ function NewAnalysis() {
     }
     const fetchMedicineData = async () => {
         if (!medicineName) return
+        setLoading(true)
         try {
             const response = await getSecureApiData(`pharmacy/medicine-data/${medicineName}`);
             if (response.success) {
@@ -49,6 +50,8 @@ function NewAnalysis() {
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        }finally{
+            setLoading(false)
         }
     }
     useEffect(() => {
