@@ -35,7 +35,7 @@ function Sell() {
                 &search=${name}&schedule=${schedule}&startDate=${startDate}&endDate=${endDate}&sort=${sort}`);
             if (response.success) {
                 setList(response.data)
-                setTotalPage(response.pagiantion.totalPages)
+                setTotalPage(response.totalPages)
             } else {
                 toast.error(response.message)
             }

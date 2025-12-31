@@ -9,7 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getSecureApiData } from "../../Services/api";
+import { getSecureApiData, securePostData } from "../../Services/api";
 import { toast } from "react-toastify";
 import html2canvas from "html2canvas";
 import { useEffect, useRef, useState } from "react";
@@ -25,7 +25,6 @@ function Profile() {
     rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
   const [message, setMessage] = useState('')
 
-  
   useEffect(() => {
     dispatch(fetchUserProfile())
     dispatch(fetchUserDetail())
@@ -54,13 +53,15 @@ function Profile() {
       console.error("Download failed:", error);
     }
   };
+  console.log(isRequest)
   const sendEditRequest = async (e) => {
     e.preventDefault()
-    const data = { labId: userId, message }
+    const data = { pharId: userId, message }
     try {
-      const response = await securePostData(`lab/edit-request`, data);
+      const response = await securePostData(`pharmacy/edit-request`, data);
       if (response.success) {
         setMessage('')
+        dispatch(fetchUserDetail())
         toast.success("You request was sent!")
       } else {
         toast.error(response.message)
@@ -113,7 +114,7 @@ function Profile() {
                 </nav>
               </div>
             </div>
-            {isRequest && <div className="add-nw-bx">
+            {!isRequest && <div className="add-nw-bx">
               <a href="javascript:void(0)" className="add-nw-btn nw-thm-btn " data-bs-toggle="modal" data-bs-target="#edit-Request" >
                 Send Profile Edit Request
               </a>
@@ -624,7 +625,7 @@ function Profile() {
                   </div>
 
                   <div>
-                    <button type="submit" data-bs-dismiss="modal" onClick={() => navigate("/approve-profile")} aria-label="Close" className="nw-thm-btn w-100" > Send Edit Request </button>
+                    <button type="submit" data-bs-dismiss="modal"  aria-label="Close" className="nw-thm-btn w-100" > Send Edit Request </button>
                   </div>
 
                 </form>

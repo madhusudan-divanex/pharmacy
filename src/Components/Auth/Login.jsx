@@ -7,10 +7,12 @@ import { postApiData } from '../../Services/api'
 import { toast } from 'react-toastify'
 import { clearStaffProfiles, fetchStaffDetail } from '../../redux/feature/staffSlice'
 import { clearProfiles, fetchUserDetail } from '../../redux/feature/userSlice'
+import Loader from '../Layouts/Loader'
 function Login() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [isShow, setIsShow] = useState(false)
+  const [loading,setLoading] =useState(false)
   const userId = localStorage.getItem('userId')
   const [formData, setFormData] = useState({
     email: "",
@@ -18,6 +20,7 @@ function Login() {
   });
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true)
     try {
       const response = await postApiData('pharmacy/signin', formData)
       if (response.success) {
@@ -35,11 +38,13 @@ function Login() {
         }else{
         }
         toast.success('Login successfully')
+        if(response.nextStep){
+          navigate(response.nextStep)
+        }
         if (response.user.status == 'pending') {
           navigate('/wating-for-approval')
           return
         } else {
-
           navigate('/')
         }
       } else {
@@ -47,11 +52,14 @@ function Login() {
       }
     } catch (err) {
       console.error("Error creating lab:", err);
+    } finally{
+      setLoading(false)
     }
   };
   return (
     <>
-      <section className="admin-login-section ">
+      {loading?<Loader/>
+      :<section className="admin-login-section ">
         <div className="container-fluid ">
           <div className="row">
             <div className="col-lg-6 col-md-12 col-sm-12 px-0 mb-sm-3 mb-lg-0">
@@ -117,7 +125,7 @@ function Login() {
                       </div>
 
                       <div className='text-center mt-5'>
-                        <span className='do-account-title'>don't have an account?  <Link to="/create-account" className='lab-login-forgot-btn'>Register here</Link></span>
+                        <span className='do-account-title'>don't have an account?  <Link to="/create-account" type='button' className='lab-login-forgot-btn'>Register here</Link></span>
                       </div>
 
                     </form>
@@ -128,7 +136,7 @@ function Login() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
     </>
   )
 }

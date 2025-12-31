@@ -38,7 +38,7 @@ function NewAnalysis() {
         if (!medicineName) return
         setLoading(true)
         try {
-            const response = await getSecureApiData(`pharmacy/medicine-data/${medicineName}`);
+            const response = await getSecureApiData(`pharmacy/medicine-data/${medicineName}/${userId}`);
             if (response.success) {
                 setInventoryValue(response.inventoryValue)
                 setMedicineList(response.data)

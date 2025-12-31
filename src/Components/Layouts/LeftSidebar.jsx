@@ -12,7 +12,7 @@ function LeftSidebar() {
   const { pathname } = useLocation();
   const {
     profiles, isOwner,
-    pharPerson
+    pharPerson,customId
   } = useSelector((state) => state.user);
   const {
     staffData, empAccess,
@@ -57,7 +57,7 @@ function LeftSidebar() {
                 <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt="" />
                 <div>
                   <h6 className="new_title fw-500 mb-0">{isOwner ? profiles?.name : staffData?.name}</h6>
-                  <p>#{isOwner ? profiles?.customId : staffData?._id?.slice(-10)}</p>
+                  <p>#{isOwner ? customId : staffData?._id?.slice(-10)}</p>
                 </div>
               </div>
             </NavLink>

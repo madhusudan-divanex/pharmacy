@@ -14,12 +14,14 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
 import { useSelector } from "react-redux";
+import Loader from "../Layouts/Loader";
 
 function Permission() {
     const userId = localStorage.getItem('userId')
     const [name, setName] = useState('')
     const [editId, setEditId] = useState(null)
     const [search, setSearch] = useState(null)
+    const [loading,setLoading]=useState(false)
     const [totalPage, setTotalPage] = useState()
     const [currentPage, setCurrentPage] = useState(1)
     const {isOwner} =useSelector(state=>state.user)
@@ -76,6 +78,7 @@ function Permission() {
     }
     const deletePermission = async (id) => {
         // e.preventDefault()
+        setLoading(true)
         const data = { pharId: userId, permissionId: id }
         try {
             const response = await deleteApiData(`pharmacy/permission`, data);
@@ -87,6 +90,8 @@ function Permission() {
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        } finally{
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -108,7 +113,8 @@ function Permission() {
     }, [isOwner])
     return (
         <>
-            <div className="main-content flex-grow-1 p-3 overflow-auto">
+            {loading?<Loader/>
+            :<div className="main-content flex-grow-1 p-3 overflow-auto">
                 <form action="">
                     <div className="row mb-3">
                         <div className="d-flex align-items-center justify-content-between sub-header-bx">
@@ -461,7 +467,7 @@ function Permission() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>}
 
 
 

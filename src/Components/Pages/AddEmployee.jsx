@@ -10,10 +10,12 @@ import { Tab } from "bootstrap";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
 import base_url from "../../baseUrl";
 import { useSelector } from "react-redux";
+import Loader from "../Layouts/Loader";
 
 function AddEmployee() {
     const [searchParams] = useSearchParams()
-    const {isOwner}=useSelector(state=>state.user)
+    const { isOwner } = useSelector(state => state.user)
+    const [loading, setLoading] = useState(false)
     const [staffId, setStaffId] = useState(searchParams.get('id'))
     const userId = localStorage.getItem('userId')
     const [permisions, setPermissions] = useState([])
@@ -212,6 +214,19 @@ function AddEmployee() {
         const tab = new Tab(tabTrigger);
         tab.show();
     };
+    const goToTab = (tabId) => {
+        setTimeout(() => {
+            const tabTrigger = document.querySelector(tabId);
+            console.log("trigger:", tabTrigger);
+
+            if (!tabTrigger) return;
+
+            const tab = new Tab(tabTrigger);
+            tab.show();
+        }, 0);
+    };
+
+
     const userInfoSubmit = async (e) => {
         e.preventDefault()
         const data = new FormData()
@@ -230,18 +245,19 @@ function AddEmployee() {
         try {
             const response = await securePostData(`pharmacy/staff`, data);
             if (response.success) {
+                goToTab('#profile-tab')
                 toast.success("Personal Info was saved")
                 setStaffId(response.empId)
-                handleBack(e, '#profile-tab')
             } else {
                 toast.error(response.message)
             }
         } catch (err) {
             console.error("Error creating lab:", err);
-        }
+        } 
     }
     const professionalSubmit = async (e) => {
         e.preventDefault();
+        console.log(staffId)
         if (!staffId) {
             return
         }
@@ -273,7 +289,7 @@ function AddEmployee() {
             const response = await securePostData(`pharmacy/professional`, data);
             if (response.success) {
                 toast.success("Professional data was saved")
-                handleBack(e, "#contact-tab");
+                goToTab("#contact-tab");
             } else {
                 toast.error(response.message);
             }
@@ -294,7 +310,7 @@ function AddEmployee() {
             const response = await securePostData(`pharmacy/employment`, data);
             if (response.success) {
                 toast.success("Employment data was saved")
-                handleBack(e, '#upload-tab')
+                goToTab('#upload-tab')
             } else {
                 toast.error(response.message)
             }
@@ -308,10 +324,12 @@ function AddEmployee() {
         if (accessInfo.password !== accessInfo.confirmPassword) {
             toast.error('Password not matched')
         }
+        setLoading(true)
         const data = { ...accessInfo, empId: staffId }
         try {
             const response = await securePostData(`pharmacy/access`, data);
             if (response.success) {
+                setLoading(false)
                 toast.success("Data updated")
             } else {
                 toast.error(response.message)
@@ -324,6 +342,7 @@ function AddEmployee() {
     const [empData, setEmpData] = useState()
     const fetchStaffData = async () => {
         if (!staffId) return
+        setLoading(true)
         try {
             const response = await getSecureApiData(`pharmacy/staff-data/${staffId}`);
             if (response.success) {
@@ -355,6 +374,8 @@ function AddEmployee() {
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        } finally {
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -383,590 +404,593 @@ function AddEmployee() {
 
     return (
         <>
-            <div className="main-content flex-grow-1 p-3 overflow-auto">
-                <div className="row mb-3">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h3 className="innr-title mb-2">Add Employee</h3>
-                            <div className="admin-breadcrumb">
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb custom-breadcrumb">
-                                        <li className="breadcrumb-item">
-                                            <a href="#" className="breadcrumb-link">
-                                                Dashboard
-                                            </a>
-                                        </li>
-                                        <li className="breadcrumb-item">
-                                            <a href="#" className="breadcrumb-link">
-                                                Employee List
-                                            </a>
-                                        </li>
-                                        <li
-                                            className="breadcrumb-item active"
-                                            aria-current="page"
-                                        >
-                                            Add Employee
-                                        </li>
-                                    </ol>
-                                </nav>
+            {loading ? <Loader />
+                : <div className="main-content flex-grow-1 p-3 overflow-auto">
+                    <div className="row mb-3">
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h3 className="innr-title mb-2">Add Employee</h3>
+                                <div className="admin-breadcrumb">
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb custom-breadcrumb">
+                                            <li className="breadcrumb-item">
+                                                <a href="#" className="breadcrumb-link">
+                                                    Dashboard
+                                                </a>
+                                            </li>
+                                            <li className="breadcrumb-item">
+                                                <a href="#" className="breadcrumb-link">
+                                                    Employee List
+                                                </a>
+                                            </li>
+                                            <li
+                                                className="breadcrumb-item active"
+                                                aria-current="page"
+                                            >
+                                                Add Employee
+                                            </li>
+                                        </ol>
+                                    </nav>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="row">
-                    <div className="col-lg-12">
-                        <div className="employee-tabs mb-4">
-                            <ul className="nav nav-tabs gap-3 ps-2" id="myTab" role="tablist">
-                                <li className="nav-item" role="presentation">
-                                    <a
-                                        className="nav-link active"
-                                        id="home-tab"
-                                        data-bs-toggle="tab"
-                                        href="#home"
-                                        role="tab"
-                                    >
-                                        Personal Info
-                                    </a>
-                                </li>
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <div className="employee-tabs mb-4">
+                                <ul className="nav nav-tabs gap-3 ps-2" id="myTab" role="tablist">
+                                    <li className="nav-item" role="presentation">
+                                        <a
+                                            className="nav-link active"
+                                            id="home-tab"
+                                            data-bs-toggle="tab"
+                                            href="#home"
+                                            role="tab"
+                                        >
+                                            Personal Info
+                                        </a>
+                                    </li>
 
-                                <li className="nav-item" role="presentation">
-                                    <a
-                                        className="nav-link"
-                                        id="profile-tab"
-                                        data-bs-toggle="tab"
-                                        href="#profile"
-                                        role="tab"
-                                    >
-                                        Professional
-                                    </a>
-                                </li>
+                                    <li className="nav-item" role="presentation">
+                                        <a
+                                            className="nav-link"
+                                            id="profile-tab"
+                                            data-bs-toggle="tab"
+                                            href="#profile"
+                                            role="tab"
+                                        >
+                                            Professional
+                                        </a>
+                                    </li>
 
-                                <li className="nav-item" role="presentation">
-                                    <a
-                                        className="nav-link"
-                                        id="contact-tab"
-                                        data-bs-toggle="tab"
-                                        href="#contact"
-                                        role="tab"
-                                    >
-                                        Employment
-                                    </a>
-                                </li>
-                                <li className="nav-item" role="presentation">
-                                    <a
-                                        className="nav-link"
-                                        id="upload-tab"
-                                        data-bs-toggle="tab"
-                                        href="#upload"
-                                        role="tab"
-                                    >
-                                        Access
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className="lab-chart-crd">
-                            <div className="patient-bio-tab">
-                                <div className="tab-content" id="myTabContent">
-                                    <div
-                                        className="tab-pane fade show active"
-                                        id="home"
-                                        role="tabpanel"
-                                    >
-                                        <form onSubmit={userInfoSubmit}>
-                                            <div className="row">
-                                                <div className="d-flex align-items-center gap-3">
-                                                    <h4 className="lg_title text-black">Personal Information</h4>
-                                                    <div className="switch">
-                                                        <input type="checkbox" id="toggle7" />
-                                                        <label for="toggle7"></label>
+                                    <li className="nav-item" role="presentation">
+                                        <a
+                                            className="nav-link"
+                                            id="contact-tab"
+                                            data-bs-toggle="tab"
+                                            href="#contact"
+                                            role="tab"
+                                        >
+                                            Employment
+                                        </a>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <a
+                                            className="nav-link"
+                                            id="upload-tab"
+                                            data-bs-toggle="tab"
+                                            href="#upload"
+                                            role="tab"
+                                        >
+                                            Access
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="lab-chart-crd">
+                                <div className="patient-bio-tab">
+                                    <div className="tab-content" id="myTabContent">
+                                        <div
+                                            className="tab-pane fade show active"
+                                            id="home"
+                                            role="tabpanel"
+                                        >
+                                            <form onSubmit={userInfoSubmit}>
+                                                <div className="row">
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <h4 className="lg_title text-black">Personal Information</h4>
+                                                        <div className="switch">
+                                                            <input type="checkbox" id="toggle7" />
+                                                            <label for="toggle7"></label>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="col-lg-4">
-                                                    <div className="custom-frm-bx">
-                                                        <div className="upload-box  p-3">
-                                                            <div className="upload-icon mb-2">
-                                                                <IoCloudUploadOutline />
-                                                            </div>
-
-                                                            <div>
-                                                                <p className="fw-semibold mb-1">
-                                                                    <label htmlFor="fileInput1" className="file-label file-select-label">
-                                                                        Choose a file or drag & drop here
-                                                                    </label>
-                                                                </p>
-
-                                                                <small className="format-title">JPEG Format</small>
-
-
-                                                                <div className="mt-3">
-                                                                    <label htmlFor="fileInput1" className="browse-btn">
-                                                                        Browse File
-                                                                    </label>
+                                                    <div className="col-lg-4">
+                                                        <div className="custom-frm-bx">
+                                                            <div className="upload-box  p-3">
+                                                                <div className="upload-icon mb-2">
+                                                                    <IoCloudUploadOutline />
                                                                 </div>
 
-                                                                <input
-                                                                    type="file"
-                                                                    className="d-none"
-                                                                    onChange={handleUserChange}
-                                                                    id="fileInput1"
-                                                                    name="profileImage"
-                                                                    accept=".png,.jpg,.jpeg"
-                                                                />
+                                                                <div>
+                                                                    <p className="fw-semibold mb-1">
+                                                                        <label htmlFor="fileInput1" className="file-label file-select-label">
+                                                                            Choose a file or drag & drop here
+                                                                        </label>
+                                                                    </p>
 
-                                                                {userInfo.profileImage instanceof File && (
-                                                                    <div id="filePreviewWrapper" className="mt-3">
-                                                                        <img
-                                                                            src={URL.createObjectURL(userInfo.profileImage)}
-                                                                            alt="Preview"
-                                                                            className="img-thumbnail"
-                                                                        />
+                                                                    <small className="format-title">JPEG Format</small>
+
+
+                                                                    <div className="mt-3">
+                                                                        <label htmlFor="fileInput1" className="browse-btn">
+                                                                            Browse File
+                                                                        </label>
                                                                     </div>
-                                                                )}{typeof userInfo.profileImage === "string" &&
-                                                                    userInfo.profileImage.startsWith("uploads") && (
+
+                                                                    <input
+                                                                        type="file"
+                                                                        className="d-none"
+                                                                        onChange={handleUserChange}
+                                                                        id="fileInput1"
+                                                                        name="profileImage"
+                                                                        accept=".png,.jpg,.jpeg"
+                                                                    />
+
+                                                                    {userInfo.profileImage instanceof File && (
                                                                         <div id="filePreviewWrapper" className="mt-3">
                                                                             <img
-                                                                                src={`${base_url}/${userInfo.profileImage}`}
+                                                                                src={URL.createObjectURL(userInfo.profileImage)}
                                                                                 alt="Preview"
                                                                                 className="img-thumbnail"
                                                                             />
                                                                         </div>
-                                                                    )}
+                                                                    )}{typeof userInfo.profileImage === "string" &&
+                                                                        userInfo.profileImage.startsWith("uploads") && (
+                                                                            <div id="filePreviewWrapper" className="mt-3">
+                                                                                <img
+                                                                                    src={`${base_url}/${userInfo.profileImage}`}
+                                                                                    alt="Preview"
+                                                                                    className="img-thumbnail"
+                                                                                />
+                                                                            </div>
+                                                                        )}
 
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-
-
-                                            <div className="row">
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Name</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter name"
-                                                            value={userInfo.name}
-                                                            name="name"
-                                                            onChange={handleUserChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Date of Birth</label>
-                                                        <input
-                                                            type="date"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder=""
-                                                            value={userInfo.dob}
-                                                            name="dob"
-                                                            max={new Date().toISOString().split("T")[0]}
-                                                            onChange={handleUserChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Gender</label>
-                                                        <select className="form-select nw-frm-select" value={userInfo.gender}
-                                                            name="gender"
-                                                            onChange={handleUserChange}
-                                                            required>
-                                                            <option>---Select Gender---</option>
-                                                            <option value="male">Male</option>
-                                                            <option value="female">Female</option>
-                                                            <option value="other">other</option>
-
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Address</label>
-                                                        <textarea value={userInfo.address}
-                                                            name="address"
-                                                            onChange={handleUserChange}
-                                                            required id="" className="form-control nw-frm-select" placeholder="Enter Address"></textarea>
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">State</label>
-                                                        <select className="form-select nw-frm-select" value={userInfo.state}
-                                                            name="state"
-                                                            onChange={handleUserChange}
-                                                            required>
-                                                            <option>---Select State---</option>
-                                                            <option value="rajasthan">Rajasthan</option>
-                                                            <option value="gujrat">Gujrat</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">City</label>
-                                                        <select className="form-select nw-frm-select" value={userInfo.city}
-                                                            name="city"
-                                                            onChange={handleUserChange}
-                                                            required>
-                                                            <option>---Select City---</option>
-                                                            <option value="jaipur">Jaipur</option>
-                                                            <option value="ahemdabad">Ahemdabad</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Pin code</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter Pin code"
-                                                            value={userInfo.pinCode}
-                                                            name="pinCode"
-                                                            onChange={handleUserChange}
-                                                            required
-                                                        />
-
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-12 my-3">
-                                                    <div className="">
-                                                        <h5 className="add-contact-title">Contact Information</h5>
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Mobile Number</label>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  mobile number"
-                                                            value={userInfo.contactInformation.contactNumber}
-                                                            name="contactInformation.contactNumber"
-                                                            onChange={handleUserChange}
-                                                            required
-                                                        />
-
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Email</label>
-                                                        <input
-                                                            type="email"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Email"
-                                                            value={userInfo.contactInformation.email}
-                                                            name="contactInformation.email"
-                                                            onChange={handleUserChange}
-                                                            required
-                                                        />
-
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Emergency Contact Name</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Emergency Contact Name"
-                                                            value={userInfo.contactInformation.emergencyContactName}
-                                                            name="contactInformation.emergencyContactName"
-                                                            onChange={handleUserChange}
-                                                            required
-                                                        />
-
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Emergency Contact Phone</label>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Emergency Contact Phone"
-                                                            value={userInfo.contactInformation.emergencyContactNumber}
-                                                            name="contactInformation.emergencyContactNumber"
-                                                            onChange={handleUserChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="text-end">
-                                                    <button type="submit" className="nw-thm-btn">Save & Continue</button>
-                                                </div>
-
-                                            </div>
-                                        </form>
-                                    </div>
-
-                                    <div className="tab-pane fade" id="profile" role="tabpanel">
-                                        <form onSubmit={professionalSubmit}>
-                                            <div className="row">
-                                                <h4 className="lg_title text-black">Professional Information</h4>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Profession</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="e.g. Pharmacist, Nurse, etc."
-                                                            value={professionalInfo.profession}
-                                                            name="profession"
-                                                            onChange={handleProfessionalChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Specialization</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="e.g. Cardiology, Pediatrics, etc."
-                                                            value={professionalInfo.specialization}
-                                                            name="specialization"
-                                                            onChange={handleProfessionalChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Total Experience</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Total Experience"
-                                                            value={professionalInfo.totalExperience}
-                                                            name="totalExperience"
-                                                            onChange={handleProfessionalChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Professional Bio</label>
-                                                        <textarea value={professionalInfo.professionalBio}
-                                                            name="professionalBio"
-                                                            onChange={handleProfessionalChange}
-                                                            required id="" className="form-control nw-frm-select" placeholder="Enter professional biography and experience"></textarea>
-                                                    </div>
-                                                </div>
-
-
-                                                <div className="col-lg-12 my-3">
-                                                    <div className="">
-                                                        <h5 className="add-contact-title">Education</h5>
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-
-                                            {professionalInfo.education.map((item, index) => (
-                                                <div className="education-frm-bx mb-4" key={index}>
-                                                    <div className="row" >
-
-                                                        <div className="col-lg-3 col-md-6 col-sm-12">
-                                                            <div className="custom-frm-bx">
-                                                                <label>University / Institution</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control nw-frm-select"
-                                                                    placeholder="Enter University / Institution"
-                                                                    value={item.university}
-                                                                    name="university"
-                                                                    onChange={(e) => handleProfessionalChange(e, index, "education")}
-                                                                    required
-                                                                />
+                                                                </div>
                                                             </div>
                                                         </div>
 
-                                                        <div className="col-lg-3 col-md-6 col-sm-12">
-                                                            <div className="custom-frm-bx">
-                                                                <label>Degree / Qualification</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control nw-frm-select"
-                                                                    placeholder="Enter Degree / Qualification"
-                                                                    value={item.degree}
-                                                                    name="degree"
-                                                                    onChange={(e) => handleProfessionalChange(e, index, "education")}
-                                                                    required
-                                                                />
-                                                            </div>
-                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                                        <div className="col-lg-3 col-md-6 col-sm-12">
-                                                            <div className="custom-frm-bx">
-                                                                <label>Year From</label>
-                                                                <input
-                                                                    type="number"
-                                                                    className="form-control nw-frm-select"
-                                                                    placeholder="Enter Year From"
-                                                                    value={item.yearFrom}
-                                                                    name="yearFrom"
-                                                                    onChange={(e) => handleProfessionalChange(e, index, "education")}
-                                                                    required
-                                                                />
-                                                            </div>
-                                                        </div>
 
-                                                        <div className="col-lg-3 col-md-6 col-sm-12">
-                                                            <div className="return-box">
-                                                                <div className="custom-frm-bx flex-column flex-grow-1">
-                                                                    <label>Year To</label>
+                                                <div className="row">
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Name</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter name"
+                                                                value={userInfo.name}
+                                                                name="name"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Date of Birth</label>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder=""
+                                                                value={userInfo.dob}
+                                                                name="dob"
+                                                                max={new Date().toISOString().split("T")[0]}
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Gender</label>
+                                                            <select className="form-select nw-frm-select" value={userInfo.gender}
+                                                                name="gender"
+                                                                onChange={handleUserChange}
+                                                                required>
+                                                                <option>---Select Gender---</option>
+                                                                <option value="male">Male</option>
+                                                                <option value="female">Female</option>
+                                                                <option value="other">other</option>
+
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Address</label>
+                                                            <textarea value={userInfo.address}
+                                                                name="address"
+                                                                onChange={handleUserChange}
+                                                                required id="" className="form-control nw-frm-select" placeholder="Enter Address"></textarea>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">State</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder=""
+                                                                value={userInfo.state}
+                                                                name="state"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">City</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder=""
+                                                                value={userInfo.city}
+                                                                name="city"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Pin code</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter Pin code"
+                                                                value={userInfo.pinCode}
+                                                                name="pinCode"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-12 my-3">
+                                                        <div className="">
+                                                            <h5 className="add-contact-title">Contact Information</h5>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Mobile Number</label>
+                                                            <input
+                                                                type="number"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  mobile number"
+                                                                value={userInfo.contactInformation.contactNumber}
+                                                                name="contactInformation.contactNumber"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Email</label>
+                                                            <input
+                                                                type="email"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Email"
+                                                                value={userInfo.contactInformation.email}
+                                                                name="contactInformation.email"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Emergency Contact Name</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Emergency Contact Name"
+                                                                value={userInfo.contactInformation.emergencyContactName}
+                                                                name="contactInformation.emergencyContactName"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Emergency Contact Phone</label>
+                                                            <input
+                                                                type="number"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Emergency Contact Phone"
+                                                                value={userInfo.contactInformation.emergencyContactNumber}
+                                                                name="contactInformation.emergencyContactNumber"
+                                                                onChange={handleUserChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="text-end">
+                                                        <button type="submit" className="nw-thm-btn">Save & Continue</button>
+                                                    </div>
+
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <div className="tab-pane fade" id="profile" role="tabpanel">
+                                            <form onSubmit={professionalSubmit}>
+                                                <div className="row">
+                                                    <h4 className="lg_title text-black">Professional Information</h4>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Profession</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="e.g. Pharmacist, Nurse, etc."
+                                                                value={professionalInfo.profession}
+                                                                name="profession"
+                                                                onChange={handleProfessionalChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Specialization</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="e.g. Cardiology, Pediatrics, etc."
+                                                                value={professionalInfo.specialization}
+                                                                name="specialization"
+                                                                onChange={handleProfessionalChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Total Experience</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Total Experience"
+                                                                value={professionalInfo.totalExperience}
+                                                                name="totalExperience"
+                                                                onChange={handleProfessionalChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Professional Bio</label>
+                                                            <textarea value={professionalInfo.professionalBio}
+                                                                name="professionalBio"
+                                                                onChange={handleProfessionalChange}
+                                                                required id="" className="form-control nw-frm-select" placeholder="Enter professional biography and experience"></textarea>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div className="col-lg-12 my-3">
+                                                        <div className="">
+                                                            <h5 className="add-contact-title">Education</h5>
+                                                        </div>
+                                                    </div>
+
+
+                                                </div>
+
+                                                {professionalInfo.education.map((item, index) => (
+                                                    <div className="education-frm-bx mb-4" key={index}>
+                                                        <div className="row" >
+
+                                                            <div className="col-lg-3 col-md-6 col-sm-12">
+                                                                <div className="custom-frm-bx">
+                                                                    <label>University / Institution</label>
                                                                     <input
-                                                                        type="number"
+                                                                        type="text"
                                                                         className="form-control nw-frm-select"
-                                                                        placeholder="Enter Year To"
-                                                                        value={item.yearTo}
-                                                                        name="yearTo"
+                                                                        placeholder="Enter University / Institution"
+                                                                        value={item.university}
+                                                                        name="university"
                                                                         onChange={(e) => handleProfessionalChange(e, index, "education")}
                                                                         required
                                                                     />
                                                                 </div>
+                                                            </div>
 
-                                                                <div>
-                                                                    <button
-                                                                        type="button"
-                                                                        disabled={professionalInfo.education.length === 1}
-                                                                        className="text-black"
-                                                                        onClick={() => removeEducation(index, item)}
-                                                                    >
-                                                                        <FontAwesomeIcon icon={faTrash} />
-                                                                    </button>
+                                                            <div className="col-lg-3 col-md-6 col-sm-12">
+                                                                <div className="custom-frm-bx">
+                                                                    <label>Degree / Qualification</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        className="form-control nw-frm-select"
+                                                                        placeholder="Enter Degree / Qualification"
+                                                                        value={item.degree}
+                                                                        name="degree"
+                                                                        onChange={(e) => handleProfessionalChange(e, index, "education")}
+                                                                        required
+                                                                    />
                                                                 </div>
                                                             </div>
-                                                        </div>
 
-                                                    </div>
-
-
-                                                </div>))}
-
-                                            <div className="text-end my-3">
-                                                <button onClick={() => addEducation()} className="employee-data-btn"><FaPlusSquare /> Add More</button>
-                                            </div>
-
-                                            <div className="col-lg-12 my-3">
-                                                <div className="">
-                                                    <h5 className="add-contact-title">Certificate</h5>
-                                                </div>
-                                            </div>
-                                            {professionalInfo.pharCert.map((item, index) => (
-                                                <div className="education-frm-bx mt-4 mb-4" key={index}>
-                                                    <div className="row">
-                                                        <div className="col-lg-6 col-md-6 col-sm-12">
-                                                            <div className="custom-frm-bx">
-                                                                <label htmlFor="">Certificate</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control nw-frm-select"
-                                                                    placeholder="Enter Certificate Name"
-                                                                    value={item.certName}
-                                                                    name="certName"
-                                                                    onChange={(e) => handleProfessionalChange(e, index, "pharCert")}
-                                                                    required
-                                                                />
-
+                                                            <div className="col-lg-3 col-md-6 col-sm-12">
+                                                                <div className="custom-frm-bx">
+                                                                    <label>Year From</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        className="form-control nw-frm-select"
+                                                                        placeholder="Enter Year From"
+                                                                        value={item.yearFrom}
+                                                                        name="yearFrom"
+                                                                        onChange={(e) => handleProfessionalChange(e, index, "education")}
+                                                                        required
+                                                                    />
+                                                                </div>
                                                             </div>
+
+                                                            <div className="col-lg-3 col-md-6 col-sm-12">
+                                                                <div className="return-box">
+                                                                    <div className="custom-frm-bx flex-column flex-grow-1">
+                                                                        <label>Year To</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            className="form-control nw-frm-select"
+                                                                            placeholder="Enter Year To"
+                                                                            value={item.yearTo}
+                                                                            name="yearTo"
+                                                                            onChange={(e) => handleProfessionalChange(e, index, "education")}
+                                                                            required
+                                                                        />
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={professionalInfo.education.length === 1}
+                                                                            className="text-black"
+                                                                            onClick={() => removeEducation(index, item)}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faTrash} />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
                                                         </div>
 
-                                                        <div className="col-lg-6 col-md-6 col-sm-12">
-                                                            <div className="return-box">
-                                                                <div className="custom-frm-bx mb-3 flex-column flex-grow-1">
-                                                                    <label className="">Certificate Upload</label>
 
-                                                                    <div className="custom-file-wrapper nw-frm-select">
-                                                                        <span className="em-browse-btn">Browse File</span>
-                                                                        <span className="em-file-name">{item.certFile ? (item.certFile.name || item?.certFile.split("\\").pop().split("-").slice(1).join("-")) : "No Choose file"}</span>
-                                                                        <input type="file" name="certFile" onChange={(e) => handleProfessionalChange(e, index, "pharCert")} className="real-file-input " />
+                                                    </div>))}
+
+                                                <div className="text-end my-3">
+                                                    <button onClick={() => addEducation()} className="employee-data-btn"><FaPlusSquare /> Add More</button>
+                                                </div>
+
+                                                <div className="col-lg-12 my-3">
+                                                    <div className="">
+                                                        <h5 className="add-contact-title">Certificate</h5>
+                                                    </div>
+                                                </div>
+                                                {professionalInfo.pharCert.map((item, index) => (
+                                                    <div className="education-frm-bx mt-4 mb-4" key={index}>
+                                                        <div className="row">
+                                                            <div className="col-lg-6 col-md-6 col-sm-12">
+                                                                <div className="custom-frm-bx">
+                                                                    <label htmlFor="">Certificate</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        className="form-control nw-frm-select"
+                                                                        placeholder="Enter Certificate Name"
+                                                                        value={item.certName}
+                                                                        name="certName"
+                                                                        onChange={(e) => handleProfessionalChange(e, index, "pharCert")}
+                                                                        required
+                                                                    />
+
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="col-lg-6 col-md-6 col-sm-12">
+                                                                <div className="return-box">
+                                                                    <div className="custom-frm-bx mb-3 flex-column flex-grow-1">
+                                                                        <label className="">Certificate Upload</label>
+
+                                                                        <div className="custom-file-wrapper nw-frm-select">
+                                                                            <span className="em-browse-btn">Browse File</span>
+                                                                            <span className="em-file-name">{item.certFile ? (item.certFile.name || item?.certFile.split("\\").pop().split("-").slice(1).join("-")) : "No Choose file"}</span>
+                                                                            <input type="file" name="certFile" onChange={(e) => handleProfessionalChange(e, index, "pharCert")} className="real-file-input " />
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <button className="text-black"
+                                                                            disabled={professionalInfo?.pharCert?.length === 1}
+                                                                            onClick={() => removeCertificate(index, item)}><FontAwesomeIcon icon={faTrash} /></button>
                                                                     </div>
                                                                 </div>
 
-                                                                <div>
-                                                                    <button className="text-black"
-                                                                        disabled={professionalInfo?.pharCert?.length === 1}
-                                                                        onClick={() => removeCertificate(index, item)}><FontAwesomeIcon icon={faTrash} /></button>
-                                                                </div>
                                                             </div>
-
                                                         </div>
-                                                    </div>
-                                                </div>))}
-                                            <div className="text-end my-3">
-                                                <button onClick={() => addCertificate()} className="employee-data-btn"><FaPlusSquare /> Add More</button>
-                                            </div>
-                                            <div className="d-flex align-items-center justify-content-end gap-3">
-                                                <button type="button" onClick={(e) => handleBack(e, '#home-tab')} className="nw-thm-btn outline rounded-3">Back </button>
-                                                <button type="submit" className="nw-thm-btn rounded-3" >Save & Continue</button>
-                                            </div>
-                                        </form>
-                                    </div>
-
-                                    <div className="tab-pane fade" id="contact" role="tabpanel">
-
-                                        <form onSubmit={employmentSubmit}>
-                                            <div className="row">
-
-                                                <div className="d-flex align-items-center gap-3">
-                                                    <h4 className="lg_title text-black">Employment Details</h4>
-                                                    <div className="switch">
-                                                        <input type="checkbox" id="toggle8" />
-                                                        <label for="toggle8"></label>
-                                                    </div>
+                                                    </div>))}
+                                                <div className="text-end my-3">
+                                                    <button onClick={() => addCertificate()} className="employee-data-btn"><FaPlusSquare /> Add More</button>
                                                 </div>
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Position/Role</label>
-                                                        <div className="select-wrapper">
-                                                            <Select
-                                                                isMulti
-                                                                options={options}
-                                                                value={options.filter(opt =>
-                                                                    employmentInfo?.position?.includes(opt.value)
-                                                                )}
-                                                                onChange={(selected) =>
-                                                                    setEmploymentInfo({
-                                                                        ...employmentInfo,
-                                                                        position: selected.map(item => item.value)    // store only values
-                                                                    })
-                                                                }
-                                                                placeholder="Select Role"
-                                                                classNamePrefix="custom-select"
-                                                            />
+                                                <div className="d-flex align-items-center justify-content-end gap-3">
+                                                    <button type="button" onClick={(e) => handleBack(e, '#home-tab')} className="nw-thm-btn outline rounded-3">Back </button>
+                                                    <button type="submit" className="nw-thm-btn rounded-3" >Save & Continue</button>
+                                                </div>
+                                            </form>
+                                        </div>
 
+                                        <div className="tab-pane fade" id="contact" role="tabpanel">
 
+                                            <form onSubmit={employmentSubmit}>
+                                                <div className="row">
+
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <h4 className="lg_title text-black">Employment Details</h4>
+                                                        <div className="switch">
+                                                            <input type="checkbox" id="toggle8" />
+                                                            <label for="toggle8"></label>
                                                         </div>
-                                                        {/* <input
+                                                    </div>
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Position/Role</label>
+                                                            <div className="select-wrapper">
+                                                                <Select
+                                                                    isMulti
+                                                                    options={options}
+                                                                    value={options.filter(opt =>
+                                                                        employmentInfo?.position?.includes(opt.value)
+                                                                    )}
+                                                                    onChange={(selected) =>
+                                                                        setEmploymentInfo({
+                                                                            ...employmentInfo,
+                                                                            position: selected.map(item => item.value)    // store only values
+                                                                        })
+                                                                    }
+                                                                    placeholder="Select Role"
+                                                                    classNamePrefix="custom-select"
+                                                                />
+
+
+                                                            </div>
+                                                            {/* <input
                                                             type="text"
                                                             className="form-control nw-frm-select"
                                                             placeholder="Enter Position/Role"
@@ -975,222 +999,222 @@ function AddEmployee() {
                                                             name="position"
                                                             onChange={handleEmploymentChange}
                                                         /> */}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="row">
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Join Date</label>
-                                                        <input
-                                                            type="date"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Total Experience"
-                                                            value={employmentInfo?.joinDate}
-                                                            required
-                                                            name="joinDate"
-                                                            onChange={handleEmploymentChange}
-                                                        />
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">On Leave Date</label>
-                                                        <input
-                                                            type="date"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Total Experience"
-                                                            value={employmentInfo?.onLeaveDate}
-                                                            required
-                                                            name="onLeaveDate"
-                                                            onChange={handleEmploymentChange}
-                                                        />
+                                                <div className="row">
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Join Date</label>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Total Experience"
+                                                                value={employmentInfo?.joinDate}
+                                                                required
+                                                                name="joinDate"
+                                                                onChange={handleEmploymentChange}
+                                                            />
+                                                        </div>
                                                     </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">On Leave Date</label>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Total Experience"
+                                                                value={employmentInfo?.onLeaveDate}
+                                                                // required
+                                                                name="onLeaveDate"
+                                                                onChange={handleEmploymentChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Salary($)</label>
+                                                            <input type="number" value={employmentInfo?.salary}
+                                                                required
+                                                                name="salary"
+                                                                onChange={handleEmploymentChange} id=""
+                                                                className="form-control nw-frm-select"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-lg-12 my-3">
+                                                        <div className="">
+                                                            <h5 className="add-contact-title">Contract Details</h5>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Contract Start</label>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Total Experience"
+                                                                value={employmentInfo?.contractStart}
+                                                                required
+                                                                name="contractStart"
+                                                                onChange={handleEmploymentChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Contract End</label>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter  Total Experience"
+                                                                value={employmentInfo?.contractEnd}
+                                                                required
+                                                                name="contractEnd"
+                                                                onChange={handleEmploymentChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-12 mt-5">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Note</label>
+                                                            <textarea value={employmentInfo?.note}
+                                                                required
+                                                                name="note"
+                                                                onChange={handleEmploymentChange} id="" className="form-control nw-frm-select" placeholder="Enter Note"></textarea>
+                                                        </div>
+                                                    </div>
+
+
+
                                                 </div>
 
-                                                <div className="col-lg-4 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Salary($)</label>
-                                                        <input type="number" value={employmentInfo?.salary}
-                                                            required
-                                                            name="salary"
-                                                            onChange={handleEmploymentChange} id=""
-                                                            className="form-control nw-frm-select"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-12 my-3">
-                                                    <div className="">
-                                                        <h5 className="add-contact-title">Contract Details</h5>
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Contract Start</label>
-                                                        <input
-                                                            type="date"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Total Experience"
-                                                            value={employmentInfo?.contractStart}
-                                                            required
-                                                            name="contractStart"
-                                                            onChange={handleEmploymentChange}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Contract End</label>
-                                                        <input
-                                                            type="date"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter  Total Experience"
-                                                            value={employmentInfo?.contractEnd}
-                                                            required
-                                                            name="contractEnd"
-                                                            onChange={handleEmploymentChange}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-12 mt-5">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Note</label>
-                                                        <textarea value={employmentInfo?.note}
-                                                            required
-                                                            name="note"
-                                                            onChange={handleEmploymentChange} id="" className="form-control nw-frm-select" placeholder="Enter Note"></textarea>
-                                                    </div>
-                                                </div>
-
-
-
-                                            </div>
-
-
-                                            <div className="d-flex align-items-center justify-content-end gap-3">
-                                                <button type="button" className="nw-thm-btn outline rounded-3" onClick={(e) => handleBack(e, '#profile-tab')}>Back </button>
-                                                <button type="submit" className="nw-thm-btn rounded-3" >Save & Continue</button>
-                                            </div>
-
-                                        </form>
-                                    </div>
-
-
-                                    <div className="tab-pane fade" id="upload" role="tabpanel">
-                                        <form onSubmit={accessSubmit}>
-                                            <div className="row">
-                                                <div className="d-flex align-items-center gap-3">
-                                                    <h4 className="lg_title text-black">Access</h4>
-                                                    <div className="switch">
-                                                        <input type="checkbox" id="toggle8" />
-                                                        <label for="toggle8"></label>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Username</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter Username"
-                                                            value={accessInfo.userName}
-                                                            onChange={handleAccessChange}
-                                                            name="userName"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Email for Access</label>
-                                                        <input
-                                                            type="email"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter Email  Address"
-                                                            value={accessInfo.email}
-                                                            onChange={handleAccessChange}
-                                                            name="email"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Temporary Password</label>
-                                                        <input
-                                                            type="password"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter Password"
-                                                            value={accessInfo.password}
-                                                            onChange={handleAccessChange}
-                                                            name="password"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Confirm Password</label>
-                                                        <input
-                                                            type="password"
-                                                            className="form-control nw-frm-select"
-                                                            placeholder="Enter Confirm Password"
-                                                            value={accessInfo.confirmPassword}
-                                                            onChange={handleAccessChange}
-                                                            name="confirmPassword"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-12 my-3">
-                                                    <div className="">
-                                                        <h5 className="add-contact-title">Permission</h5>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                                    <div className="custom-frm-bx">
-                                                        <label htmlFor="">Permission  Type</label>
-                                                        <select name="permissionId" onChange={handleAccessChange}
-                                                            value={accessInfo?.permissionId} id="" className="form-select nw-frm-select">
-                                                            <option value="">---Select Permission Type---</option>
-                                                            {permisions?.length > 0 &&
-                                                                permisions?.map((item, key) =>
-                                                                    <option value={item?._id} key={key}>{item?.name}</option>)}
-                                                        </select>
-                                                    </div>
-                                                </div>
 
                                                 <div className="d-flex align-items-center justify-content-end gap-3">
-                                                    <button className="nw-thm-btn outline rounded-3" onClick={(e) => handleBack(e, '#contact-tab')}
-                                                    >Back </button>
-                                                    <button type="submit" className="nw-thm-btn rounded-3" >Submit</button>
+                                                    <button type="button" className="nw-thm-btn outline rounded-3" onClick={(e) => handleBack(e, '#profile-tab')}>Back </button>
+                                                    <button type="submit" className="nw-thm-btn rounded-3" >Save & Continue</button>
                                                 </div>
 
+                                            </form>
+                                        </div>
 
-                                            </div>
-                                        </form>
+
+                                        <div className="tab-pane fade" id="upload" role="tabpanel">
+                                            <form onSubmit={accessSubmit}>
+                                                <div className="row">
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <h4 className="lg_title text-black">Access</h4>
+                                                        <div className="switch">
+                                                            <input type="checkbox" id="toggle8" />
+                                                            <label for="toggle8"></label>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Username</label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter Username"
+                                                                value={accessInfo.userName}
+                                                                onChange={handleAccessChange}
+                                                                name="userName"
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Email for Access</label>
+                                                            <input
+                                                                type="email"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter Email  Address"
+                                                                value={accessInfo.email}
+                                                                onChange={handleAccessChange}
+                                                                name="email"
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Temporary Password</label>
+                                                            <input
+                                                                type="password"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter Password"
+                                                                value={accessInfo.password}
+                                                                onChange={handleAccessChange}
+                                                                name="password"
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Confirm Password</label>
+                                                            <input
+                                                                type="password"
+                                                                className="form-control nw-frm-select"
+                                                                placeholder="Enter Confirm Password"
+                                                                value={accessInfo.confirmPassword}
+                                                                onChange={handleAccessChange}
+                                                                name="confirmPassword"
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-lg-12 my-3">
+                                                        <div className="">
+                                                            <h5 className="add-contact-title">Permission</h5>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                                        <div className="custom-frm-bx">
+                                                            <label htmlFor="">Permission  Type</label>
+                                                            <select name="permissionId" onChange={handleAccessChange}
+                                                                value={accessInfo?.permissionId} id="" className="form-select nw-frm-select">
+                                                                <option value="">---Select Permission Type---</option>
+                                                                {permisions?.length > 0 &&
+                                                                    permisions?.map((item, key) =>
+                                                                        <option value={item?._id} key={key}>{item?.name}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="d-flex align-items-center justify-content-end gap-3">
+                                                        <button className="nw-thm-btn outline rounded-3" onClick={(e) => handleBack(e, '#contact-tab')}
+                                                        >Back </button>
+                                                        <button type="submit" className="nw-thm-btn rounded-3" >Submit</button>
+                                                    </div>
+
+
+                                                </div>
+                                            </form>
+                                        </div>
+
                                     </div>
-
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
 
 
 
 
 
-            </div>
+                </div>}
         </>
     )
 }

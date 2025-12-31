@@ -7,6 +7,7 @@ import { deleteApiData, getSecureApiData, securePostData } from "../../Services/
 import { useEffect, useState } from "react";
 import base_url from "../../baseUrl";
 import { useSelector } from "react-redux";
+import Loader from "../Layouts/Loader";
 
 
 function Employee() {
@@ -14,6 +15,7 @@ function Employee() {
     const userId = localStorage.getItem('userId')
     const {isOwner}=useSelector(state=>state.user)
     const [employees, setEmployees] = useState([])
+    const [loading,setLoading]=useState(false)
     const [status, setStatus] = useState()
     const [currentPage, setCurrentPage] = useState(1)
     const [name, setName] = useState('')
@@ -51,6 +53,7 @@ function Employee() {
         }
     }
     const deleteStaff = async (id) => {
+        setLoading(true)
         try {
             const response = await deleteApiData(`pharmacy/staff/${id}`);
             if (response.success) {
@@ -61,6 +64,8 @@ function Employee() {
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        } finally{
+            setLoading(false)
         }
     }
    
@@ -73,7 +78,8 @@ function Employee() {
     }, [isOwner])
     return (
         <>
-            <div className="main-content flex-grow-1 p-3 overflow-auto">
+            {loading?<Loader/>
+            :<div className="main-content flex-grow-1 p-3 overflow-auto">
                 <div className="row mb-3">
                     <div className="d-flex align-items-center justify-content-between">
                         <div>
@@ -230,7 +236,7 @@ function Employee() {
                                 :'No Data'}
                     </div>
                 </div>
-            </div>
+            </div>}
         </>
     )
 }

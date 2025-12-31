@@ -119,7 +119,6 @@ function ChangePassword() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
-
                   <div className="search-item-bx">
                     <a href="javascript:void(0)" onClick={() => setIsConf(!isConf)} className="search-item-btn">
                       <FontAwesomeIcon icon={isConf ? faEye : faEyeSlash} className="text-black" />

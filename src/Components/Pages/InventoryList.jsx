@@ -8,8 +8,10 @@ import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "
 import { toast } from "react-toastify";
 import Barcode from "react-barcode"
 import { useSelector } from "react-redux";
+import Loader from "../Layouts/Loader";
 
 function InventoryList() {
+    const [loading, setLoading] = useState(false)
     const handleDetected = (code) => {
         alert("Scanned barcode: " + code);
     };
@@ -42,6 +44,7 @@ function InventoryList() {
     // submit handler
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true)
         try {
             if (formData?._id) {
                 const data = { inventoryId: formData?._id, ...formData }
@@ -73,6 +76,8 @@ function InventoryList() {
         } catch (error) {
             console.error(error);
             toast.error("Something went wrong");
+        } finally {
+            setLoading(false)
         }
     };
     const [currentPage, setCurrentPage] = useState(1)
@@ -121,240 +126,255 @@ function InventoryList() {
     }, [permissions])
     return (
         <>
-            <div className="main-content flex-grow-1 p-3 overflow-auto">
-                <div className="row mb-3">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h3 className="innr-title mb-2 gradient-text">Inventory</h3>
-                            <div className="admin-breadcrumb">
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb custom-breadcrumb">
-                                        <li className="breadcrumb-item">
-                                            <a href="#" className="breadcrumb-link">
-                                                Dashboard
-                                            </a>
-                                        </li>
-                                        <li
-                                            className="breadcrumb-item active"
-                                            aria-current="page"
-                                        >
-                                            Inventory
-                                        </li>
-                                    </ol>
-                                </nav>
+            {loading ? <Loader />
+                : <div className="main-content flex-grow-1 p-3 overflow-auto">
+                    <div className="row mb-3">
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h3 className="innr-title mb-2 gradient-text">Inventory</h3>
+                                <div className="admin-breadcrumb">
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb custom-breadcrumb">
+                                            <li className="breadcrumb-item">
+                                                <a href="#" className="breadcrumb-link">
+                                                    Dashboard
+                                                </a>
+                                            </li>
+                                            <li
+                                                className="breadcrumb-item active"
+                                                aria-current="page"
+                                            >
+                                                Inventory
+                                            </li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                            </div>
+
+                            <div className="d-flex gap-2">
+                                {/* <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button> */}
+                                <button className="nw-thm-btn rounded-3"
+                                    onClick={() => setFormData({
+                                        medicineName: "",
+                                        schedule: "",
+                                        batchNumber: "",
+                                        mfgDate: "",
+                                        expDate: "",
+                                        quantity: "",
+                                        purchasePrice: "",
+                                        totalStockPrice: "",
+                                        marginType: "",
+                                        avgMargin: "",
+                                        highMargin: "",
+                                        lowMargin: "",
+                                    })} data-bs-toggle="modal"
+                                    disabled={!isOwner && !permissions?.add}
+                                    data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
                             </div>
                         </div>
-
-                        <div className="d-flex gap-2">
-                            {/* <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button> */}
-                            <button className="nw-thm-btn rounded-3" data-bs-toggle="modal"
-                                disabled={!isOwner && !permissions?.add}
-                                data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
-                        </div>
                     </div>
-                </div>
-                <div className='new-mega-card'>
-                    <div className="row">
-                        <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details">
-                            <div>
-                                <div className="d-flex align-items-center gap-2 nw-box">
-                                    <div className="custom-frm-bx mb-0">
-                                        <input
-                                            type="text"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            className="form-control admin-table-search-frm search-table-frm pe-5"
-                                            id="email"
-                                            placeholder="Search"
-                                            required
-                                        />
-                                        <div className="adm-search-bx">
-                                            <button className="tp-search-btn text-secondary">
-                                                <FontAwesomeIcon icon={faSearch} />
+                    <div className='new-mega-card'>
+                        <div className="row">
+                            <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details">
+                                <div>
+                                    <div className="d-flex align-items-center gap-2 nw-box">
+                                        <div className="custom-frm-bx mb-0">
+                                            <input
+                                                type="text"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                className="form-control admin-table-search-frm search-table-frm pe-5"
+                                                id="email"
+                                                placeholder="Search"
+                                                required
+                                            />
+                                            <div className="adm-search-bx">
+                                                <button className="tp-search-btn text-secondary">
+                                                    <FontAwesomeIcon icon={faSearch} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="filters">
+                                            <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
+                                                <label className="label">Schedule :</label>
+                                                <select className="" value={schedule} onChange={(e) => setSchedule(e.target.value)}>
+                                                    <option value='all'>All</option>
+                                                    <option value="H1">H1</option>
+                                                    <option value="H">H</option>
+                                                    <option value="X">X</option>
+
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button onClick={() => fetchInventory()} className="nw-thm-btn rounded-2">
+                                                Filter
                                             </button>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="filters">
-                                        <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
-                                            <label className="label">Schedule :</label>
-                                            <select className="" value={schedule} onChange={(e) => setSchedule(e.target.value)}>
-                                                <option value='all'>All</option>
-                                                <option value="H1">H1</option>
-                                                <option value="H">H</option>
-                                                <option value="X">X</option>
-
-                                            </select>
-                                        </div>
-                                    </div>
+                                {totalPage && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
                                     <div>
-                                        <button onClick={() => fetchInventory()} className="nw-thm-btn rounded-2">
-                                            Filter
-                                        </button>
+                                        <select
+                                            value={currentPage}
+                                            onChange={(e) => setCurrentPage(e.target.value)}
+                                            className="form-select custom-page-dropdown nw-custom-page ">
+                                            {Array.from({ length: totalPage }, (_, i) => (
+                                                <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                            ))}
+                                        </select>
                                     </div>
-                                </div>
+                                </div>}
                             </div>
-
-                            {totalPage && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
-                                <div>
-                                    <select
-                                        value={currentPage}
-                                        onChange={(e) => setCurrentPage(e.target.value)}
-                                        className="form-select custom-page-dropdown nw-custom-page ">
-                                        {Array.from({ length: totalPage }, (_, i) => (
-                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>}
                         </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <div className="table-section">
-                                <div className="table table-responsive mb-0">
-                                    <table className="table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>S.no.</th>
-                                                <th>Medicine Name</th>
-                                                <th>Batch Number</th>
-                                                <th>Schedule</th>
-                                                <th>MFG Date</th>
-                                                <th>Exp Date</th>
-                                                <th>Quantity/Stock</th>
-                                                <th>Purch Price</th>
-                                                <th>Avg Margin</th>
-                                                <th>Low Margin</th>
-                                                <th>High Margin</th>
-                                                <th>Bar Code </th>
-                                                <th>Action</th>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="table-section">
+                                    <div className="table table-responsive mb-0">
+                                        <table className="table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>S.no.</th>
+                                                    <th>Medicine Name</th>
+                                                    <th>Batch Number</th>
+                                                    <th>Schedule</th>
+                                                    <th>MFG Date</th>
+                                                    <th>Exp Date</th>
+                                                    <th>Quantity/Stock</th>
+                                                    <th>Purch Price</th>
+                                                    <th>Avg Margin</th>
+                                                    <th>Low Margin</th>
+                                                    <th>High Margin</th>
+                                                    <th>Bar Code </th>
+                                                    <th>Action</th>
 
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
 
-                                            {list?.length > 0 &&
-                                                list?.map((item, key) =>
-                                                    <tr key={key}>
-                                                        <td>{key + 1}</td>
+                                                {list?.length > 0 &&
+                                                    list?.map((item, key) =>
+                                                        <tr key={key}>
+                                                            <td>{key + 1}</td>
 
-                                                        <td>
-                                                            {item?.medicineName}
-                                                        </td>
+                                                            <td>
+                                                                {item?.medicineName}
+                                                            </td>
 
-                                                        <td>
-                                                            {item?.batchNumber}
-                                                        </td>
+                                                            <td>
+                                                                {item?.batchNumber}
+                                                            </td>
 
-                                                        <td> {item?.schedule}</td>
-                                                        <td>
-                                                            {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric'
-                                                            })}
-                                                        </td>
-                                                        <td>
-                                                            {new Date(item?.expDate) > new Date() ?
-                                                                new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                            <td> {item?.schedule}</td>
+                                                            <td>
+                                                                {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
                                                                     day: '2-digit',
                                                                     month: 'short',
                                                                     year: 'numeric'
-                                                                })
-                                                                : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
-                                                                    day: '2-digit',
-                                                                    month: 'short',
-                                                                    year: 'numeric'
-                                                                })}</span>
-                                                            }
-                                                        </td>
+                                                                })}
+                                                            </td>
+                                                            <td>
+                                                                {new Date(item?.expDate) > new Date() ?
+                                                                    new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                        day: '2-digit',
+                                                                        month: 'short',
+                                                                        year: 'numeric'
+                                                                    })
+                                                                    : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                        day: '2-digit',
+                                                                        month: 'short',
+                                                                        year: 'numeric'
+                                                                    })}</span>
+                                                                }
+                                                            </td>
 
-                                                        <td>
-                                                            {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
-                                                        </td>
-                                                        <td>
-                                                            ${item?.purchasePrice}
-                                                        </td>
-                                                        <td>
-                                                            {item?.avgMargin} {item?.marginType == 'Percentage' && '%'}
-                                                        </td>
-                                                        <td>
-                                                            {item?.lowMargin} {item?.marginType == 'Percentage' && '%'}
-                                                        </td>
-                                                        <td>
-                                                            {item?.highMargin} {item?.marginType == 'Percentage' && '%'}
-                                                        </td>
-                                                        <td>
-                                                            {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
-                                                            {showBarcode == key ?
-                                                                <div className="inventory-barcd">
+                                                            <td>
+                                                                {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
+                                                            </td>
+                                                            <td>
+                                                                ${item?.purchasePrice}
+                                                            </td>
+                                                            <td>
+                                                                {item?.avgMargin} {item?.marginType == 'Percentage' && '%'}
+                                                            </td>
+                                                            <td>
+                                                                {item?.lowMargin} {item?.marginType == 'Percentage' && '%'}
+                                                            </td>
+                                                            <td>
+                                                                {item?.highMargin} {item?.marginType == 'Percentage' && '%'}
+                                                            </td>
+                                                            <td>
+                                                                {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
+                                                                {showBarcode == key ?
+                                                                    <div className="inventory-barcd">
 
-                                                                    <Barcode value={item?.customId} width={1.3} displayValue={false}
-                                                                        height={80} />
-                                                                </div>
-                                                                :
-                                                                <button
-                                                                    className="thm-btn rounded-3"
-                                                                    onClick={() => setShowBarcode(key)}
-                                                                >
-                                                                    Generate
-                                                                </button>
-                                                            }
-                                                        </td>
-
-                                                        <td>
-                                                            <div className="d-flex align-items-center gap-2">
-                                                                {/* <a href="javascript:void(0)" className="text-secondary" data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen}/></a> */}
-                                                                <div className="d-flex align-items-centet gap-2">
-                                                                    <div className="dropdown">
-                                                                        <button
-                                                                            disabled={!isOwner && !permissions?.add}
-
-                                                                            className="text-secondary"
-                                                                            id="acticonMenu1"
-                                                                            onClick={() => {
-                                                                                const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
-                                                                                const expDate = new Date(item?.expDate).toISOString().split("T")[0]
-                                                                                setFormData({ ...item, mfgDate: mfgDate, expDate: expDate })
-                                                                            }
-
-                                                                            } data-bs-toggle="modal" data-bs-target="#edit-Inventory"
-                                                                        >
-                                                                            <FontAwesomeIcon icon={faPen} />
-                                                                        </button>
-                                                                        <ul
-                                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                                            aria-labelledby="acticonMenu1"
-                                                                        >
-                                                                            <li className="prescription-item">
-                                                                                <button className="prescription-nav" onClick={() => setFormData(item)} data-bs-toggle="modal" data-bs-target="#edit-Inventory">
-                                                                                    View/Edit
-                                                                                </button>
-                                                                            </li>
-                                                                            <li className="prescription-item">
-                                                                                <button className=" prescription-nav" onClick={() => deleteInventory(item?._id)}>
-
-                                                                                    Delete
-                                                                                </button>
-                                                                            </li>
-                                                                        </ul>
+                                                                        <Barcode value={item?.customId} width={1.3} displayValue={false}
+                                                                            height={80} />
                                                                     </div>
+                                                                    :
+                                                                    <button
+                                                                        className="thm-btn rounded-3"
+                                                                        onClick={() => setShowBarcode(key)}
+                                                                    >
+                                                                        Generate
+                                                                    </button>
+                                                                }
+                                                            </td>
+
+                                                            <td>
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    {/* <a href="javascript:void(0)" className="text-secondary" data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen}/></a> */}
+                                                                    <div className="d-flex align-items-centet gap-2">
+                                                                        <div className="dropdown">
+                                                                            <button
+                                                                                disabled={!isOwner && !permissions?.add}
+
+                                                                                className="text-secondary"
+                                                                                id="acticonMenu1"
+                                                                                onClick={() => {
+                                                                                    const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
+                                                                                    const expDate = new Date(item?.expDate).toISOString().split("T")[0]
+                                                                                    setFormData({ ...item, mfgDate: mfgDate, expDate: expDate })
+                                                                                }
+
+                                                                                } data-bs-toggle="modal" data-bs-target="#edit-Inventory"
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faPen} />
+                                                                            </button>
+                                                                            <ul
+                                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                                aria-labelledby="acticonMenu1"
+                                                                            >
+                                                                                <li className="prescription-item">
+                                                                                    <button className="prescription-nav" onClick={() => setFormData(item)} data-bs-toggle="modal" data-bs-target="#edit-Inventory">
+                                                                                        View/Edit
+                                                                                    </button>
+                                                                                </li>
+                                                                                <li className="prescription-item">
+                                                                                    <button className=" prescription-nav" onClick={() => deleteInventory(item?._id)}>
+
+                                                                                        Delete
+                                                                                    </button>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </div>
+                                                                    <button className="text-secondary" onClick={() => deleteInventory(item?._id)}><FontAwesomeIcon icon={faTrash} /></button>
                                                                 </div>
-                                                                <button className="text-secondary" onClick={() => deleteInventory(item?._id)}><FontAwesomeIcon icon={faTrash} /></button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>)}
+                                                            </td>
+                                                        </tr>)}
 
-                                        </tbody>
-                                    </table>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
                                 </div>
-
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div>}
 
             {/*Add Inventroy Popup Start  */}
             {/* data-bs-toggle="modal" data-bs-target="#add-Inventory" */}
@@ -620,6 +640,7 @@ function InventoryList() {
                                                     <option value="">Select</option>
                                                     <option value="H1">H1</option>
                                                     <option value="H">H</option>
+                                                    <option value="X">X</option>
                                                 </select>
                                             </div>
                                         </div>
