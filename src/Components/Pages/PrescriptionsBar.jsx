@@ -91,7 +91,7 @@ function PrescriptionsBar() {
                                     <div className="view-avatr-bio-bx text-center">
                                         <img src={ptData?.profileImage ? `${base_url}/${ptData?.profileImage}` : "/view-avatr.png"} alt="" />
                                         <h4>{ptData?.name}</h4>
-                                        <p><span className="vw-id">ID:</span> {ptData?.customId}</p>
+                                        <p><span className="vw-id">ID:</span> {ptData?.unique_id}</p>
                                         <h6 className="vw-activ text-capitalize">{ptData?.status}</h6>
 
                                     </div>
@@ -205,7 +205,7 @@ function PrescriptionsBar() {
                                                                     <div className="admin-table-bx d-flex align-items-center justify-content-between nw-pharmacy-details">
                                                                         <div className="">
                                                                             <div className="admin-table-sub-details d-flex align-items-center gap-2">
-                                                                                <img src={item?.status ? "/prescriptions.png" : "/in-active.png"} alt="" />
+                                                                                <img src={item?.status!=='Inactive' ? "/prescriptions.png" : "/in-active.png"} alt="" />
                                                                                 <div>
                                                                                     <h6 className="fs-16 fw-600 text-black">Prescriptions</h6>
                                                                                     <p className="fs-14 fw-500">{new Date(item?.createdAt).toLocaleDateString('en-GB', {
@@ -219,18 +219,18 @@ function PrescriptionsBar() {
                                                                         <div className="admin-table-bx">
                                                                             <div className="">
                                                                                 <div className="admin-table-sub-details d-flex align-items-center gap-2 doctor-title ">
-                                                                                    <img src={item?.doctorId?.profileImage ?
-                                                                                        `${base_url}/${item?.doctorId?.profileImage}` : "/doctor-avatr.png"} alt="" />
+                                                                                    <img src={item?.doctorId?.doctorId?.profileImage ?
+                                                                                        `${base_url}/${item?.doctorId?.doctorId?.profileImage}` : "/doctor-avatr.png"} alt="" />
                                                                                     <div>
                                                                                         <h6>{item?.doctorId?.name} </h6>
-                                                                                        <p className="fs-14 fw-500">{item?.doctorId?.customId}</p>
+                                                                                        <p className="fs-14 fw-500">{item?.doctorId?.unique_id}</p>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                         <div className="d-flex align-items gap-2">
                                                                             <div>
-                                                                                <span className="approved rounded-5 py-1">{item?.status ? 'Active' : 'Inactive'}</span>
+                                                                                <span className={`approved rounded-5 py-1 ${item?.status=='Inactive'&&'in-active'}`}>{item?.status!=='Inactive' ? 'Active' : 'Inactive'}</span>
                                                                             </div>
                                                                             <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faPrint} /></button>
                                                                             <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faEye} /></button>
@@ -247,7 +247,7 @@ function PrescriptionsBar() {
                                                                                 <div className="barcode-id-details">
                                                                                     <div>
                                                                                         <h6>Patient Id </h6>
-                                                                                        <p>{ptData?.customId}</p>
+                                                                                        <p>{ptData?.unique_id}</p>
                                                                                     </div>
                                                                                     <div>
                                                                                         <h6>Appointment ID </h6>
@@ -256,7 +256,7 @@ function PrescriptionsBar() {
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                        {item?.status && <NavLink to={`/prescriptions-detail/${item?._id}`} className="text-decoration-none">
+                                                                        {item?.status!=='Inactive' && <NavLink to={`/prescriptions-detail/${item?._id}`} className="text-decoration-none">
                                                                             <div className="form-check custom-check nw-thm-btn ps-5">
                                                                                 <input className="form-check-input bg-transparent" type="checkbox" value="" id="addTests" />
                                                                                 <label className="form-check-label text-white fw-700" for="addTests" >

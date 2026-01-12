@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { getSecureApiData, securePostData } from "../../Services/api";
 import { use, useEffect, useState } from "react";
 import Select from "react-select";
+import Loader from "../Layouts/Loader";
 
 function AddManually() {
     const navigate = useNavigate()
@@ -28,6 +29,7 @@ function AddManually() {
         ],
     })
     const fetchPatient = async () => {
+        setIsLoading(true)
         try {
             const response = await getSecureApiData(`patient/${patientId}`);
             if (response.success) {
@@ -39,20 +41,25 @@ function AddManually() {
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        } finally{
+            setIsLoading(false)
         }
     }
     const fetchDoctor = async () => {
+        setIsLoading(true)
         try {
             const response = await getSecureApiData(`doctor/${doctorId}`);
             if (response.success) {
                 setFormData({ ...formData, doctorId: response.data._id })
-                setDtData(response.data)
+                setDtData({name:response.data.name,contactNumber:response.data.contactNumber})
                 setIsLoading(false)
             } else {
                 toast.error(response.message)
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        } finally{
+            setIsLoading(false)
         }
     }
     const fetchInventory = async () => {
@@ -153,7 +160,8 @@ function AddManually() {
     }
     return (
         <>
-            <div className="main-content flex-grow-1 p-3 overflow-auto">
+            {isLoading ?<Loader/>
+            :<div className="main-content flex-grow-1 p-3 overflow-auto">
                 <div className="row mb-2">
                     <div className="d-flex align-items-center justify-content-between">
                         <div>
@@ -384,7 +392,7 @@ function AddManually() {
 
 
 
-            </div>
+            </div>}
 
 
             {/*Generate Bill Popup Start  */}

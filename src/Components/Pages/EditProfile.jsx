@@ -27,7 +27,7 @@ function EditProfile() {
     const [cities, setCities] = useState([])
     const [loading, setLoading] = useState(false)
     const userId = localStorage.getItem("userId")
-    const { profiles, pharPerson, pharAddress, pharImg,
+    const { profiles, pharPerson, pharAddress, pharImg,customId,
         rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
 
     //   Lab Data 
@@ -590,7 +590,7 @@ function EditProfile() {
 
                                                                 <div>
                                                                     <h4 className="lg_title ">{pharData?.name || "World Pharmacy"}</h4>
-                                                                    <p className="first_para">ID : #{pharData?.customId || "94969548"}</p>
+                                                                    <p className="first_para">ID : #{customId || "94969548"}</p>
                                                                 </div>
                                                             </div>
                                                         </div>

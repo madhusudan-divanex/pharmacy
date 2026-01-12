@@ -2,7 +2,7 @@ import { TbGridDots } from "react-icons/tb";
 
 import { faCircleXmark, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { deleteApiData, getSecureApiData } from "../../Services/api";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
@@ -156,7 +156,7 @@ function Sell() {
 
                             </div>
 
-                            <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                            {totalPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
                                 <div>
                                     <select
                                         value={currentPage}
@@ -169,7 +169,7 @@ function Sell() {
                                 </div>
 
 
-                            </div>                        </div>
+                            </div>}                        </div>
                     </div>
 
 
@@ -208,10 +208,10 @@ function Sell() {
                                                             <ul className="admin-appointment-list">
                                                                 {item?.products?.map((product, index) => (
                                                                     <>
-                                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.inventoryId?.medicineName}</span></li>
+                                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.inventory?.medicineName}</span></li>
                                                                         <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">{product?.quantity}</span></li>
-                                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{product?.inventoryId?.batchNumber}</span></li>
-                                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventoryId?.schedule}</span></li>
+                                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{product?.inventory?.batchNumber}</span></li>
+                                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventory?.schedule}</span></li>
                                                                     </>))}
 
 
@@ -226,15 +226,12 @@ function Sell() {
                                                         <td>
                                                             <div className="d-flex align-items-centet gap-2">
                                                                 <div className="dropdown">
-                                                                    <a
-                                                                        href="javascript:void(0)"
+                                                                    <Link
+                                                                        to={`/scan-prescriptions-detail/${item?._id}`}
                                                                         className="admin-sub-dropdown"
-                                                                        id="acticonMenu1"
-                                                                        data-bs-toggle="dropdown"
-                                                                        aria-expanded="false"
                                                                     >
                                                                         View
-                                                                    </a>
+                                                                    </Link>
                                                                     <ul
                                                                         className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
                                                                         aria-labelledby="acticonMenu1"

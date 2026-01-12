@@ -12,6 +12,7 @@ import {
     BarcodeFormat,
     DecodeHintType,
 } from "@zxing/library";
+import base_url from "../../baseUrl";
 
 function PrescriptionDetails() {
     const params = useParams();
@@ -184,10 +185,11 @@ function PrescriptionDetails() {
                                         <div className="admin-table-bx">
                                             <div className="">
                                                 <div className="admin-table-sub-details d-flex align-items-center gap-2">
-                                                    <img src="/doctor-avatr.png" alt="" style={{ border: "5px solid #fff" }} />
+                                                    <img src={data?.doctorId?.doctorId?.profileImage?
+                                                    `${base_url}/${data?.doctorId?.doctorId?.profileImage}`:"/doctor-avatr.png"} alt="" style={{ border: "5px solid #fff" }} />
                                                     <div className="">
                                                         <h6 className="fw-700 fz-14" style={{ color: "#00B4B5" }}>{data?.doctorId?.name}</h6>
-                                                        <p>{data?.doctorId?.customId}</p>
+                                                        <p>{data?.doctorId?.unique_id}</p>
                                                     </div>
                                                 </div>
 

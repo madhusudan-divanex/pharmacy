@@ -159,7 +159,7 @@ function Permission() {
                                 <button className="search-item-btn"><FontAwesomeIcon icon={faSearch} /></button>
                             </div>
                         </div>
-                        <div>
+                        {totalPage>1 &&<div>
                             <div className="page-selector d-flex align-items-center">
                                 <div className="custom-frm-bx">
                                     <select className="form-select custom-page-dropdown nw-custom-page ">
@@ -169,7 +169,7 @@ function Permission() {
                                     </select>
                                 </div>
                             </div>
-                        </div>
+                        </div>}
                     </div>
                 </div>
                 <div className="new-mega-card">

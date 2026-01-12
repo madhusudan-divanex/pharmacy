@@ -9,6 +9,7 @@ import AudioWaveform from "../AudioWaveform";
 import base_url from "../../baseUrl";
 function Chat() {
     const ringtoneRef = useRef(null);
+    const callingRef = useRef(null)
     const [callSeconds, setCallSeconds] = useState(0);
     const callTimerRef = useRef(null);
     const mediaRecorderRef = useRef(null);
@@ -19,6 +20,8 @@ function Chat() {
     const recordTimerRef = useRef(null);
     const [previewFile, setPreviewFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [callerName, setCallerName] = useState()
+    const [outgoingCall, setOutgoingCall] = useState(false);
 
 
     const [chatList, setChatList] = useState([]);
@@ -171,6 +174,13 @@ function Chat() {
             ringtoneRef.current.currentTime = 0;
         }
     };
+    const stopOutgoingTone = () => {
+        if (callingRef.current) {
+            callingRef.current.pause();
+            callingRef.current.currentTime = 0;
+        }
+    };
+
 
 
 
@@ -209,7 +219,9 @@ function Chat() {
         if (!selectedChat) return;
 
         setCallType(type);
+        setOutgoingCall(true);
         initPeerConnection(selectedChat.participants[0]._id);
+        setCallerName(selectedChat.participants[0].name)
 
         const stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
@@ -234,6 +246,7 @@ function Chat() {
 
     const acceptCall = async () => {
         stopRingtone();
+        stopOutgoingTone()
         startCallTimer();
         initPeerConnection(incomingCall.fromUserId);
 
@@ -261,6 +274,7 @@ function Chat() {
 
         setIncomingCall(null);
         setCallActive(true);
+        ;
     };
 
     const endCallCleanup = () => {
@@ -273,6 +287,7 @@ function Chat() {
 
         setCallActive(false);
         setIncomingCall(null);
+
     };
 
     const rejectCall = () => {
@@ -280,6 +295,8 @@ function Chat() {
             toUserId: incomingCall.fromUserId
         });
         stopRingtone();
+        setOutgoingCall(false);
+        stopOutgoingTone()
         endCallCleanup();
     };
 
@@ -288,8 +305,42 @@ function Chat() {
             toUserId: selectedChat.participants[0]._id
         });
         stopRingtone();
+        setOutgoingCall(false);
+        stopOutgoingTone()
         endCallCleanup();
     };
+    useEffect(() => {
+        if (!socketRef.current) return;
+
+        const socket = socketRef.current;
+
+        socket.on("call-rejected", ({ fromUserId }) => {
+            console.log("Call rejected by:", fromUserId);
+
+            stopRingtone();
+            stopOutgoingTone()
+            setOutgoingCall(false);
+            endCallCleanup();
+        });
+
+        return () => {
+            socket.off("call-rejected");
+        };
+    }, []);
+    useEffect(() => {
+        if (!socketRef.current) return;
+
+        const socket = socketRef.current;
+        socket?.on("call-busy", ({ message }) => {
+            alert(message);
+            setOutgoingCall(false);
+            endCallCleanup();
+        });
+
+        return () => {
+            socketRef.current?.off("call-busy");
+        };
+    }, []);
 
     // ================= SOCKET INIT =================
     useEffect(() => {
@@ -312,8 +363,9 @@ function Chat() {
         socketRef.current.on("user-stop-typing", () => setTypingUser(false));
 
         //Call
-        socketRef.current.on("incoming-call", ({ fromUserId, offer, callType }) => {
+        socketRef.current.on("incoming-call", ({ fromUserId, offer, callType, name }) => {
             setIncomingCall({ fromUserId, offer });
+            setCallerName(name)
             setCallType(callType);
         });
 
@@ -337,7 +389,9 @@ function Chat() {
 
         socketRef.current.on("call-rejected", () => {
             stopRingtone();
+            stopOutgoingTone()
             endCallCleanup();
+            setOutgoingCall(false)
             return toast.error("Call rejected by user");
         });
 
@@ -851,18 +905,22 @@ function Chat() {
 
 
             </div>
-            {(incomingCall || callActive) && (
+            {(incomingCall || callActive || outgoingCall) && (
                 <div className="call-modal">
                     <div className="call-header">
                         <h4>
-                            {incomingCall ? "Incoming" : "Ongoing"} {callType} Call
+                            {incomingCall
+                                ? "Incoming"
+                                : outgoingCall
+                                    ? "Calling..."
+                                    : "Ongoing"} {callType} Call
                         </h4>
                         {callActive && (
                             <span className="call-timer">
                                 ⏱ {formatTime(callSeconds)}
                             </span>
                         )}
-                        <p>{selectedChat?.participants[0]?.name || "User"}</p>
+                        <p>{callerName || "User"}</p>
                     </div>
 
                     {/* BODY */}
@@ -916,6 +974,14 @@ function Chat() {
                             autoPlay
                             loop
                             src="/ringtone.mp3"
+                        />
+                    )}
+                    {outgoingCall && (
+                        <audio
+                            ref={callingRef}
+                            autoPlay
+                            loop
+                            src="./calling.m4a"
                         />
                     )}
                 </div>

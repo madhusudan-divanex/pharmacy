@@ -21,7 +21,7 @@ function Profile() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const userId = localStorage.getItem("userId")
-  const { profiles, pharPerson, pharAddress, pharImg,
+  const { profiles,allowEdit, pharPerson, pharAddress, pharImg,customId,
     rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
   const [message, setMessage] = useState('')
 
@@ -53,7 +53,6 @@ function Profile() {
       console.error("Download failed:", error);
     }
   };
-  console.log(isRequest)
   const sendEditRequest = async (e) => {
     e.preventDefault()
     const data = { pharId: userId, message }
@@ -129,7 +128,7 @@ function Profile() {
                 <div>
                   <h6 className="mb-0 text-black fz-22 fw-600">Profile</h6>
                 </div>
-                {profiles?.allowEdit && <div className="d-flex align-items-center gap-2">
+                {allowEdit && <div className="d-flex align-items-center gap-2">
                   <div className="approve-title">
                     <h5><span className="approve-right-check"><FontAwesomeIcon icon={faCheck} /></span> Approved Edit Request</h5>
                   </div>
@@ -227,7 +226,7 @@ function Profile() {
 
                                 <div>
                                   <h4 className="lg_title ">{profiles?.name}</h4>
-                                  <p className="first_para">ID : #{profiles?.customId}</p>
+                                  <p className="first_para">ID : #{customId}</p>
                                 </div>
 
 
@@ -247,8 +246,8 @@ function Profile() {
                                     <h6>{profiles?.customId}</h6>
                                   </div>
                                   <QRCodeCanvas
-                                    // value={String(userId)}
-                                    value="PAT-0001"
+                                    // readOnly value={String(userId)}
+                                    readOnly value="PAT-0001"
                                     size={256}
                                     className="qr-code"
                                     style={{ height: "auto", maxWidth: "100%", width: "20%" }}
@@ -282,7 +281,7 @@ function Profile() {
                                 type="text"
                                 className="form-control patient-frm-control"
                                 placeholder=""
-                                value={profiles?.name}
+                                readOnly value={profiles?.name}
                               />
                             </div>
                           </div>
@@ -294,7 +293,7 @@ function Profile() {
                                 type="number"
                                 className="form-control patient-frm-control"
                                 placeholder=""
-                                value={profiles?.contactNumber}
+                                readOnly value={profiles?.contactNumber}
                               />
                             </div>
                           </div>
@@ -306,7 +305,7 @@ function Profile() {
                                 type="email"
                                 className="form-control patient-frm-control"
                                 placeholder=""
-                                value={profiles?.email}
+                                readOnly value={profiles?.email}
                               />
                             </div>
                           </div>
@@ -318,7 +317,7 @@ function Profile() {
                                 type="text"
                                 className="form-control patient-frm-control"
                                 placeholder=""
-                                value={profiles?.gstNumber}
+                                readOnly value={profiles?.gstNumber}
                               />
                             </div>
                           </div>
@@ -328,7 +327,7 @@ function Profile() {
                               <label htmlFor="">About</label>
                               <textarea name="" id=""
                                 className="form-control patient-frm-control"
-                                value={profiles?.about}></textarea>
+                                readOnly value={profiles?.about}></textarea>
                             </div>
                           </div>
                         </div>
@@ -371,7 +370,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.fullAddress}
+                                readOnly value={pharAddress?.fullAddress}
                               />
                             </div>
                           </div>
@@ -383,7 +382,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.countryId?.name}
+                                readOnly value={pharAddress?.countryId?.name}
                               />
                             </div>
                           </div>
@@ -395,7 +394,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.stateId?.name}
+                                readOnly value={pharAddress?.stateId?.name}
                               />
                             </div>
                           </div>
@@ -407,7 +406,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.cityId?.name}
+                                readOnly value={pharAddress?.cityId?.name}
                               />
                             </div>
                           </div>
@@ -419,7 +418,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharAddress?.pinCode}
+                                readOnly value={pharAddress?.pinCode}
                               />
                             </div>
                           </div>
@@ -441,7 +440,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharLicense?.pharLicenseNumber}
+                                readOnly value={pharLicense?.pharLicenseNumber}
                               />
                             </div>
                           </div>
@@ -476,7 +475,7 @@ function Profile() {
                                     type="email"
                                     className="form-control nw-frm-select"
                                     placeholder=""
-                                    value={item?.certName}
+                                    readOnly value={item?.certName}
                                   />
                                 </div>
                               </div>
@@ -538,7 +537,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharPerson?.name}
+                                readOnly value={pharPerson?.name}
                               />
                             </div>
                           </div>
@@ -550,7 +549,7 @@ function Profile() {
                                 type="number"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharPerson?.contactNumber}
+                                readOnly value={pharPerson?.contactNumber}
                               />
                             </div>
                           </div>
@@ -562,7 +561,7 @@ function Profile() {
                                 type="email"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharPerson?.email}
+                                readOnly value={pharPerson?.email}
                               />
                             </div>
                           </div>
@@ -574,7 +573,7 @@ function Profile() {
                                 type="text"
                                 className="form-control nw-frm-select"
                                 placeholder=""
-                                value={pharPerson?.gender}
+                                readOnly value={pharPerson?.gender}
                               />
                             </div>
                           </div>
@@ -620,7 +619,7 @@ function Profile() {
 
                   <div className="custom-frm-bx">
                     <label htmlFor="">Note</label>
-                    <textarea name="" id="" className="form-control" value={message} required onChange={(e) => setMessage(e.target.value)} ></textarea>
+                    <textarea name="" id="" className="form-control" readOnly value={message} required onChange={(e) => setMessage(e.target.value)} ></textarea>
 
                   </div>
 
