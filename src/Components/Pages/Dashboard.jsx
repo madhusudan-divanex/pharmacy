@@ -395,9 +395,8 @@ const Dashboard = () => {
                         <tr>
                           <th>Medicine Name</th>
                           <th>Purchase Price</th>
-                          <th>Avg Margin</th>
-                          <th>Low Margin</th>
-                          <th>High Margin</th>
+                          <th>Sale Price</th>
+                          <th>Margin</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -408,10 +407,9 @@ const Dashboard = () => {
                           <td>{item?.medicineName}</td>
 
                           <td>{item?.purchasePrice}</td>
-                          <td>{item?.avgMargin}%</td>
+                          <td>{item?.salePrice}</td>
 
-                          <td >{item?.lowMargin}%</td>
-                          <td> {item?.highMargin}%</td>
+                          <td >{item?.margin}%</td>
                         </tr>):'No data is available to show'}
                         
                       </tbody>

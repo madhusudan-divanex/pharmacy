@@ -131,6 +131,10 @@ function LeftSidebar() {
                     <NavLink to="/medicine-request" className="nav-link submenu-link">H1 Medicine List</NavLink>
                   </li>
 
+                   <li className="nav-item">
+                    <NavLink to="/other-medicine" className="nav-link submenu-link">Other Medicine </NavLink>
+                  </li>
+
 
                 </ul>
               </li>

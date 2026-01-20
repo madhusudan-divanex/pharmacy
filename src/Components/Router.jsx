@@ -44,6 +44,7 @@ import Wating from "./Auth/Waiting";
 import H1Medicine from "./Pages/H1Medicine";
 import XMedicine from "./Pages/XMedicine";
 import HMedicine from "./Pages/HMedicine";
+import OtherMedicine from "./Pages/OtherMedicine";
 
 function Router() {
   const router = createBrowserRouter([
@@ -120,6 +121,7 @@ function Router() {
         { path: "/h1", element: <ProtectedRoute component={H1Medicine} /> },
         { path: "/h", element: <ProtectedRoute component={HMedicine} /> },
         { path: "/x", element: <ProtectedRoute component={XMedicine} /> },
+        { path: "/other-medicine", element: <ProtectedRoute component={OtherMedicine} /> },
 
 
         // -----------------------------

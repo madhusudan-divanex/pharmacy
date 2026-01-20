@@ -3,21 +3,16 @@ import { faCircleXmark, faDollar, faPen, faSearch, faTrash } from "@fortawesome/
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Scanner from "./Scanner";
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
 import { toast } from "react-toastify";
 import Barcode from "react-barcode"
-import { useSelector } from "react-redux";
-import Loader from "../Layouts/Loader";
 
-function InventoryList() {
-    const [loading, setLoading] = useState(false)
+function OtherMedicine() {
     const handleDetected = (code) => {
         alert("Scanned barcode: " + code);
     };
     const userId = localStorage.getItem('userId')
-    const { permissions, isOwner } = useSelector(state => state.user)
-    const navigate = useNavigate()
 
     const [showBarcode, setShowBarcode] = useState(false);
     const [formData, setFormData] = useState({
@@ -27,11 +22,12 @@ function InventoryList() {
         mfgDate: "",
         expDate: "",
         quantity: "",
-        purchasePrice: null,
+        purchasePrice: "",
         totalStockPrice: "",
         marginType: "",
-        margin: "",
-        salePrice: null
+        avgMargin: "",
+        highMargin: "",
+        lowMargin: "",
     });
 
     // input change handler
@@ -39,24 +35,10 @@ function InventoryList() {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
-    useEffect(() => {
-        const purchase = parseFloat(formData.purchasePrice);
-        const sale = parseFloat(formData.salePrice);
-
-        if (!isNaN(purchase) && !isNaN(sale) && purchase > 0) {
-            const margin = (((sale - purchase) / purchase) * 100).toFixed(2);
-            setFormData(prev => ({
-                ...prev,
-                margin
-            }));
-        }
-    }, [formData.purchasePrice, formData.salePrice]);
-
 
     // submit handler
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true)
         try {
             if (formData?._id) {
                 const data = { inventoryId: formData?._id, ...formData }
@@ -68,8 +50,6 @@ function InventoryList() {
                 if (res.success) {
                     fetchInventory()
                     toast.success("Inventory Updated Successfully");
-                } else {
-                    toast.error(res.message);
                 }
             } else {
                 const data = { pharId: userId, ...formData }
@@ -81,15 +61,11 @@ function InventoryList() {
                 if (res.success) {
                     fetchInventory()
                     toast.success("Inventory Added Successfully");
-                } else {
-                    toast.error(res.message);
                 }
             }
         } catch (error) {
             console.error(error);
             toast.error("Something went wrong");
-        } finally {
-            setLoading(false)
         }
     };
     const [currentPage, setCurrentPage] = useState(1)
@@ -99,7 +75,7 @@ function InventoryList() {
     const [totalPage, setTotalPage] = useState(1)
     const fetchInventory = async () => {
         try {
-            const response = await getSecureApiData(`pharmacy/inventory/${userId}?page=${currentPage}&search=${name}&schedule=${schedule}`);
+            const response = await getSecureApiData(`pharmacy/inventory/${userId}?page=${currentPage}&search=${name}&schedule=Other`);
             if (response.success) {
                 setList(response.data)
                 setTotalPage(response.pagiantion.totalPages)
@@ -127,261 +103,246 @@ function InventoryList() {
             console.error("Error creating lab:", err);
         }
     }
-    useEffect(() => {
-        if (permissions && Object.keys(permissions)?.length > 0) {
-            if (!isOwner && !permissions?.listView) {
-                navigate('/')
-                toast.error('You do not have permission to add test ')
-                return
-            }
-        }
-    }, [permissions])
     return (
         <>
-            {loading ? <Loader />
-                : <div className="main-content flex-grow-1 p-3 overflow-auto">
-                    <div className="row mb-3">
-                        <div className="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h3 className="innr-title mb-2 gradient-text">Inventory</h3>
-                                <div className="admin-breadcrumb">
-                                    <nav aria-label="breadcrumb">
-                                        <ol className="breadcrumb custom-breadcrumb">
-                                            <li className="breadcrumb-item">
-                                                <a href="#" className="breadcrumb-link">
-                                                    Dashboard
-                                                </a>
-                                            </li>
-                                            <li
-                                                className="breadcrumb-item active"
-                                                aria-current="page"
-                                            >
-                                                Inventory
-                                            </li>
-                                        </ol>
-                                    </nav>
-                                </div>
-                            </div>
-
-                            <div className="d-flex gap-2">
-                                {/* <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button> */}
-                                <button className="nw-thm-btn rounded-3"
-                                    onClick={() => setFormData({
-                                        medicineName: "",
-                                        schedule: "",
-                                        batchNumber: "",
-                                        mfgDate: "",
-                                        expDate: "",
-                                        quantity: "",
-                                        purchasePrice: "",
-                                        salePrice:"",
-                                        totalStockPrice: "",
-                                        margin: "",
-                                    })} data-bs-toggle="modal"
-                                    disabled={!isOwner && !permissions?.add}
-                                    data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
+            <div className="main-content flex-grow-1 p-3 overflow-auto">
+                <div className="row mb-3">
+                    <div className="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 className="innr-title mb-2 gradient-text">Schedule Medicine</h3>
+                            <div className="admin-breadcrumb">
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb custom-breadcrumb">
+                                        <li className="breadcrumb-item">
+                                            <a href="#" className="breadcrumb-link">
+                                                Dashboard
+                                            </a>
+                                        </li>
+                                        <li
+                                            className="breadcrumb-item active"
+                                            aria-current="page"
+                                        >
+                                            Other
+                                        </li>
+                                    </ol>
+                                </nav>
                             </div>
                         </div>
+
+                        {/* <div className="d-flex gap-2">
+                            <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button>
+                            <button className="nw-thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
+                        </div> */}
+
+
                     </div>
-                    <div className='new-mega-card'>
-                        <div className="row">
-                            <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details">
-                                <div>
-                                    <div className="d-flex align-items-center gap-2 nw-box">
-                                        <div className="custom-frm-bx mb-0">
-                                            <input
-                                                type="text"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                className="form-control admin-table-search-frm search-table-frm pe-5"
-                                                id="email"
-                                                placeholder="Search"
-                                                required
-                                            />
-                                            <div className="adm-search-bx">
-                                                <button className="tp-search-btn text-secondary">
-                                                    <FontAwesomeIcon icon={faSearch} />
-                                                </button>
-                                            </div>
-                                        </div>
+                </div>
 
-                                        <div className="filters">
-                                            <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
-                                                <label className="label">Schedule :</label>
-                                                <select className="" value={schedule} onChange={(e) => setSchedule(e.target.value)}>
-                                                    <option value='all'>All</option>
-                                                    <option value="H1">H1</option>
-                                                    <option value="H">H</option>
-                                                    <option value="X">X</option>
-                                                    <option value="Other">Other</option>
-
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <button onClick={() => fetchInventory()} className="nw-thm-btn rounded-2">
-                                                Filter
+                <div className='new-mega-card'>
+                    <div className="row">
+                        <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 nw-box">
+                                    <div className="custom-frm-bx mb-0">
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className="form-control admin-table-search-frm search-table-frm pe-5"
+                                            id="email"
+                                            placeholder="Search"
+                                            required
+                                        />
+                                        <div className="adm-search-bx">
+                                            <button className="tp-search-btn text-secondary">
+                                                <FontAwesomeIcon icon={faSearch} />
                                             </button>
                                         </div>
                                     </div>
-                                </div>
 
-                                {totalPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                                    {/* <div className="filters">
+                                        <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
+                                            <label className="label">Schedule :</label>
+                                            <select className="" value={schedule} onChange={(e) => setSchedule(e.target.value)}>
+                                                <option value='all'>All</option>
+                                                <option value="H1">H1</option>
+                                                <option value="H">H</option>
+                                            </select>
+                                        </div>
+                                    </div> */}
                                     <div>
-                                        <select
-                                            value={currentPage}
-                                            onChange={(e) => setCurrentPage(e.target.value)}
-                                            className="form-select custom-page-dropdown nw-custom-page ">
-                                            {Array.from({ length: totalPage }, (_, i) => (
-                                                <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                            ))}
-                                        </select>
+                                        <button onClick={() => fetchInventory()} className="nw-thm-btn rounded-2">
+                                            Filter
+                                        </button>
                                     </div>
-                                </div>}
+                                </div>
                             </div>
+
+                            {totalPage &&<div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                                <div>
+                                    <select
+                                        value={currentPage}
+                                        onChange={(e) => setCurrentPage(e.target.value)}
+                                        className="form-select custom-page-dropdown nw-custom-page ">
+                                        {Array.from({ length: totalPage }, (_, i) => (
+                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>}
+
+
                         </div>
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <div className="table-section">
-                                    <div className="table table-responsive mb-0">
-                                        <table className="table mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>S.no.</th>
-                                                    <th>Medicine Name</th>
-                                                    <th>Batch Number</th>
-                                                    <th>Schedule</th>
-                                                    <th>MFG Date</th>
-                                                    <th>Exp Date</th>
-                                                    <th>Quantity/Stock</th>
-                                                    <th>Purchase Price</th>
-                                                    <th>Sale Price</th>
-                                                    <th>Margin</th>
-                                                    <th>Bar Code </th>
-                                                    <th>Action</th>
+                    </div>
 
-                                                </tr>
-                                            </thead>
-                                            <tbody>
 
-                                                {list?.length > 0 &&
-                                                    list?.map((item, key) =>
-                                                        <tr key={key}>
-                                                            <td>{key + 1}</td>
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <div className="table-section">
+                                <div className="table table-responsive mb-0">
+                                    <table className="table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>S.no.</th>
+                                                <th>Medicine Name</th>
+                                                <th>Batch Number</th>
+                                                <th>Schedule</th>
+                                                <th>MFG Date</th>
+                                                <th>Exp Date</th>
+                                                <th>Quantity/Stock</th>
+                                                <th>Purch Price</th>
+                                                <th>Avg Margin</th>
+                                                <th>Low Margin</th>
+                                                <th>High Margin</th>
+                                                <th>Bar Code </th>
+                                                <th>Action</th>
 
-                                                            <td>
-                                                                {item?.medicineName}
-                                                            </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
 
-                                                            <td>
-                                                                {item?.batchNumber}
-                                                            </td>
+                                            {list?.length > 0 ?
+                                                list?.map((item, key) =>
+                                                    <tr key={key}>
+                                                        <td>{key + 1}</td>
 
-                                                            <td> {item?.schedule}</td>
-                                                            <td>
-                                                                {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
+                                                        <td>
+                                                            {item?.medicineName}
+                                                        </td>
+
+                                                        <td>
+                                                            {item?.batchNumber}
+                                                        </td>
+
+                                                        <td> {item?.schedule}</td>
+                                                        <td>
+                                                            {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
                                                                     day: '2-digit',
                                                                     month: 'short',
                                                                     year: 'numeric'
-                                                                })}
-                                                            </td>
-                                                            <td>
-                                                                {new Date(item?.expDate) > new Date() ?
-                                                                    new Date(item?.expDate)?.toLocaleDateString('en-GB', {
-                                                                        day: '2-digit',
-                                                                        month: 'short',
-                                                                        year: 'numeric'
+                                                                    })}
+                                                        </td>
+                                                        <td>
+                                                            {new Date(item?.expDate) > new Date() ?
+                                                                new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                    day: '2-digit',
+                                                                    month: 'short',
+                                                                    year: 'numeric'
                                                                     })
-                                                                    : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
-                                                                        day: '2-digit',
-                                                                        month: 'short',
-                                                                        year: 'numeric'
+                                                                : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                    day: '2-digit',
+                                                                    month: 'short',
+                                                                    year: 'numeric'
                                                                     })}</span>
-                                                                }
-                                                            </td>
+                                                            }
+                                                        </td>
 
-                                                            <td>
-                                                                {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
-                                                            </td>
-                                                            <td>
-                                                                ${item?.purchasePrice}
-                                                            </td>
-                                                            <td>
-                                                                {item?.salePrice}
-                                                            </td>
-                                                            <td>
-                                                                {item?.margin} %
-                                                            </td>
-                                                            <td>
-                                                                {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
-                                                                {showBarcode == key ?
-                                                                    <div className="inventory-barcd">
+                                                        <td>
+                                                            {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
+                                                        </td>
+                                                        <td>
+                                                            ${item?.purchasePrice}
+                                                        </td>
+                                                        <td>
+                                                            {item?.avgMargin} {item?.marginType == 'Percentage' && '%'}
+                                                        </td>
+                                                        <td>
+                                                            {item?.lowMargin} {item?.marginType == 'Percentage' && '%'}
+                                                        </td>
+                                                        <td>
+                                                            {item?.highMargin} {item?.marginType == 'Percentage' && '%'}
+                                                        </td>
 
-                                                                        <Barcode value={item?.customId} width={1.3} displayValue={false}
-                                                                            height={80} />
-                                                                    </div>
-                                                                    :
-                                                                    <button
-                                                                        className="thm-btn rounded-3"
-                                                                        onClick={() => setShowBarcode(key)}
-                                                                    >
-                                                                        Generate
-                                                                    </button>
-                                                                }
-                                                            </td>
+                                                        <td>
+                                                            {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
+                                                            {showBarcode == key ?
+                                                                <div className="inventory-barcd">
 
-                                                            <td>
-                                                                <div className="d-flex align-items-center gap-2">
-                                                                    {/* <a href="javascript:void(0)" className="text-secondary" data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen}/></a> */}
-                                                                    <div className="d-flex align-items-centet gap-2">
-                                                                        <div className="dropdown">
-                                                                            <button
-                                                                                disabled={!isOwner && !permissions?.add}
-
-                                                                                className="text-secondary"
-                                                                                id="acticonMenu1"
-                                                                                onClick={() => {
-                                                                                    const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
-                                                                                    const expDate = new Date(item?.expDate).toISOString().split("T")[0]
-                                                                                    setFormData({ ...item, mfgDate: mfgDate, expDate: expDate })
-                                                                                }
-
-                                                                                } data-bs-toggle="modal" data-bs-target="#edit-Inventory"
-                                                                            >
-                                                                                <FontAwesomeIcon icon={faPen} />
-                                                                            </button>
-                                                                            <ul
-                                                                                className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
-                                                                                aria-labelledby="acticonMenu1"
-                                                                            >
-                                                                                <li className="prescription-item">
-                                                                                    <button className="prescription-nav" onClick={() => setFormData(item)} data-bs-toggle="modal" data-bs-target="#edit-Inventory">
-                                                                                        View/Edit
-                                                                                    </button>
-                                                                                </li>
-                                                                                <li className="prescription-item">
-                                                                                    <button className=" prescription-nav" onClick={() => deleteInventory(item?._id)}>
-
-                                                                                        Delete
-                                                                                    </button>
-                                                                                </li>
-                                                                            </ul>
-                                                                        </div>
-                                                                    </div>
-                                                                    <button className="text-secondary" onClick={() => deleteInventory(item?._id)}><FontAwesomeIcon icon={faTrash} /></button>
+                                                                    <Barcode value={item._id} width={0.5} displayValue={false}
+                                                                        height={50} />
                                                                 </div>
-                                                            </td>
-                                                        </tr>)}
+                                                                :
+                                                                <button
+                                                                    className="thm-btn rounded-3"
+                                                                    onClick={() => setShowBarcode(key)}
+                                                                >
+                                                                    Generate
+                                                                </button>
+                                                            }
+                                                        </td>
 
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                        <td>
+                                                            <div className="d-flex align-items-center gap-2">
+                                                                {/* <a href="javascript:void(0)" className="text-secondary" data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen}/></a> */}
+                                                                <div className="d-flex align-items-centet gap-2">
+                                                                    <div className="dropdown">
+                                                                        <a
 
+                                                                            href="javascript:void(0)"
+                                                                            className="text-secondary"
+                                                                            id="acticonMenu1"
+                                                                            onClick={() => {
+                                                                                const mfgDate=new Date(item?.mfgDate).toISOString().split("T")[0]
+                                                                                const expDate=new Date(item?.expDate).toISOString().split("T")[0]
+                                                                                setFormData({...item,mfgDate:mfgDate,expDate:expDate})}
+
+                                                                            } data-bs-toggle="modal" data-bs-target="#edit-Inventory"
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faPen} />
+                                                                        </a>
+                                                                        <ul
+                                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                            aria-labelledby="acticonMenu1"
+                                                                        >
+                                                                            <li className="prescription-item">
+                                                                                <button className="prescription-nav" onClick={() => setFormData(item)} data-bs-toggle="modal" data-bs-target="#edit-Inventory">
+                                                                                    View/Edit
+                                                                                </button>
+                                                                            </li>
+                                                                            <li className="prescription-item">
+                                                                                <button className=" prescription-nav" onClick={() => deleteInventory(item?._id)}>
+
+                                                                                    Delete
+                                                                                </button>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                                <button className="text-secondary" onClick={() => deleteInventory(item?._id)}><FontAwesomeIcon icon={faTrash} /></button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>)
+                                                    :<span className="text-center">No data found</span>}
+
+                                        </tbody>
+                                    </table>
                                 </div>
+
                             </div>
                         </div>
                     </div>
-                </div>}
+                </div>
+            </div>
 
             {/*Add Inventroy Popup Start  */}
             {/* data-bs-toggle="modal" data-bs-target="#add-Inventory" */}
@@ -430,9 +391,7 @@ function InventoryList() {
                                                     <option value="">Select</option>
                                                     <option value="H1">H1</option>
                                                     <option value="H">H</option>
-                                                    <option value="X">X</option>
                                                     <option value="Other">Other</option>
-
                                                 </select>
                                             </div>
                                         </div>
@@ -522,37 +481,66 @@ function InventoryList() {
                                             />
                                         </div>
                                     </div>
+
                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
-                                            <label>Sale Price</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter Sale Price"
-                                                name="salePrice"
-                                                value={formData.salePrice}
-                                                onChange={handleChange}
-                                            />
+                                            <label>Margin Type</label>
+                                            <div className="select-wrapper">
+                                                <select
+                                                    className="form-select custom-select"
+                                                    name="marginType"
+                                                    value={formData.marginType}
+                                                    onChange={handleChange}
+                                                >
+                                                    <option value="">Margin Type</option>
+                                                    <option value="percentage">Percentage</option>
+                                                    <option value="fixed">Fixed</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
-                                            <label>Margin</label>
+                                            <label>High Margin</label>
                                             <input
                                                 type="text"
-                                                disabled
                                                 className="form-control nw-frm-select"
                                                 placeholder="Enter High Margin"
-                                                name="margin"
-                                                value={formData.margin}
+                                                name="highMargin"
+                                                value={formData.highMargin}
                                                 onChange={handleChange}
                                             />
                                         </div>
                                     </div>
 
+                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Low Margin</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Low Margin"
+                                                name="lowMargin"
+                                                value={formData.lowMargin}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
 
-
+                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Avg Margin</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Avg Margin"
+                                                name="avgMargin"
+                                                value={formData.avgMargin}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
 
                                     <div className="col-lg-12">
                                         <div className="text-center mt-3">
@@ -619,7 +607,6 @@ function InventoryList() {
                                                     <option value="">Select</option>
                                                     <option value="H1">H1</option>
                                                     <option value="H">H</option>
-                                                    <option value="X">X</option>
                                                     <option value="Other">Other</option>
                                                 </select>
                                             </div>
@@ -709,40 +696,66 @@ function InventoryList() {
                                             />
                                         </div>
                                     </div>
+
                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
-                                            <label>Sale Price</label>
+                                            <label>Margin Type</label>
+                                            <div className="select-wrapper">
+                                                <select
+                                                    className="form-select custom-select"
+                                                    name="marginType"
+                                                    value={formData.marginType}
+                                                    onChange={handleChange}
+                                                >
+                                                    <option value="">Margin Type</option>
+                                                    <option value="percentage">Percentage</option>
+                                                    <option value="fixed">Fixed</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>High Margin</label>
                                             <input
                                                 type="text"
-
                                                 className="form-control nw-frm-select"
-                                                placeholder="Enter Sale Price"
-                                                name="salePrice"
-                                                value={formData.salePrice}
+                                                placeholder="Enter High Margin"
+                                                name="highMargin"
+                                                value={formData.highMargin}
                                                 onChange={handleChange}
                                             />
                                         </div>
                                     </div>
-
-
 
                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
-                                            <label>Margin</label>
+                                            <label>Low Margin</label>
                                             <input
-                                                type="number"
-                                                disabled
+                                                type="text"
                                                 className="form-control nw-frm-select"
-                                                placeholder="Enter High Margin"
-                                                name="margin"
-                                                value={formData.margin}
+                                                placeholder="Enter Low Margin"
+                                                name="lowMargin"
+                                                value={formData.lowMargin}
                                                 onChange={handleChange}
                                             />
                                         </div>
                                     </div>
 
-
-
+                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Avg Margin</label>
+                                            <input
+                                                type="text"
+                                                className="form-control nw-frm-select"
+                                                placeholder="Enter Avg Margin"
+                                                name="avgMargin"
+                                                value={formData.avgMargin}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
 
                                     <div className="col-lg-12">
                                         <div className="text-center mt-3">
@@ -797,4 +810,4 @@ function InventoryList() {
     )
 }
 
-export default InventoryList
+export default OtherMedicine
