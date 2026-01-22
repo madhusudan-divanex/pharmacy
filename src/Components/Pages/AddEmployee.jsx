@@ -195,7 +195,7 @@ function AddEmployee() {
     };
     const fetchLabPermission = async () => {
         try {
-            const response = await getSecureApiData(`pharmacy/permission/${userId}`);
+            const response = await getSecureApiData(`api/comman/permission/${userId}?type=pharmacy`);
             if (response.success) {
                 setPermissions(response.data)
             } else {

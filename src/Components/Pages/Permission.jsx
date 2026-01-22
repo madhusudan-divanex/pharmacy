@@ -30,7 +30,7 @@ function Permission() {
     const fetchPharPermission = async () => {
        
         try {
-            const response = await getSecureApiData(`pharmacy/permission/${userId}?page=${currentPage}&name=${search}`);
+            const response = await getSecureApiData(`api/comman/permission/${userId}?page=${currentPage}&name=${search}&type=pharmacy`);
             if (response.success) {
                 setCurrentPage(response.pagination.page)
                 setTotalPage(response.pagination.totalPages)
@@ -45,9 +45,9 @@ function Permission() {
     const addPharPermission = async (e) => {
         e.preventDefault()
         if (editId) {
-            const data = { pharId: userId, name, permissionId: editId }
+            const data = { ownerId: userId, name, permissionId: editId }
             try {
-                const response = await updateApiData(`pharmacy/permission`, data);
+                const response = await updateApiData(`api/comman/permission`, data);
                 if (response.success) {
                     fetchPharPermission()
                     setName('')
@@ -61,9 +61,9 @@ function Permission() {
             }
         } else {
 
-            const data = { pharId: userId, name }
+            const data = { ownerId: userId, name }
             try {
-                const response = await securePostData(`pharmacy/permission`, data);
+                const response = await securePostData(`api/comman/permission`, data);
                 if (response.success) {
                     fetchPharPermission()
                     setName('')
@@ -79,9 +79,9 @@ function Permission() {
     const deletePermission = async (id) => {
         // e.preventDefault()
         setLoading(true)
-        const data = { pharId: userId, permissionId: id }
+        const data = { ownerId: userId, permissionId: id }
         try {
-            const response = await deleteApiData(`pharmacy/permission`, data);
+            const response = await deleteApiData(`api/comman/permission`, data);
             if (response.success) {
                 fetchPharPermission()
                 toast.success("Permission deleted")
