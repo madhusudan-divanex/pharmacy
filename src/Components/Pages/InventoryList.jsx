@@ -178,7 +178,7 @@ function InventoryList() {
                                         totalStockPrice: "",
                                         margin: "",
                                     })} data-bs-toggle="modal"
-                                    disabled={!isOwner && !permissions?.add}
+                                    // disabled={!isOwner && !permissions?.add}
                                     data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
                             </div>
                         </div>

@@ -14,7 +14,7 @@ function CreateAccountAddress() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const userId = localStorage.getItem('userId')
-    const [loading,setLoading]=useState(false)
+    const [loading, setLoading] = useState(false)
     const [countries, setCountries] = useState([])
     const [states, setStates] = useState([])
     const [cities, setCities] = useState([])
@@ -25,6 +25,8 @@ function CreateAccountAddress() {
         stateId: "",
         cityId: "",
         pinCode: "",
+        lat:null,
+        long:null,
         userId
     });
     const handleChange = (e) => {
@@ -57,7 +59,7 @@ function CreateAccountAddress() {
             setCountries(data)
         } catch (error) {
 
-        } finally{
+        } finally {
             setLoading(false)
         }
     }
@@ -72,7 +74,7 @@ function CreateAccountAddress() {
             setStates(data)
         } catch (error) {
 
-        } finally{
+        } finally {
             setLoading(false)
         }
     }
@@ -84,7 +86,7 @@ function CreateAccountAddress() {
             setCities(data)
         } catch (error) {
 
-        }finally{
+        } finally {
             setLoading(false)
         }
     }
@@ -111,146 +113,162 @@ function CreateAccountAddress() {
             navigate('/create-account-person')
         }
     }, [pharAddress])
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setFormData(prev => ({
+                        ...prev,
+                        lat: position.coords.latitude,
+                        long: position.coords.longitude
+                    }));
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
+        }
+    }, []);
     return (
         <>
-            {loading? <Loader/>
-            :<section className="admin-login-section account-lg-section nw-create-account-section nw-login-frm-card">
-                <div className="container-fluid px-lg-0">
-                    <div className="row justify-content-center mb-4">
-                        <div className="col-lg-8">
-                            <div className="account-step-main-bx">
-                                <NavLink to="/create-account">
-                                    <div className="account-step-crd account-step-one account-progress-done">
-                                        <div className="account-step-bx account-step-complete">
-                                            <FaFlask className="account-step-icon" />
+            {loading ? <Loader />
+                : <section className="admin-login-section account-lg-section nw-create-account-section nw-login-frm-card">
+                    <div className="container-fluid px-lg-0">
+                        <div className="row justify-content-center mb-4">
+                            <div className="col-lg-8">
+                                <div className="account-step-main-bx">
+                                    <NavLink to="/create-account">
+                                        <div className="account-step-crd account-step-one account-progress-done">
+                                            <div className="account-step-bx account-step-complete">
+                                                <FaFlask className="account-step-icon" />
+                                            </div>
+                                            <h6>Pharmacy Details</h6>
                                         </div>
-                                        <h6>Pharmacy Details</h6>
-                                    </div>
-                                </NavLink>
+                                    </NavLink>
 
-                                <NavLink to="/create-account-image">
-                                    <div className="account-step-crd account-step-one account-progress-done">
-                                        <div className="account-step-bx  account-step-complete">
-                                            <BsFillFileImageFill className="account-step-icon" />
+                                    <NavLink to="/create-account-image">
+                                        <div className="account-step-crd account-step-one account-progress-done">
+                                            <div className="account-step-bx  account-step-complete">
+                                                <BsFillFileImageFill className="account-step-icon" />
+                                            </div>
+                                            <h6>Images</h6>
                                         </div>
-                                        <h6>Images</h6>
-                                    </div>
-                                </NavLink>
+                                    </NavLink>
 
-                                <NavLink to="/create-account-address">
-                                    <div className="account-step-crd account-step-one">
-                                        <div className="account-step-bx  ">
-                                            <FaMapMarkerAlt className="account-step-icon" />
+                                    <NavLink to="/create-account-address">
+                                        <div className="account-step-crd account-step-one">
+                                            <div className="account-step-bx  ">
+                                                <FaMapMarkerAlt className="account-step-icon" />
+                                            </div>
+                                            <h6>Address</h6>
                                         </div>
-                                        <h6>Address</h6>
-                                    </div>
-                                </NavLink>
+                                    </NavLink>
 
-                                <NavLink to="/create-account-person">
-                                    <div className="account-step-crd account-step-one">
-                                        <div className="account-step-bx account-unstep-card">
-                                            <FaUser className="account-step-icon" />
+                                    <NavLink to="/create-account-person">
+                                        <div className="account-step-crd account-step-one">
+                                            <div className="account-step-bx account-unstep-card">
+                                                <FaUser className="account-step-icon" />
+                                            </div>
+                                            <h6>Contact Person</h6>
                                         </div>
-                                        <h6>Contact Person</h6>
-                                    </div>
-                                </NavLink>
+                                    </NavLink>
 
-                                <NavLink to="/create-account-upload">
-                                    <div className="account-step-crd">
-                                        <div className="account-step-bx account-unstep-card">
-                                            <FaCloudUploadAlt className="account-step-icon" />
+                                    <NavLink to="/create-account-upload">
+                                        <div className="account-step-crd">
+                                            <div className="account-step-bx account-unstep-card">
+                                                <FaCloudUploadAlt className="account-step-icon" />
+                                            </div>
+                                            <h6>Upload</h6>
                                         </div>
-                                        <h6>Upload</h6>
-                                    </div>
-                                </NavLink>
-                            </div>
-
-
-
-
-
-                        </div>
-
-                        <div className="col-lg-12">
-                            <div>
-                                {/* <img src="/footer-bnner.png" alt="" /> */}
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div className="row justify-content-center mb-4">
-                        <div className="col-lg-5 col-md-6 col-sm-12">
-                            <form onSubmit={handleSubmit}>
-                                <div className="">
-                                    <div className="neo-health-frm-card">
-                                        <div className="admin-vndr-login">
-                                            <h3 className="text-grad" s>Pharmacy Address</h3>
-                                            <p>Enter Pharmacy Address </p>
-                                        </div>
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Full Address</label>
-                                            <input type="text" className="form-control nw-frm-select" name="fullAddress" value={formData.fullAddress} onChange={handleChange} placeholder="Enter Full Address" />
-                                        </div>
-
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Country</label>
-                                            <select name="countryId" value={formData.countryId} onChange={handleChange} id="" className="form-select nw-frm-select">
-                                                <option value="">---Select Country---</option>
-                                                {countries?.map((item, key) =>
-                                                    <option value={item?._id} key={key}>{item?.name}</option>)}
-                                            </select>
-                                        </div>
-
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">State</label>
-                                            <select name="stateId" value={formData.stateId} onChange={handleChange} id="" className="form-select nw-frm-select">
-                                                <option value="">---Select State---</option>
-                                                {states?.map((item, key) =>
-                                                    <option value={item?._id} key={key}>{item?.name}</option>)}
-                                            </select>
-                                        </div>
-
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">City</label>
-                                            <select name="cityId" value={formData.cityId} onChange={handleChange} id="" className="form-select nw-frm-select">
-                                                <option value="">---Select City---</option>
-                                                {cities?.map((item, key) =>
-                                                    <option value={item?._id} key={key}>{item?.name}</option>)}
-                                            </select>
-                                        </div>
-
-                                        <div className="custom-frm-bx">
-                                            <label htmlFor="">Pin Code</label>
-                                            <input type="text" name="pinCode" value={formData.pinCode} onChange={handleChange} className="form-control nw-frm-select" placeholder="Enter Pin code" />
-                                        </div>
-
-
-                                        <div className='mt-4'>
-                                            <button type="submit" className="admin-lg-btn">
-                                                Next
-                                            </button>
-                                        </div>
-
-                                        <div className='text-center mt-5'>
-                                            <span className='do-account-title'>Already have an account? <NavLink to="/login" className='lab-login-forgot-btn'>Login here</NavLink></span>
-                                        </div>
-                                    </div>
+                                    </NavLink>
                                 </div>
-                            </form>
-                        </div>
-                    </div>
 
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <div>
-                                <img src="/footer-pharmacy.png" alt="" />
+
+
+
+
+                            </div>
+
+                            <div className="col-lg-12">
+                                <div>
+                                    {/* <img src="/footer-bnner.png" alt="" /> */}
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className="row justify-content-center mb-4">
+                            <div className="col-lg-5 col-md-6 col-sm-12">
+                                <form onSubmit={handleSubmit}>
+                                    <div className="">
+                                        <div className="neo-health-frm-card">
+                                            <div className="admin-vndr-login">
+                                                <h3 className="text-grad" s>Pharmacy Address</h3>
+                                                <p>Enter Pharmacy Address </p>
+                                            </div>
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Full Address</label>
+                                                <input type="text" className="form-control nw-frm-select" name="fullAddress" value={formData.fullAddress} onChange={handleChange} placeholder="Enter Full Address" />
+                                            </div>
+
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Country</label>
+                                                <select name="countryId" value={formData.countryId} onChange={handleChange} id="" className="form-select nw-frm-select">
+                                                    <option value="">---Select Country---</option>
+                                                    {countries?.map((item, key) =>
+                                                        <option value={item?._id} key={key}>{item?.name}</option>)}
+                                                </select>
+                                            </div>
+
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">State</label>
+                                                <select name="stateId" value={formData.stateId} onChange={handleChange} id="" className="form-select nw-frm-select">
+                                                    <option value="">---Select State---</option>
+                                                    {states?.map((item, key) =>
+                                                        <option value={item?._id} key={key}>{item?.name}</option>)}
+                                                </select>
+                                            </div>
+
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">City</label>
+                                                <select name="cityId" value={formData.cityId} onChange={handleChange} id="" className="form-select nw-frm-select">
+                                                    <option value="">---Select City---</option>
+                                                    {cities?.map((item, key) =>
+                                                        <option value={item?._id} key={key}>{item?.name}</option>)}
+                                                </select>
+                                            </div>
+
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Pin Code</label>
+                                                <input type="text" name="pinCode" value={formData.pinCode} onChange={handleChange} className="form-control nw-frm-select" placeholder="Enter Pin code" />
+                                            </div>
+
+
+                                            <div className='mt-4'>
+                                                <button type="submit" className="admin-lg-btn">
+                                                    Next
+                                                </button>
+                                            </div>
+
+                                            <div className='text-center mt-5'>
+                                                <span className='do-account-title'>Already have an account? <NavLink to="/login" className='lab-login-forgot-btn'>Login here</NavLink></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                    </div>
 
-                </div>
-            </section>}
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div>
+                                    <img src="/footer-pharmacy.png" alt="" />
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>}
 
 
 

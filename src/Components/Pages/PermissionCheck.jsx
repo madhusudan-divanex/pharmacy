@@ -16,9 +16,9 @@ function PermissionCheck() {
         name,
         pharmacy: {
             listView: false,
-            add: false,
-            edit: false,
-            view: false,
+            addInventory: false,
+            editInventory: false,
+            viewInventory: false,
             patientList: false,
             details: false,
             chat: false,
@@ -70,6 +70,27 @@ function PermissionCheck() {
         }
     };
 
+    const labels = {
+        listInventory: "List View",
+        addInventory: "Add Inventory",
+        editInventory: "Edit Inventory",
+        viewInventory: "View Inventory"
+    }
+    const supplierLabels = {
+        listSupplier: "List View",
+        addSupplier: "Add Supplier",
+        editSupplier: "Edit Supplier",
+        viewSupplier: "View Supplier",
+        deleteSupplier:"Delete Supplier"
+    }
+    const returnLabels = {
+        listReturn: "List View",
+        addReturn: "Add Return",
+        editReturn: "Edit Return",
+        viewReturn: "View Return",
+        deleteReturn:"Delete Return"
+    }
+
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -83,7 +104,7 @@ function PermissionCheck() {
                                 <div className="permission-check-main-bx my-4">
                                     <h4><PiTagChevronFill /> Inventory Management</h4>
                                     <ul className="permision-check-list">
-                                        {["listView", "add", "edit", "view"].map(key => (
+                                        {["listInventory", "addInventory", "editInventory", "viewInventory"].map(key => (
                                             <li key={key}>
                                                 <div className="form-check custom-check">
                                                     <input
@@ -93,7 +114,49 @@ function PermissionCheck() {
                                                         onChange={() => handleChange(key)}
                                                     />
                                                     <label className="form-check-label text-capitalize">
-                                                        {key}
+                                                        {labels[key]}
+                                                    </label>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                {/* Supplier */}
+                                <div className="permission-check-main-bx my-4">
+                                    <h4><PiTagChevronFill /> Supplier Management</h4>
+                                    <ul className="permision-check-list">
+                                        {["listSupplier", "addSupplier", "editSupplier", "viewSupplier", "deleteSupplier"].map(key => (
+                                            <li key={key}>
+                                                <div className="form-check custom-check">
+                                                    <input
+                                                        className="form-check-input"
+                                                        type="checkbox"
+                                                        checked={formData.pharmacy[key]}
+                                                        onChange={() => handleChange(key)}
+                                                    />
+                                                    <label className="form-check-label text-capitalize">
+                                                        {supplierLabels[key]}
+                                                    </label>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                {/* Return Order */}
+                                <div className="permission-check-main-bx my-4">
+                                    <h4><PiTagChevronFill /> Return Management</h4>
+                                    <ul className="permision-check-list">
+                                        {["listReturn", "addReturn", "editReturn", "viewReturn", "deleteReturn"].map(key => (
+                                            <li key={key}>
+                                                <div className="form-check custom-check">
+                                                    <input
+                                                        className="form-check-input"
+                                                        type="checkbox"
+                                                        checked={formData.pharmacy[key]}
+                                                        onChange={() => handleChange(key)}
+                                                    />
+                                                    <label className="form-check-label text-capitalize">
+                                                        {returnLabels[key]}
                                                     </label>
                                                 </div>
                                             </li>
@@ -101,27 +164,7 @@ function PermissionCheck() {
                                     </ul>
                                 </div>
 
-                                {/* Prescription */}
-                                <div className="permission-check-main-bx my-4">
-                                    <h4><PiTagChevronFill /> Prescriptions Management</h4>
-                                    <ul className="permision-check-list">
-                                        {["patientList", "details"].map(key => (
-                                            <li key={key}>
-                                                <div className="form-check custom-check">
-                                                    <input
-                                                        className="form-check-input"
-                                                        type="checkbox"
-                                                        checked={formData.pharmacy[key]}
-                                                        onChange={() => handleChange(key)}
-                                                    />
-                                                    <label className="form-check-label text-capitalize">
-                                                        {key.replace(/([A-Z])/g, " $1")}
-                                                    </label>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                               
 
                                 {/* Chat */}
                                 <div className="permission-check-main-bx">

@@ -12,7 +12,7 @@ function Returns() {
     const navigate = useNavigate()
     const [returnData, setReturnData] = useState([])
     const [loading,setLoading] =useState(true)
-    const [status, setStatus] = useState('all')
+    const [status, setStatus] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [name, setName] = useState('')
     const [totalPage, setTotalPage] = useState(1)
@@ -113,7 +113,7 @@ function Returns() {
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
                                             <label className="label">Status :</label>
                                             <select className="" value={status} onChange={(e) => setStatus(e.target.value)}>
-                                                <option value='all'>All</option>
+                                                <option value=''>All</option>
                                                 <option value='Pending'>Pending</option>
                                                 <option value='Complete'>Complete</option>
                                             </select>

@@ -9,7 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { TbGridDots } from "react-icons/tb";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
@@ -17,6 +17,7 @@ import { useSelector } from "react-redux";
 import Loader from "../Layouts/Loader";
 
 function Permission() {
+    const navigate=useNavigate()
     const userId = localStorage.getItem('userId')
     const [name, setName] = useState('')
     const [editId, setEditId] = useState(null)

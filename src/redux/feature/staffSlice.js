@@ -43,7 +43,7 @@ const staffSlice = createSlice({
         loading: false,
         error: null,
         isOwner: localStorage.getItem('isOwner') === 'true' ?true:false, // <-- read from localStorage
-        permissions: JSON.parse(localStorage.getItem('permissions')) || null,
+        permissions:  null,
     },
     reducers: {
         clearStaffProfiles: (state) => {
@@ -76,8 +76,8 @@ const staffSlice = createSlice({
                 state.employment = action.payload.employment;
                 state.professional = action.payload.professional;
                 state.empAccess = action.payload.empAccess;
-                state.isOwner= localStorage.getItem('isOwner') === 'true' ?true:false;
-                state.permissions= JSON.parse(localStorage.getItem('permissions')) || null;
+                state.isOwner= action.payload?.empAccess?.permissionId ?false:true;
+                state.permissions= action.payload?.empAccess?.permissionId?.pharmacy;
             })
             .addCase(fetchStaffDetail.rejected, (state, action) => {
                 state.loading = false;

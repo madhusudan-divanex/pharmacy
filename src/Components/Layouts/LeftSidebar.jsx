@@ -16,7 +16,7 @@ function LeftSidebar() {
   } = useSelector((state) => state.user);
   const {
     staffData, empAccess,
-    professional, employment
+    professional, employment,permissions
   } = useSelector((state) => state.staff);
   useEffect(() => {
   const isOwner = localStorage.getItem('isOwner');
@@ -219,8 +219,7 @@ function LeftSidebar() {
                   <FontAwesomeIcon icon={faUserCircle} /> Profile
                 </NavLink>
               </li>
-
-              <li className="nav-item">
+              {(isOwner || permissions?.chat) &&<li className="nav-item">
                 <NavLink
                   to="/chat"
                   className={({ isActive }) =>
@@ -229,7 +228,7 @@ function LeftSidebar() {
                 >
                   <FontAwesomeIcon icon={faMessage} /> Chat
                 </NavLink>
-              </li>
+              </li>}
 
               {isOwner && <li className="nav-item">
                 <NavLink

@@ -29,6 +29,7 @@ export const fetchUserDetail = createAsyncThunk(
         }
     }
 );
+
 const userSlice = createSlice({
     name: "userProfile",
     initialState: {
@@ -45,7 +46,6 @@ const userSlice = createSlice({
         loading: false,
         error: null,
         isOwner: localStorage.getItem('isOwner') === 'true' ?true:false, // <-- read from localStorage
-        permissions: JSON.parse(localStorage.getItem('permissions')) || null,
     },
     reducers: {
         clearProfiles: (state) => {
@@ -85,12 +85,13 @@ const userSlice = createSlice({
                 state.customId = action.payload.customId
                 state.pharLicense = action.payload.pharLicense;
                 state.isOwner= localStorage.getItem('isOwner') === 'true' ?true:false;
-                state.permissions= JSON.parse(localStorage.getItem('permissions')) || null;
+                // state.permissions= JSON.parse(localStorage.getItem('permissions')) || null;
             })
             .addCase(fetchUserDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+          
     },
 });
 

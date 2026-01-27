@@ -265,11 +265,12 @@ function AddEmployee() {
 
         // Basic fields
         for (let key in professionalInfo) {
-            if (key === 'pharCert' || key === 'education') continue;
+            if (key === 'pharCert' || key === 'education' || key==='empId') continue;
             data.append(key, professionalInfo[key]);
         }
 
         // Education
+        data.append('empId',staffId)
         data.append("education", JSON.stringify(professionalInfo.education));
 
         // Certificate metadata
