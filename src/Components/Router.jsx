@@ -72,6 +72,7 @@ function Router() {
         { path: "/scan-prescriptions-detail/:id", element: <ProtectedRoute component={ScanPrescriptionDetails} /> },
 
         { path: "/add-manually", element: <ProtectedRoute component={AddManually} /> },
+        { path: "/edit-sell/:id", element: <ProtectedRoute component={AddManually} /> },
 
         { path: "/supplier", element: <ProtectedRoute component={Supplier} /> },
 

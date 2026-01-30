@@ -2,14 +2,16 @@ import { faCircleXmark, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { FaPlusCircle, FaPlusSquare } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getSecureApiData, securePostData } from "../../Services/api";
 import { use, useEffect, useState } from "react";
 import Select from "react-select";
 import Loader from "../Layouts/Loader";
+import base_url from "../../baseUrl";
 
 function AddManually() {
+    const { id } = useParams()
     const navigate = useNavigate()
     const userId = localStorage.getItem("userId")
     const [patientId, setPatientId] = useState("")
@@ -22,10 +24,14 @@ function AddManually() {
         patientId: null,
         doctorId: null,
         pharId: userId,
+        ptMob: null,
+        ptName: '',
+        dtMob: null,
+        dtName: '',
         prescriptionFile: null,
         paymentStatus: "Pending",
         products: [
-            { inventoryId: null, quantity: 0, amount: 0, discountType: null, discount: 0, totalAmount: 0,unitPrice:0 },
+            { inventoryId: null, quantity: 0, amount: 0, discountType: null, discount: 0, totalAmount: 0, unitPrice: 0 },
         ],
     })
     const fetchPatient = async () => {
@@ -33,7 +39,10 @@ function AddManually() {
         try {
             const response = await getSecureApiData(`patient/${patientId}`);
             if (response.success) {
-                setFormData({ ...formData, patientId: response.data._id })
+                setFormData({
+                    ...formData, patientId: response.data._id, ptMob: response.data.contactNumber,
+                    ptName: response.data.name
+                })
                 setPtData(response.data)
                 setIsLoading(false)
             } else {
@@ -50,7 +59,10 @@ function AddManually() {
         try {
             const response = await getSecureApiData(`doctor/${doctorId}`);
             if (response.success) {
-                setFormData({ ...formData, doctorId: response.data._id })
+                setFormData({
+                    ...formData, doctorId: response.data._id, dtMob: response.data.contactNumber,
+                    dtName: response.data.name
+                })
                 setDtData({ name: response.data.name, contactNumber: response.data.contactNumber })
                 setIsLoading(false)
             } else {
@@ -83,7 +95,7 @@ function AddManually() {
         }
     }
     useEffect(() => {
-        if (patientId?.length > 3) {
+        if (patientId?.length > 3 && !id) {
             fetchPatient()
         }
     }, [patientId])
@@ -135,23 +147,37 @@ function AddManually() {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!patientId || !doctorId) {
+        if (!patientId && !formData.ptMob) {
             toast.error("Please fill all required fields")
             return
         }
-        const data = new FormData();
-        data.append("patientId", formData.patientId)
-        data.append("doctorId", formData.doctorId)
-        data.append("pharId", formData.pharId)
-        if (formData.prescriptionFile) {
-            data.append("prescriptionFile", formData.prescriptionFile)
-        } else {
+        if(!formData.prescriptionFile) {
             toast.error("Please upload prescription file")
             return
         }
+        const data = new FormData();
+        if (formData.patientId) {
+            data.append("patientId", formData.patientId)
+        }
+        if (!formData.patientId && formData.ptMob) {
+            data.append("ptMob", formData.ptMob)
+            data.append("ptName", formData.ptName)
+        }
+        if (formData.doctorId) {
+            data.append("doctorId", formData.doctorId)
+        }
+        if (!formData.doctorId && formData?.dtMob) {
+            data.append("dtMob", formData.dtMob)
+            data.append("dtName", formData?.dtName)
+        }
+        data.append("pharId", formData.pharId)
+        if (formData.prescriptionFile instanceof File) {
+            data.append("prescriptionFile", formData.prescriptionFile)
+        } 
         data.append("paymentStatus", formData.paymentStatus)
         data.append("products", JSON.stringify(formData.products))
         // data.appent("total",total)
+        setIsLoading(true)
         try {
             const response = await securePostData(`pharmacy/sell`, data);
             if (response.success) {
@@ -162,6 +188,8 @@ function AddManually() {
             }
         } catch (error) {
 
+        } finally{
+            setIsLoading(false)
         }
     }
     const handleTypeSelectChange = (index, option) => {
@@ -197,7 +225,6 @@ function AddManually() {
                 updatedProducts[index].discount
             ),
         };
-
         setFormData({ ...formData, products: updatedProducts });
     };
     const handleDiscountTypeChange = (index, e) => {
@@ -239,8 +266,54 @@ function AddManually() {
 
         return amount;
     };
+    async function fetchSellDetails() {
+        setIsLoading(true)
+        try {
+            const response = await getSecureApiData(`pharmacy/sell-data/${id}`);
+            if (response.success) {
+                const data = response.sell
+                const products = data.products.map(prod => ({
+                    inventoryId: prod.inventoryId?._id || prod.inventoryId,
+                    quantity: prod.quantity,
+                    amount: prod.amount,
+                    discountType: prod.discountType || null,
+                    discount: prod.discountValue || 0,
+                    totalAmount: prod.totalAmount || 0,
+                    unitPrice: prod.inventoryId?.salePrice || 0, 
+                }));
+                setFormData({
+                    ...formData,
+                    patientId: data?.patientId?._id,
+                    ptName: data?.patientId?.name,
+                    ptMob: data?.patientId?.patientId?.contactNumber,
+                    doctorId: data.doctorId?._id,
+                    dtName: data?.doctorId?.name,
+                    dtMob: data?.doctorId?.doctorId?.contactNumber,
+                    prescriptionFile: data?.prescriptionFile,
+                    products: products,
+                    paymentStatus:data?.paymentStatus
+                    
+                })
+                console.log(data?.patientId?._id)
+                
+                setPatientId(data?.patientId?.unique_id)
+                setDoctorId(data?.doctorId?.unique_id)
+            } else {
+                toast.error("Failed to fetch sell details");
+            }
 
+        } catch (error) {
+            console.error("Error fetching sell details:", error);
+        } finally{
+            setIsLoading(false)
+        }
+    }
 
+    useEffect(() => {
+        if (id) {
+            fetchSellDetails()
+        }
+    }, [id])
 
     return (
         <>
@@ -282,45 +355,45 @@ function AddManually() {
                                 <div className="mb-3">
                                     <h5 className="add-contact-title text-black fz-24">Manually Details</h5>
                                 </div>
-                                <div className="col-lg-4 col-md-4 col-sm-12">
+                                {/* <div className="col-lg-4 col-md-4 col-sm-12">
                                     <div className="custom-frm-bx">
                                         <label htmlFor="">Patient Id</label>
-                                        <input type="number" value={patientId} onChange={(e) => setPatientId(e.target.value)} className="form-control nw-frm-select " placeholder="Enter Patient Id" />
+                                        <input type="number" disabled={id} value={patientId} onChange={(e) => setPatientId(e.target.value)} className="form-control nw-frm-select " placeholder="Enter Patient Id" />
                                     </div>
-                                </div>
+                                </div> */}
 
-                                <div className="col-lg-4 col-md-4 col-sm-12">
+                                <div className="col-lg-6 col-md-6 col-sm-12">
                                     <div className="custom-frm-bx">
                                         <label htmlFor="">Patient Name</label>
-                                        <input type="text" value={ptData?.name} disabled className="form-control nw-frm-select " placeholder="Enter Patient name" />
+                                        <input type="text" disabled={id} value={formData?.ptName} onChange={(e) => setFormData({ ...formData, ptName: e.target.value })} className="form-control nw-frm-select " placeholder="Enter Patient name" />
                                     </div>
                                 </div>
 
-                                <div className="col-lg-4 col-md-4 col-sm-12">
+                                <div className="col-lg-6 col-md-6 col-sm-12">
                                     <div className="custom-frm-bx">
                                         <label htmlFor="">Patient Mobile Number</label>
-                                        <input type="number" value={ptData?.contactNumber} disabled className="form-control nw-frm-select " placeholder="Enter Patient Mobile Number" />
+                                        <input type="number" disabled={id} value={formData?.ptMob} onChange={(e) => setFormData({ ...formData, ptMob: e.target.value })} className="form-control nw-frm-select " placeholder="Enter Patient Mobile Number" />
                                     </div>
                                 </div>
 
-                                <div className="col-lg-4 col-md-4 col-sm-12">
+                                {/* <div className="col-lg-6 col-md-6 col-sm-12">
                                     <div className="custom-frm-bx">
                                         <label htmlFor="">Doctor Id</label>
-                                        <input type="text" value={doctorId} onChange={(e) => setDoctorId(e.target.value)} className="form-control nw-frm-select " placeholder="Enter Doctor Id" />
+                                        <input type="text" disabled={id} value={doctorId} onChange={(e) => setDoctorId(e.target.value)} className="form-control nw-frm-select " placeholder="Enter Doctor Id" />
                                     </div>
-                                </div>
+                                </div> */}
 
-                                <div className="col-lg-4 col-md-4 col-sm-12">
+                                <div className="col-lg-6 col-md-6 col-sm-12">
                                     <div className="custom-frm-bx">
                                         <label htmlFor="">Doctor  Name</label>
-                                        <input type="text" value={dtData?.name} disabled className="form-control nw-frm-select " placeholder="Enter Doctor name" />
+                                        <input type="text" disabled={id} value={formData?.dtName} onChange={(e) => setFormData({ ...formData, dtName: e.target.value })} className="form-control nw-frm-select " placeholder="Enter Doctor name" />
                                     </div>
                                 </div>
 
-                                <div className="col-lg-4 col-md-4 col-sm-12">
+                                <div className="col-lg-6 col-md-6 col-sm-12">
                                     <div className="custom-frm-bx">
                                         <label htmlFor="">Doctor Mobile Number</label>
-                                        <input type="number" value={dtData?.contactNumber} disabled className="form-control nw-frm-select " placeholder="Enter Doctor Mobile Number" />
+                                        <input type="number" disabled={id} value={formData?.dtMob} onChange={(e) => setFormData({ ...formData, dtMob: e.target.value })} className="form-control nw-frm-select " placeholder="Enter Doctor Mobile Number" />
                                     </div>
                                 </div>
 
@@ -350,17 +423,23 @@ function AddManually() {
 
                                                 <input
                                                     type="file"
+                                                    disabled={id}
                                                     className="d-none"
                                                     id="fileInput1"
                                                     onChange={(e) => setFormData({ ...formData, prescriptionFile: e.target.files[0] })}
                                                     accept=".png,.jpg,.jpeg"
                                                 />
 
-                                                {formData.prescriptionFile && (
+                                                {formData.prescriptionFile instanceof File && (
                                                     <div id="filePreviewWrapper" className=" mt-3">
                                                         <img src={URL.createObjectURL(formData.prescriptionFile)} alt="Preview" className="img-thumbnail" />
                                                     </div>
                                                 )}
+                                                {formData?.prescriptionFile?.startsWith('uploads') && (
+                                                <div id="filePreviewWrapper" className=" mt-3">
+                                                    <img src={`${base_url}/${formData?.prescriptionFile}`} alt="Preview" className="img-thumbnail" />
+                                                </div>
+                                            )}
                                             </div>
                                         </div>
                                     </div>
@@ -393,9 +472,7 @@ function AddManually() {
                                                     />
                                                 </div>
                                             </div>
-
                                         </div>
-
                                         <div className="col-lg-2 col-md-4 col-sm-12">
                                             <div className="custom-frm-bx">
                                                 <label htmlFor="">Quantity</label>
@@ -491,7 +568,7 @@ function AddManually() {
                                                 checked={formData?.paymentStatus === "Completed"}
                                                 onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.checked ? "Completed" : "Pending" })}
                                                 id="chat" />
-                                            <label className="form-check-label" for="chat">
+                                            <label className="form-check-label" htmlFor="chat">
                                                 Payment Done
                                             </label>
                                         </div>

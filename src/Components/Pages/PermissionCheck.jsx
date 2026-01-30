@@ -74,7 +74,8 @@ function PermissionCheck() {
         listInventory: "List View",
         addInventory: "Add Inventory",
         editInventory: "Edit Inventory",
-        viewInventory: "View Inventory"
+        viewInventory: "View Inventory",
+        deleteInventory:"Delete Inventory"
     }
     const supplierLabels = {
         listSupplier: "List View",
@@ -104,7 +105,7 @@ function PermissionCheck() {
                                 <div className="permission-check-main-bx my-4">
                                     <h4><PiTagChevronFill /> Inventory Management</h4>
                                     <ul className="permision-check-list">
-                                        {["listInventory", "addInventory", "editInventory", "viewInventory"].map(key => (
+                                        {["listInventory", "addInventory", "editInventory", "viewInventory","deleteInventory"].map(key => (
                                             <li key={key}>
                                                 <div className="form-check custom-check">
                                                     <input
@@ -125,7 +126,7 @@ function PermissionCheck() {
                                 <div className="permission-check-main-bx my-4">
                                     <h4><PiTagChevronFill /> Supplier Management</h4>
                                     <ul className="permision-check-list">
-                                        {["listSupplier", "addSupplier", "editSupplier", "viewSupplier", "deleteSupplier"].map(key => (
+                                        {["listSupplier", "addSupplier", "editSupplier",  "deleteSupplier"].map(key => (
                                             <li key={key}>
                                                 <div className="form-check custom-check">
                                                     <input

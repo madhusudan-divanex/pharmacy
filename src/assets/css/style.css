@@ -2349,6 +2349,7 @@ min-height: 100vh; */
     justify-content: center;
     font-size: 30px;
     color: #00B4B5;
+    flex-shrink: 0;
 }
 
 .file-select-label {

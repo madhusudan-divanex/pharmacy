@@ -33,7 +33,7 @@ function ScanPrescriptionDetails() {
     useEffect(() => {
         fetchSellDetails();
     }, [sellId]);
-    const invoiceRef=useRef()
+    const invoiceRef = useRef()
     const handleDownload = () => {
         const element = invoiceRef.current;
         document.body.classList.add("hide-buttons");
@@ -49,8 +49,7 @@ function ScanPrescriptionDetails() {
         });
     };
     const subtotal = sellData?.products
-        ?.reduce((acc, item) => acc + Number(item?.price || 0), 0) || 0;
-
+        ?.reduce((acc, item) => acc + Number(item?.totalAmount || 0), 0) || 0;
     const gst = subtotal * 0.05;
     const total = subtotal + gst;
 
@@ -261,12 +260,12 @@ function ScanPrescriptionDetails() {
                                             <div className="nw-laboratory-bill-bx">
                                                 <h6>Bill To</h6>
                                                 <h4>{sellData?.patientId?.name}</h4>
-                                                <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.contactNumber}</p>
+                                                <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.patientId?.contactNumber}</p>
                                             </div>
                                             <div className="nw-laboratory-bill-bx">
                                                 <h6>Order</h6>
                                                 <h4>{sellData?.patientId?.name}</h4>
-                                                <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.contactNumber}</p>
+                                                <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.patientId?.contactNumber}</p>
                                             </div>
                                         </div>
 
@@ -275,7 +274,7 @@ function ScanPrescriptionDetails() {
                                                 <li className="laboratory-item"><span className="price-title">Medicine</span> <span className="price-title">Price</span></li>
                                                 {sellData?.products?.map((item, index) =>
                                                     <li className="laboratory-item border-0">
-                                                        <span>{item?.inventoryId?.medicineName}</span> <span className="price-title">{item?.price}</span></li>)}
+                                                        <span>{item?.inventoryId?.medicineName}</span> <span className="price-title">{item?.totalAmount}</span></li>)}
                                             </ul>
 
                                             <div className="lab-amount-bx">
@@ -289,14 +288,18 @@ function ScanPrescriptionDetails() {
                                     </div>
                                 </div>
                             </div>
+                            {/* <div className="custom-frm-bx mt-3">
+                                <label htmlFor="">Note</label>
+                                <textarea name="" id="" className="form-control nw-frm-select"></textarea>
+                            </div> */}
                         </div>
 
 
-                        <div className="mt-3 text-end border-top pt-3">
+                        {/* <div className="mt-3 text-end border-top pt-3">
                             <div>
-                                {/* <button className="nw-thm-btn rounded-3">Submit</button> */}
+                                <button className="nw-thm-btn rounded-3">Submit</button>
                             </div>
-                        </div>
+                        </div> */}
 
 
 

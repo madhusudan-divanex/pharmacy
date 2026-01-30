@@ -11,6 +11,7 @@ import {
     BarcodeFormat,
     DecodeHintType,
 } from "@zxing/library";
+import Loader from "../Layouts/Loader";
 
 
 
@@ -23,16 +24,17 @@ function Sell() {
     const [sort, setSort] = useState('newest')
     const [scannerOpen, setScannerOpen] = useState(false)
     const [list, setList] = useState([])
-    const [startDate, setStartDate] = useState()
-    const [endDate, setEndDate] = useState()
+    const [startDate, setStartDate] = useState('')
+    const [endDate, setEndDate] = useState('')
     const [totalPage, setTotalPage] = useState(1)
+    const [loading,setLoading] = useState(false)
 
     const openScanner = () => setScannerOpen(true);
     const closeScanner = () => setScannerOpen(false);
     const fetchSellData = async () => {
+        setLoading(true)
         try {
-            const response = await getSecureApiData(`pharmacy/sell/${userId}?page=${currentPage}
-                &search=${name}&schedule=${schedule}&startDate=${startDate}&endDate=${endDate}&sort=${sort}`);
+            const response = await getSecureApiData(`pharmacy/sell/${userId}?page=${currentPage}&search=${name}&schedule=${schedule}&startDate=${startDate}&endDate=${endDate}&sort=${sort}`);
             if (response.success) {
                 setList(response.data)
                 setTotalPage(response.totalPages)
@@ -41,6 +43,8 @@ function Sell() {
             }
         } catch (err) {
             console.error("Error creating lab:", err);
+        } finally{
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -69,7 +73,7 @@ function Sell() {
     }
     return (
         <>
-            <div className="main-content flex-grow-1 p-3 overflow-auto">
+            {loading?<Loader />:<div className="main-content flex-grow-1 p-3 overflow-auto">
                 <div className="row mb-3">
                     <div className="d-flex align-items-center justify-content-between">
                         <div>
@@ -185,7 +189,6 @@ function Sell() {
                                                 <th>Patient Name</th>
                                                 <th>Prescriber Name</th>
                                                 <th>Medicine Name</th>
-                                                <th>Note</th>
                                                 <th>Prescription</th>
                                                 <th>Action</th>
 
@@ -202,16 +205,16 @@ function Sell() {
                                                             year: 'numeric'
                                                         })}</td>
                                                         <td>{item?.patient?.name}</td>
-                                                        <td>Dr. {item?.doctor?.name}</td>
+                                                        <td>{item?.doctor?.name || '-'}</td>
 
                                                         <td>
                                                             <ul className="admin-appointment-list">
                                                                 {item?.products?.map((product, index) => (
                                                                     <>
-                                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.inventory?.medicineName}</span></li>
+                                                                        <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.inventoryDetail?.medicineName}</span></li>
                                                                         <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">{product?.quantity}</span></li>
-                                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{product?.inventory?.batchNumber}</span></li>
-                                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventory?.schedule}</span></li>
+                                                                        <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{product?.inventoryDetail?.batchNumber}</span></li>
+                                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventoryDetail?.schedule}</span></li>
                                                                     </>))}
 
 
@@ -219,9 +222,7 @@ function Sell() {
                                                         </td>
 
 
-                                                        <td>
-                                                            {item?.note || '-'}
-                                                        </td>
+                                                        
 
                                                         <td>
                                                             <div className="d-flex align-items-centet gap-2">
@@ -278,7 +279,7 @@ function Sell() {
                                                                         aria-labelledby="acticonMenu1"
                                                                     >
                                                                         <li className="prescription-item">
-                                                                            <NavLink to="/edit-generate" className="prescription-nav" href="#" >
+                                                                            <NavLink to={`/edit-sell/${item?._id}`} className="prescription-nav" href="#" >
                                                                                 View/Edit
                                                                             </NavLink>
                                                                         </li>
@@ -313,7 +314,7 @@ function Sell() {
 
 
 
-            </div>
+            </div>}
 
 
             {/*Payment Status Popup Start  */}
