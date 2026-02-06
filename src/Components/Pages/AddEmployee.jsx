@@ -363,7 +363,7 @@ function AddEmployee() {
 
                 setAccessInfo(prev => ({
                     ...prev,
-                    ...response.empAccess
+                    ...response.empAccess,permissionId:response.empAccess?.permissionId?._id
                 }))
                 setProfessionalInfo(prev => ({
                     ...prev,
@@ -1133,14 +1133,14 @@ function AddEmployee() {
 
                                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                                         <div className="custom-frm-bx">
-                                                            <label htmlFor="">Email for Access</label>
+                                                            <label htmlFor="">Phone number for Access</label>
                                                             <input
-                                                                type="email"
+                                                                type="number"
                                                                 className="form-control nw-frm-select"
-                                                                placeholder="Enter Email  Address"
-                                                                value={accessInfo.email}
-                                                                onChange={handleAccessChange}
-                                                                name="email"
+                                                                // placeholder="Enter Email  Address"
+                                                                value={userInfo.contactInformation.contactNumber}
+                                                                // onChange={handleAccessChange}
+                                                                // name="email"
                                                                 required
                                                             />
                                                         </div>

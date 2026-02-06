@@ -1,13 +1,18 @@
 import { NavLink, useNavigate } from "react-router-dom"
-import { securePostData } from "../../Services/api";
+import { postApiData, securePostData } from "../../Services/api";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
+import { clearStaffProfiles, fetchStaffDetail } from "../../redux/feature/staffSlice";
+import { clearProfiles, fetchUserDetail } from "../../redux/feature/userSlice";
+import { useDispatch } from "react-redux";
+import Loader from "../Layouts/Loader";
 
 function Otp() {
   const navigate = useNavigate()
+  const dispatch=useDispatch()
   const [timer, setTimer] = useState(30);
-  const email = sessionStorage.getItem('email')
-  const userId = localStorage.getItem('userId')
+  const [loading,setLoading]=useState(false)
+  const contactNumber = sessionStorage.getItem('contactNumber')
   const OTP_LENGTH = 6;
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const inputsRef = useRef([]);
@@ -60,10 +65,9 @@ function Otp() {
   const handleResendCode = async (e) => {
     e.preventDefault();
     try {
-      const response = await postApiData('lab/forgot-email', { email })
+      const response = await postApiData('pharmacy/resend-otp', { contactNumber })
       if (response.success) {
-        localStorage.setItem('userId', response.userId)
-        toast.success('Email sent successfully')
+        toast.success('Otp sent successfully')
       } else {
         toast.error(response.message)
       }
@@ -74,24 +78,53 @@ function Otp() {
   }
   const handleVerify = async (e) => {
     e.preventDefault();
-    const data = { userId, code: otp?.join('') }
+    const data = { contactNumber, code: otp?.join(''),type:sessionStorage.getItem('forgotId')?'forgot':'login' }
+    setLoading(true)
     try {
+      
       const response = await securePostData('pharmacy/verify-otp', data)
       if (response.success) {
-        sessionStorage.clear()
-        localStorage.setItem('otoken', response.token)
-        navigate('/set-password')
+        if(sessionStorage.getItem('forgotId')){          
+          localStorage.setItem('otoken', response.token)
+          return navigate('/set-password')
+        }
+        localStorage.setItem('token', response.token)
+        localStorage.setItem('userId', response.userId)
+        localStorage.setItem('isOwner', response.isOwner);
+        if (!response.isOwner) {
+          dispatch(clearStaffProfiles())
+          localStorage.setItem('staffId', response.staffId)
+          localStorage.setItem('permissions', JSON.stringify(response.user.permissionId))
+          dispatch(fetchStaffDetail())
+          dispatch(clearProfiles())
+          dispatch(fetchUserDetail())
+
+        } else {
+        }
+        toast.success('Login successfully')
+        if (response.nextStep) {
+          navigate(response.nextStep)
+        }
+        if (response.user.status == 'pending') {
+          navigate('/wating-for-approval')
+          return
+        } else {
+          navigate('/')
+        }
       } else {
         toast.error(response.message)
       }
     } catch (err) {
       console.error("Error creating pharmacy:", err);
+    }finally{
+      setLoading(false)
     }
     setTimer(30); // reset timer after resend
   }
   return (
     <>
-      <section className="admin-login-section ">
+      {loading?<Loader/>
+      :<section className="admin-login-section ">
         <div className="container-fluid ">
           <div className="row">
 
@@ -103,7 +136,7 @@ function Otp() {
 
 
             <div className="col-lg-6 col-md-12 col-sm-12 d-flex flex-column justify-content-center">
-              <form action="">
+              <div >
                 <div className="admin-frm-vendor-bx">
                   <div className="admin-lg-title">
                     <h4 className="mb-0"><a href="javascript:void(0)" className="dash-hp-title">
@@ -157,11 +190,11 @@ function Otp() {
                   </div>
 
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>
-      </section>
+      </section>}
     </>
   )
 }

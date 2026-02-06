@@ -12,7 +12,6 @@ function SetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isConf, setIsConf] = useState(false)
   const [isPass, setIsPass] = useState(false)
-  const userId = localStorage.getItem('userId')
   const token = localStorage.getItem('otoken')
 
   const handleSubmit = async (e) => {
@@ -21,7 +20,7 @@ function SetPassword() {
       toast.error("Password and confirm password was not match")
       return
     }
-    const data = { userId, password }
+    const data = {  password }
     try {
       const response = await axios.post(`${base_url}/pharmacy/reset-password`, data, {
         headers: {
@@ -29,6 +28,7 @@ function SetPassword() {
         }
       });
       if (response.data.success) {
+        toast.success("Password changed successfully")
         navigate('/login')
         sessionStorage.clear()
         localStorage.clear()
@@ -51,7 +51,7 @@ function SetPassword() {
             </div>
 
             <div className="col-lg-6 col-md-12 col-sm-12 d-flex flex-column justify-content-center">
-              <form action="">
+              <div>
                 <div className="admin-frm-vendor-bx">
                   <div className="admin-lg-title">
                     <h4 className="mb-0"><a href="javascript:void(0)" className="dash-hp-title">
@@ -110,7 +110,7 @@ function SetPassword() {
                   </div>
 
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>

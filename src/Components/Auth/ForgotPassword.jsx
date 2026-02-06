@@ -5,15 +5,15 @@ import { toast } from "react-toastify";
 
 function ForgotPassword() {
   const navigate=useNavigate()
-  const [email,setEmail]=useState('')
+  const [contactNumber,setContactNumber]=useState('')
    const handleSubmit = async (e) => {
       e.preventDefault();
       try {
-        const response = await postApiData('pharmacy/forgot-email', {email})
+        const response = await postApiData('pharmacy/forgot-otp', {contactNumber})
         if (response.success) {
-          sessionStorage.setItem('email',email)
-          localStorage.setItem('userId',response.userId)
-          toast.success('Email sent successfully')
+          sessionStorage.setItem('contactNumber',contactNumber)
+          sessionStorage.setItem('forgotId',response.pharId)
+          toast.success('Otp sent successfully')
           navigate('/otp')
         } else {
           toast.error(response.message)
@@ -34,7 +34,7 @@ function ForgotPassword() {
           </div>
 
           <div className="col-lg-6 col-md-12 col-sm-12 d-flex flex-column justify-content-center">
-            <form action="">
+            <div>
                 <div className="admin-frm-vendor-bx">
               <div className="admin-lg-title">
                 <h4 className="mb-0"><a href="javascript:void(0)" className="dash-hp-title">
@@ -45,18 +45,18 @@ function ForgotPassword() {
               <div className="admin-vendor-login">
                 <div className="admin-vndr-login">
                   <h3 className="text-grad">Forgot Password</h3>
-                  <p>Please enter email   address below</p>
+                  <p>Please enter mobile number below</p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                   <div className="custom-frm-bx admin-frm-bx">
-                    <label htmlFor="">Email Address</label>
+                    <label htmlFor="">Mobile Number</label>
                     <input
-                      type="email"
-                      value={email}
-                      onChange={(e)=>setEmail(e.target.value)}
+                      type="number"
+                      value={contactNumber}
+                      onChange={(e)=>setContactNumber(e.target.value)}
                       className="form-control nw-frm-select"
-                      placeholder="Enter Email Address"
+                      placeholder="Enter Mobile Number"
                     />
                   </div>
 
@@ -69,7 +69,7 @@ function ForgotPassword() {
               </div>
 
             </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>
