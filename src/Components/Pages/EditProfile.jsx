@@ -1273,14 +1273,22 @@ function EditProfile() {
                                                         <div className="col-lg-6">
                                                             <div className="custom-frm-bx">
                                                                 <label>Gender</label>
-                                                                <input
+                                                                 <select name="gender" value={personData.gender} required
+                                                                  onChange={personChange} id="" className="form-select nw-frm-select">
+                                                                <option value="">---Select Gender---</option>
+                                                                
+                                                                    <option value={"Male"} >Male</option>
+                                                                    <option value={"Female"} >Female</option>
+                                                                    <option value={"Other"} >Other</option>
+                                                            </select>
+                                                                {/* <input
                                                                     type="text"
                                                                     className="form-control nw-frm-select"
                                                                     name="gender"
                                                                     onChange={personChange}
                                                                     value={personData?.gender}
                                                                     required
-                                                                />
+                                                                /> */}
                                                             </div>
                                                         </div>
                                                     </div>

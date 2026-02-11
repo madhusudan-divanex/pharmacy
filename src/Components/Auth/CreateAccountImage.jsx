@@ -56,11 +56,12 @@ function CreateAccountImage() {
     useEffect(() => {
         dispatch(fetchUserDetail())
     }, [dispatch])
-    useEffect(() => {
-        if (pharImg) {
-            navigate('/create-account-address')
-        }
-    }, [pharImg])
+    // useEffect(() => {
+    //     if (pharImg) {
+    //         navigate('/create-account-address')
+    //     }
+    // }, [pharImg])
+    console.log(pharImg)
   return (
      <>
             <section className="admin-login-section account-lg-section nw-create-account-section ">

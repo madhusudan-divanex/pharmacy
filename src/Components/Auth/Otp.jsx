@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom"
 import { postApiData, securePostData } from "../../Services/api";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
@@ -9,10 +9,12 @@ import Loader from "../Layouts/Loader";
 
 function Otp() {
   const navigate = useNavigate()
-  const dispatch=useDispatch()
+  const dispatch = useDispatch()
+  const [searchParams] = useSearchParams()
   const [timer, setTimer] = useState(30);
-  const [loading,setLoading]=useState(false)
-  const contactNumber = sessionStorage.getItem('contactNumber')
+  const [loading, setLoading] = useState(false)
+  const contact = searchParams.get('contact')
+  const isEmail = contact?.includes('@');
   const OTP_LENGTH = 6;
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const inputsRef = useRef([]);
@@ -64,8 +66,16 @@ function Otp() {
 
   const handleResendCode = async (e) => {
     e.preventDefault();
+    let data={};
+    if (isEmail) {
+      console.log(contact)
+      data.email = contact
+    } else {
+      data.contactNumber = contact
+    }
+
     try {
-      const response = await postApiData('pharmacy/resend-otp', { contactNumber })
+      const response = await postApiData('pharmacy/resend-otp', data)
       if (response.success) {
         toast.success('Otp sent successfully')
       } else {
@@ -78,13 +88,18 @@ function Otp() {
   }
   const handleVerify = async (e) => {
     e.preventDefault();
-    const data = { contactNumber, code: otp?.join(''),type:sessionStorage.getItem('forgotId')?'forgot':'login' }
+    const data = { code: otp?.join(''), type: sessionStorage.getItem('forgotId') ? 'forgot' : 'login' }
+    if (isEmail) {
+      data.email = contact
+    } else {
+      data.contactNumber = contact
+    }
     setLoading(true)
     try {
-      
+
       const response = await securePostData('pharmacy/verify-otp', data)
       if (response.success) {
-        if(sessionStorage.getItem('forgotId')){          
+        if (sessionStorage.getItem('forgotId')) {
           localStorage.setItem('otoken', response.token)
           return navigate('/set-password')
         }
@@ -116,85 +131,85 @@ function Otp() {
       }
     } catch (err) {
       console.error("Error creating pharmacy:", err);
-    }finally{
+    } finally {
       setLoading(false)
     }
     setTimer(30); // reset timer after resend
   }
   return (
     <>
-      {loading?<Loader/>
-      :<section className="admin-login-section ">
-        <div className="container-fluid ">
-          <div className="row">
+      {loading ? <Loader />
+        : <section className="admin-login-section ">
+          <div className="container-fluid ">
+            <div className="row">
 
-            <div className="col-lg-6 col-md-12 col-sm-12 px-0 mb-sm-3 mb-lg-0">
-              <div className="admin-pisture-bx">
-                <img src="pharmacy-login-bnnr.jpg" alt="" />
+              <div className="col-lg-6 col-md-12 col-sm-12 px-0 mb-sm-3 mb-lg-0">
+                <div className="admin-pisture-bx">
+                  <img src="pharmacy-login-bnnr.jpg" alt="" />
+                </div>
               </div>
-            </div>
 
 
-            <div className="col-lg-6 col-md-12 col-sm-12 d-flex flex-column justify-content-center">
-              <div >
-                <div className="admin-frm-vendor-bx">
-                  <div className="admin-lg-title">
-                    <h4 className="mb-0"><a href="javascript:void(0)" className="dash-hp-title">
-                      <img src="/logo.png" alt="" />
-                    </a></h4>
-                  </div>
-
-                  <div className="admin-vendor-login">
-                    <div className="admin-vndr-login">
-                      <h3 className='text-grad'>Verify OTP</h3>
-                      <p>We’ve sent a 6-digit code to your email. Please enter it below to reset your password.</p>
+              <div className="col-lg-6 col-md-12 col-sm-12 d-flex flex-column justify-content-center">
+                <div >
+                  <div className="admin-frm-vendor-bx">
+                    <div className="admin-lg-title">
+                      <h4 className="mb-0"><a href="javascript:void(0)" className="dash-hp-title">
+                        <img src="/logo.png" alt="" />
+                      </a></h4>
                     </div>
 
-                    <form onSubmit={handleVerify}>
-                      <div className="custom-frm-bx admin-frm-bx lab-login-frm-bx" onPaste={handlePaste}>
-                        {otp.map((digit, index) => (
-                          <input
-                            key={index}
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={1}
-                            className="form-control nw-frm-select lab-login-frm-control"
-                            placeholder="0"
-                            value={digit}
-                            onChange={(e) => handleChange(e, index)}
-                            onKeyDown={(e) => handleKeyDown(e, index)}
-                            ref={(el) => (inputsRef.current[index] = el)}
-                          />
-                        ))}
+                    <div className="admin-vendor-login">
+                      <div className="admin-vndr-login">
+                        <h3 className='text-grad'>Verify OTP</h3>
+                        <p>We’ve sent a 6-digit code to your email. Please enter it below to reset your password.</p>
                       </div>
-                      <div className='mt-3'>
-                        <button type="submit" className="admin-lg-btn">
-                          Verify
-                        </button>
-                      </div>
-                      <div className='text-center mt-5'>
-                        <p className='do-account-title text-black'>Didn’t receive any code?</p>
-                        <p className='do-account-title py-4'>
-                          Request new code in <span className="otp-timing">{timer}s</span>
-                        </p>
-                        <button
-                          className='lab-login-forgot-btn'
-                          onClick={handleResendCode}
-                          type="button"
-                          disabled={timer > 0} // prevent clicking before timer ends
-                        >
-                          Resend
-                        </button>
-                      </div>
-                    </form>
-                  </div>
 
+                      <form onSubmit={handleVerify}>
+                        <div className="custom-frm-bx admin-frm-bx lab-login-frm-bx" onPaste={handlePaste}>
+                          {otp.map((digit, index) => (
+                            <input
+                              key={index}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              className="form-control nw-frm-select lab-login-frm-control"
+                              placeholder="0"
+                              value={digit}
+                              onChange={(e) => handleChange(e, index)}
+                              onKeyDown={(e) => handleKeyDown(e, index)}
+                              ref={(el) => (inputsRef.current[index] = el)}
+                            />
+                          ))}
+                        </div>
+                        <div className='mt-3'>
+                          <button type="submit" className="admin-lg-btn">
+                            Verify
+                          </button>
+                        </div>
+                        <div className='text-center mt-5'>
+                          <p className='do-account-title text-black'>Didn’t receive any code?</p>
+                          <p className='do-account-title py-4'>
+                            Request new code in <span className="otp-timing">{timer}s</span>
+                          </p>
+                          <button
+                            className='lab-login-forgot-btn'
+                            onClick={handleResendCode}
+                            type="button"
+                            disabled={timer > 0} // prevent clicking before timer ends
+                          >
+                            Resend
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>}
+        </section>}
     </>
   )
 }

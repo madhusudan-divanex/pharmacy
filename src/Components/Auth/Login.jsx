@@ -1,6 +1,6 @@
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { postApiData } from '../../Services/api'
@@ -13,9 +13,11 @@ function Login() {
   const dispatch = useDispatch()
   const [isShow, setIsShow] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [emailLogin,setEmailLogin]=useState(false)
   const userId = localStorage.getItem('userId')
   const [formData, setFormData] = useState({
     contactNumber: "",
+    email:"",
     password: ""
   });
   const handleSubmit = async (e) => {
@@ -24,8 +26,7 @@ function Login() {
     try {
       const response = await postApiData('pharmacy/signin', formData)
       if (response.success) {
-          sessionStorage.setItem('contactNumber',formData.contactNumber)
-          navigate('/otp')
+          navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
       
       } else {
         toast.error(response.message)
@@ -36,6 +37,13 @@ function Login() {
       setLoading(false)
     }
   };
+  useEffect(()=>{
+    if(emailLogin){
+      setFormData({...formData,contactNumber:""})
+    }else{
+      setFormData({...formData,email:""})
+    }
+  },[emailLogin])
   return (
     <>
       {loading ? <Loader />
@@ -64,7 +72,19 @@ function Login() {
                       </div>
 
                       <form onSubmit={handleSubmit}>
+                        {emailLogin?
                         <div className="custom-frm-bx admin-frm-bx">
+                          <label htmlFor="">Email Address</label>
+                          <input
+                            type="email"
+                            className="form-control nw-frm-select"
+                            placeholder="Enter email address"
+                            name='email'
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          />
+                        </div>
+                        :<div className="custom-frm-bx admin-frm-bx">
                           <label htmlFor="">Mobile Number</label>
                           <input
                             type="number"
@@ -74,7 +94,7 @@ function Login() {
                             value={formData.contactNumber}
                             onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
                           />
-                        </div>
+                        </div>}
 
                         <div className="custom-frm-bx admin-frm-bx">
                           <label htmlFor="">Password</label>
@@ -93,7 +113,8 @@ function Login() {
                             </a>
                           </div>
                         </div>
-                        <div className='text-end'>
+                         <div className='d-flex justify-content-between'>
+                           <button type="button" onClick={()=>setEmailLogin(!emailLogin)} className='lab-login-forgot-btn fs-6'>Login using {emailLogin?'mobile number':'email'}</button>
                           <NavLink to="/forgot-password" className='lab-login-forgot-btn fs-6'>Forgot Password</NavLink>
                         </div>
 
