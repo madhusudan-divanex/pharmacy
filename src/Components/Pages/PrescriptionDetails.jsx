@@ -17,7 +17,7 @@ import Select from "react-select";
 function PrescriptionDetails() {
     const params = useParams();
     const prescriptionId = params.id;
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const userId = localStorage.getItem("userId");
     const [data, setData] = useState()
     const [scannerOpen, setScannerOpen] = useState(false)
@@ -29,7 +29,7 @@ function PrescriptionDetails() {
     const [formData, setFormData] = useState({
         patientId: null,
         doctorId: null,
-        pharId: userId,deliveryType:'Counter pickup',paymentMethod:"",
+        pharId: userId, deliveryType: 'Counter pickup', paymentMethod: "",
         prescriptionFile: null,
         note: "",
         paymentStatus: "Pending",
@@ -60,6 +60,9 @@ function PrescriptionDetails() {
                     value: item?._id,
                     label: item?.medicineName, // fixed typo
                     price: item?.salePrice || 0,
+                    storageType: item?.storageType || [],
+                    storage: item?.storage || [],
+                    stocks: item?.quantity
                 }));
                 setMedicineList(data)
                 setLoading(false)
@@ -111,7 +114,7 @@ function PrescriptionDetails() {
             console.error("Error fetching sell details:", error);
         }
     }
-    
+
     const validateProducts = () => {
         if (!formData.products || formData.products.length === 0) {
             toast.error("Please add at least one medicine");
@@ -147,11 +150,16 @@ function PrescriptionDetails() {
             }
 
             // 🔥 optional: value mismatch check
-            const expected =
-                item.discountType === "Percentage"
-                    ? item.quantity * item.rate - (item.quantity * item.rate * item.discountValue) / 100
-                    : item.quantity * item.rate - item.discountValue;
+            const baseAmount = item.quantity * item.rate;
 
+            let expected = baseAmount;
+
+            if (item.discountType === "Percentage") {
+                expected = baseAmount - (baseAmount * item.discountValue) / 100;
+            } else if (item.discountType === "Fixed") {
+                expected = baseAmount - item.discountValue;
+            }
+            console.log(item.totalAmount, expected, item?.discountValue)
             if (item.totalAmount !== Math.max(0, expected)) {
                 toast.error(`Medicine ${i + 1}: Value mismatch`);
                 return false;
@@ -170,7 +178,7 @@ function PrescriptionDetails() {
         form.append("note", formData.note)
         form.append("prescriptionId", prescriptionId)
         form.append("paymentStatus", formData.paymentStatus)
-        form.append("products",JSON.stringify(formData.products))
+        form.append("products", JSON.stringify(formData.products))
         if (formData.paymentMethod) {
             form.append("paymentMethod", formData.paymentMethod)
         }
@@ -223,7 +231,10 @@ function PrescriptionDetails() {
                     medicineName: item.medicineName,
                     rate: item.salePrice,
                     quantity: 1,
+                    storageType: item?.storageType || [],
+                    storage: item?.storage || [],
                     totalAmount: item?.salePrice,
+                    stocks: item?.quantity,
                     discountType: null,   // 🆕
                     discountValue: 0
                 }));
@@ -338,6 +349,9 @@ function PrescriptionDetails() {
                         medicineName: selectedMedicine.label,
                         quantity: 1,
                         rate: selectedMedicine.price || 0,
+                        storageType: selectedMedicine?.storageType || [],
+                        storage: selectedMedicine?.storage || [],
+                        stocks: selectedMedicine?.stocks,
                         discountType: null,   // 🆕
                         discountValue: 0,
                         totalAmount: selectedMedicine.price || 0
@@ -506,6 +520,8 @@ function PrescriptionDetails() {
                                                 </span>
 
                                                 <label className="check-container">
+                                                    {item?.storageType?.map(item => item)} {item?.storage?.length > 0 && `(${item?.storage?.map(item => item).join(', ')})`}
+                                                    {"  "}(Stocks {item?.stocks})
                                                     <button
                                                         disabled={formData?.products?.length == 1}
                                                         className="text-danger"
@@ -559,32 +575,32 @@ function PrescriptionDetails() {
                                 </div>
                                 <div className="row">
                                     <div className="col-lg-6 col-md-6 col-sm-12">
-                                    <div className="custom-frm-bx">
-                                        <label htmlFor="">Delivery Type</label>
-                                        <div className="select-wrapper">
-                                        <select name="" id="" className="form-select custom-select" value={formData?.deliveryType} onChange={(e) => setFormData({ ...formData, deliveryType: e.target.value })} >
-                                            <option value="Counter pickup">Counter pickup</option>
-                                            <option value="Hospital delivery">Hospital delivery</option>
-                                            <option value="Home delivery">Home delivery</option>
-                                        </select>
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Delivery Type</label>
+                                            <div className="select-wrapper">
+                                                <select name="" id="" className="form-select custom-select" value={formData?.deliveryType} onChange={(e) => setFormData({ ...formData, deliveryType: e.target.value })} >
+                                                    <option value="Counter pickup">Counter pickup</option>
+                                                    <option value="Hospital delivery">Hospital delivery</option>
+                                                    <option value="Home delivery">Home delivery</option>
+                                                </select>
+                                            </div>
+
                                         </div>
-                                        
                                     </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                    <div className="custom-frm-bx">
-                                        <label htmlFor="">Payment Type</label>
-                                        <div className="select-wrapper">
-                                        <select name="" id="" className="form-select custom-select" value={formData?.paymentMethod} onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}  >
-                                            <option value="">----Select----</option>
-                                            <option value="CASH">CASH</option>
-                                            <option value="CARD">CARD</option>
-                                            <option value="ONLINE">ONLINE</option>
-                                        </select>
+                                    <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Payment Type</label>
+                                            <div className="select-wrapper">
+                                                <select name="" id="" className="form-select custom-select" value={formData?.paymentMethod} onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}  >
+                                                    <option value="">----Select----</option>
+                                                    <option value="CASH">CASH</option>
+                                                    <option value="CARD">CARD</option>
+                                                    <option value="ONLINE">ONLINE</option>
+                                                </select>
+                                            </div>
+
                                         </div>
-                                        
                                     </div>
-                                </div>
                                 </div>
                             </div>
                         </div>
@@ -662,7 +678,7 @@ function PrescriptionDetails() {
 
                                             <div className="col-lg-2 col-md-4 col-sm-12">
                                                 <div className="custom-frm-bx">
-                                                    <label htmlFor="">Rate($)</label>
+                                                    <label htmlFor="">Rate(₹)</label>
                                                     <input type="text"
                                                         name="price"
                                                         readOnly
@@ -702,7 +718,7 @@ function PrescriptionDetails() {
                                             </div>
                                             <div className="col-lg-2 col-md-4 col-sm-12">
                                                 <div className="custom-frm-bx">
-                                                    <label htmlFor="">Total Amount($)</label>
+                                                    <label htmlFor="">Total Amount(₹)</label>
                                                     <input
                                                         type="text"
                                                         value={item?.totalAmount || 0}

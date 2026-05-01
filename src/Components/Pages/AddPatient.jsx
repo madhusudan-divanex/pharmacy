@@ -102,7 +102,11 @@ function AddPatient() {
 
     useEffect(() => {
         getApiData("api/location/countries")
-            .then(res => setCountries(res))
+            .then(res =>{
+                const data=res.find(item=>item?.name=="India")
+                setForm({...form,countryId:data?._id})
+                fetchStates(data?.isoCode)
+                 setCountries(res)})
             .catch(err => console.error(err));
 
     }, []);
@@ -149,16 +153,16 @@ function AddPatient() {
             newErrors.email = "Invalid email address";
 
         // ✅ correct key
-        if (
-            !/^\d{10}$/.test(form.contact.emergencyContactNumber)
-        )
-            newErrors.emergencyContactNumber = "Emergency phone must be 10 digits";
+        // if (
+        //     !/^\d{10}$/.test(form.contact.emergencyContactNumber)
+        // )
+        //     newErrors.emergencyContactNumber = "Emergency phone must be 10 digits";
 
         // ✅ correct validation
-        if (
-            !form.contact.emergencyContactName.trim()
-        )
-            newErrors.emergencyContactName = "Emergency contact name is required";
+        // if (
+        //     !form.contact.emergencyContactName.trim()
+        // )
+        //     newErrors.emergencyContactName = "Emergency contact name is required";
 
         if (!form.countryId)
             newErrors.countryId = "Country is required";
@@ -182,7 +186,6 @@ function AddPatient() {
         return Object.keys(newErrors).length === 0;
     };
 
-    console.log(errors)
     useEffect(() => {
         if (!form.stateId) return;
 
@@ -228,6 +231,7 @@ function AddPatient() {
                                     <label htmlFor="">Date of Birth</label>
                                     <input type="date" name="dob"
                                         value={form.dob}
+                                        max={new Date().toISOString().split("T")[0]}
                                         onChange={handleChange} className="form-control nw-frm-select" placeholder="Enter " />
                                     {errors.dob && <small className="text-danger">{errors.dob}</small>}
                                 </div>

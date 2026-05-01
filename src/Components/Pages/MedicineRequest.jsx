@@ -11,7 +11,7 @@ function MedicineRequest() {
     const [loading, setLoading] = useState(true)
     const userId = localStorage.getItem('userId')
     const [currentPage, setCurrentPage] = useState(1)
-    const [status, setStatus] = useState('all')
+    const [status, setStatus] = useState('')
     const [name, setName] = useState('')
     const [totalPage, setTotalPage] = useState(1)
     const [schedule, setSchedule] = useState()
@@ -26,6 +26,7 @@ function MedicineRequest() {
     })
 
     const fetchSchedules = async () => {
+        
         setLoading(true)
         try {
             const response = await getApiData(`admin/schedule-medicines?name=H1`);
@@ -46,6 +47,24 @@ function MedicineRequest() {
             toast.error(err?.response?.data?.message || "Something went wrong");
         } finally {
 
+        }
+    }
+    const fetchInventory = async () => {
+        if(!schedule) return
+        setLoading(true)
+        try {
+            const response = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=${schedule?._id}&limit=10&status=${status}`);
+            if (response.success) {
+                setFormData({...formData,schedule:schedule?._id})
+                setMedicineList(response.data)
+
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -70,9 +89,11 @@ function MedicineRequest() {
         }
     }
     useEffect(() => {
-        // fetchInventory()
         fetchMedicineRequest()
     }, [userId])
+    useEffect(() => {
+        fetchInventory()
+    }, [schedule])
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({
@@ -104,6 +125,10 @@ function MedicineRequest() {
             setLoading(false)
         }
     }
+    useEffect(()=>{
+        const quantity=medicineList.find(item=>item?._id==formData?.medicineId)?.quantity || 0
+        setFormData({...formData,quantity})
+    },[formData.medicineId])
     return (
 
         <>
@@ -161,7 +186,7 @@ function MedicineRequest() {
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
                                             <label className="label">Status :</label>
                                             <select className="" value={status} onChange={(e) => setStatus(e.target.value)}>
-                                                <option value="all">All</option>
+                                                <option value="">All</option>
                                                 <option value="Pending">Pending</option>
                                                 <option value="Approved">Approved</option>
                                                 <option value="Rejected">Rejected</option>
@@ -291,7 +316,7 @@ function MedicineRequest() {
                                             <label htmlFor="">Quantity</label>
                                             <input type="number"
                                                 value={formData?.quantity}
-                                                onChange={handleChange}
+                                                readOnly
                                                 name="quantity"
                                                 className="form-control nw-frm-select " placeholder="Enter Quantity" />
                                         </div>

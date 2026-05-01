@@ -245,7 +245,7 @@ function InventoryList() {
         link.download = `qr-${key}.png`;
         link.click();
     };
-     const handlePrintQR = (key) => {
+     const handlePrintQR = (key,item) => {
         const canvas = qrRefs.current[key];
         if (!canvas) return;
 
@@ -265,29 +265,76 @@ function InventoryList() {
         const doc = iframe.contentWindow.document;
 
         doc.open();
-        doc.write(`
-        <html>
-            <head>
-                <style>
-                @page {
-            margin: 0;
+       doc.write(`
+<html>
+<head>
+    <style>
+        @page {
+            size: 80mm 100mm;
+            margin: 5mm;
         }
-                    body {
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                    }
-                    img {
-                        width: 200px;
-                    }
-                </style>
-            </head>
-            <body>
-                <img src="${dataUrl}" />
-            </body>
-        </html>
-    `);
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #000;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .text {
+            width: 60%;
+            font-size: 12px;
+        }
+
+        .title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .info {
+            margin: 3px 0;
+        }
+
+        .qr {
+            width: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr img {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        
+        <div class="text">
+            <div class="title">${item?.medicineName || ""}</div>
+
+            <div class="info">MFG: ${item?.mfgDate ? new Date(item.mfgDate).toLocaleDateString('en-GB') : ""}</div>
+            <div class="info">EXP: ${item?.expDate ? new Date(item.expDate).toLocaleDateString('en-GB') : ""}</div>
+            <div class="info">Batch: ${item?.batchNumber || ""}</div>
+        </div>
+
+        <div class="qr">
+            <img src="${dataUrl}" />
+        </div>
+
+    </div>
+</body>
+</html>
+`);
         doc.close();
 
         // wait a bit for rendering
@@ -417,6 +464,7 @@ function InventoryList() {
                                                     <th>Purchase Price</th>
                                                     <th>Sale Price</th>
                                                     <th>Margin</th>
+                                                    <th>Storage</th>
                                                     <th>Bar Code </th>
                                                     <th>Action</th>
 
@@ -464,7 +512,7 @@ function InventoryList() {
                                                                 {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
                                                             </td>
                                                             <td>
-                                                                ${item?.purchasePrice}
+                                                                ₹ {item?.purchasePrice}
                                                             </td>
                                                             <td>
                                                                 {item?.salePrice}
@@ -472,6 +520,7 @@ function InventoryList() {
                                                             <td>
                                                                 {item?.margin} %
                                                             </td>
+                                                            <td> {item?.storageType?.map(item=>item)}<br/> {item?.storage?.map(item=>item)}</td>
                                                             <td>
                                                                 {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
                                                                 {showBarcode == key ?
@@ -479,9 +528,9 @@ function InventoryList() {
 
                                                                         {/* <Barcode value={item?.customId} width={1.3} displayValue={false}
                                                                             height={80} /> */}
-                                                                        <QRCodeCanvas color="#000" value={item?.customId}  ref={(el) => (qrRefs.current[key] = el)}/>
+                                                                        <QRCodeCanvas color="#000" value={item?.batchNumber}  ref={(el) => (qrRefs.current[key] = el)}/>
                                                                         {showBarcode == key &&
-                                                                            <button className="prescription-nav w-100" onClick={() => handlePrintQR(key)}>
+                                                                            <button className="prescription-nav w-100" onClick={() => handlePrintQR(key,item)}>
                                                                                 Print QR
                                                                             </button>
                                                                         }
@@ -498,7 +547,7 @@ function InventoryList() {
 
                                                             <td>
                                                                 <div className="d-flex align-items-centet gap-2">
-                                                                    <div className="dropdown">
+                                                                    <div className="dropdown position-static">
                                                                         <a
 
                                                                             href="javascript:void(0)"

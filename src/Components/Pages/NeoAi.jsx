@@ -32,6 +32,7 @@ function NeoAi() {
     const recordTimerRef = useRef(null);
     const [chatSessions, setChatSessions] = useState([]);
     const [activeChatId, setActiveChatId] = useState(null);
+    const skipFetchOnChatIdChange = useRef(false);
     async function fetchGeneralQuestions() {
         if (!question.trim()) return;
         setMyQuestions(prev => [
@@ -53,6 +54,7 @@ function NeoAi() {
         if (!activeChatId) {
             const res = await securePostData("api/comman/create-chat");
             chatSessionId = res.data?._id
+            skipFetchOnChatIdChange.current = true;
             setActiveChatId(res.data?._id)
         } else {
             chatSessionId = activeChatId
@@ -152,6 +154,7 @@ function NeoAi() {
         if (!activeChatId) {
             const res = await securePostData("api/comman/create-chat");
             chatSessionId = res.data?._id
+            skipFetchOnChatIdChange.current = true;
             setActiveChatId(res.data?._id)
         } else {
             chatSessionId = activeChatId
@@ -185,12 +188,16 @@ function NeoAi() {
 
     useEffect(() => {
         if (activeChatId) {
+            if (skipFetchOnChatIdChange.current) {
+                skipFetchOnChatIdChange.current = false;
+                return;
+            }
             fetchMyQuestions(activeChatId);
         }
     }, [activeChatId]);
     useEffect(() => {
         fetchChatSessions();
-    }, []);
+    }, [myQuestions]);
 
     async function fetchChatSessions() {
         setLoading(true)
@@ -360,7 +367,7 @@ function NeoAi() {
                                             <div className="d-flex align-items-center justify-content-between">
                                                 <div className="chat-usr-avatr-crd">
                                                     <div className="chat-usr-avatr-bx nw-chat-add-live">
-                                                        <img src={"/logo.png"} alt="" />
+                                                        <img src={"/logo.png"} alt="" style={{ objectFit: 'contain' }} />
                                                     </div>
                                                     <div className="chat-usr-info">
                                                         <h5 className="mb-0">Neo Ai Chat</h5>

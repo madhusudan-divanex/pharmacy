@@ -206,7 +206,8 @@ function EditReturn() {
                                         name="status"
                                         required
                                         value={formData.status}
-                                        readOnly
+                                        onChange={handleChange}
+                                        
                                     >
                                         <option value="">Select Status</option>
                                         <option value="Pending">Pending</option>
@@ -282,9 +283,9 @@ function EditReturn() {
                             <Link to={-1} className="nw-thm-btn rounded-3 outline" >
                                 Go Back
                             </Link>
-                            {/* <button className="nw-thm-btn rounded-3" type="submit">
+                            <button className="nw-thm-btn rounded-3" type="submit">
                                 Submit
-                            </button> */}
+                            </button>
                         </div>
                     </form>
 

@@ -27,8 +27,12 @@ function Sell() {
     const [startDate, setStartDate] = useState('')
     const [endDate, setEndDate] = useState('')
     const [totalPage, setTotalPage] = useState(1)
+    const [currentReturnPage, setCurrentReturnPage] = useState(1)
+    const [totalReturnPage, setTotalReturnPage] = useState(1)
     const [loading, setLoading] = useState(false)
-    const [eodData,setEodData]=useState()
+    const [tableView, setTableView] = useState("sell")
+    const [eodData, setEodData] = useState()
+    const [returnList, setReturnList] = useState([])
     const openScanner = () => setScannerOpen(true);
     const closeScanner = () => setScannerOpen(false);
     const fetchSellData = async () => {
@@ -47,6 +51,26 @@ function Sell() {
             setLoading(false)
         }
     }
+    const fetchReturnData = async () => {
+        // if(tableView!=="return") returnList
+        setLoading(true)
+        try {
+            const response = await getSecureApiData(`pharmacy/customer-return/${userId}?page=${currentReturnPage}&search=${name}&schedule=${schedule}&startDate=${startDate}&endDate=${endDate}&sort=${sort}`);
+            if (response.success) {
+                setReturnList(response.data)
+                setTotalReturnPage(response.totalPages)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Something went wrong")
+        } finally {
+            setLoading(false)
+        }
+    }
+    useEffect(() => {
+        fetchReturnData()
+    }, [userId, currentReturnPage])
     useEffect(() => {
         fetchSellData()
     }, [userId, currentPage])
@@ -167,8 +191,18 @@ function Sell() {
                                     <button className="nw-thm-btn" onClick={() => fetchSellData()}>Filter</button>
                                 </div>
                             </div>
+                            <div className="filters">
+                                <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
+                                    <label className="label">View  :</label>
+                                    <select className="" value={tableView} onChange={(e) => setTableView(e.target.value)}>
+                                        <option value="sell" >Sell</option>
+                                        <option value="return">Return</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                            {totalPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                            <>
+                            {tableView=="sell"&& totalPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
                                 <div>
                                     <select
                                         value={currentPage}
@@ -181,12 +215,27 @@ function Sell() {
                                 </div>
 
 
-                            </div>}                        </div>
+                            </div>}
+                            {tableView=="return"&& totalReturnPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                                <div>
+                                    <select
+                                        value={currentReturnPage}
+                                        onChange={(e) => setCurrentReturnPage(e.target.value)}
+                                        className="form-select custom-page-dropdown nw-custom-page ">
+                                        {Array.from({ length: totalReturnPage }, (_, i) => (
+                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+
+                            </div>}
+                            </>                        </div>
                     </div>
 
 
 
-                    <div className="row">
+                    {tableView == "sell" ? <div className="row">
                         <div className="col-lg-12">
                             <div className="table-section">
                                 <div className="table table-responsive mb-0">
@@ -230,7 +279,7 @@ function Sell() {
                                                                         <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.inventoryDetail?.medicineName}</span></li>
                                                                         <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">{product?.quantity}</span></li>
                                                                         <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{product?.inventoryDetail?.batchNumber}</span></li>
-                                                                        <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventoryDetail?.schedule}</span></li>
+                                                                        {/* <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventoryDetail?.schedule}</span></li> */}
                                                                     </>))}
 
 
@@ -258,7 +307,7 @@ function Sell() {
                                                                                 View
                                                                             </NavLink>
                                                                         </li>
-                                                                        
+
                                                                         <li className="prescription-item">
                                                                             <NavLink to={`/prescriptions-detail/${item?._id}`} className="prescription-nav" href="#" >
                                                                                 Edit
@@ -280,7 +329,7 @@ function Sell() {
 
                                                         <td>
                                                             <div className="d-flex align-items-centet gap-2">
-                                                                <div className="dropdown">
+                                                                <div className="dropdown position-static">
                                                                     <a
 
                                                                         href="javascript:void(0)"
@@ -333,7 +382,108 @@ function Sell() {
 
                             </div>
                         </div>
-                    </div>
+                    </div> :
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="table-section">
+                                    <div className="table table-responsive mb-0">
+                                        <table className="table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>S.no.</th>
+                                                    <th>Date</th>
+                                                    <th>Patient Name</th>
+                                                    <th>Medicine Name</th>
+                                                    <th>Action</th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                {returnList?.length > 0 ?
+                                                    returnList?.map((item, key) =>
+                                                        <tr key={key}>
+                                                            <td>{(currentPage - 1) * 10 + key + 1}</td>
+                                                            <td>{new Date(item?.updatedAt).toLocaleDateString('en-GB', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })}</td>
+                                                            <td>
+                                                                <div className="d-flex flex-column gap-2"><span>{item?.patientId?.name} </span>
+                                                                    <span className="">{item?.patientId?.nh12} </span>
+                                                                </div></td>
+
+                                                            <td>
+                                                                <ul className="admin-appointment-list">
+                                                                    {item?.returnProducts?.map((product, index) => (
+                                                                        <>
+                                                                            <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.inventoryId?.medicineName}</span></li>
+                                                                            <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">{product?.quantity}</span></li>
+                                                                            <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{product?.inventoryId?.batchNumber}</span></li>
+                                                                        </>))}
+
+
+                                                                </ul>
+                                                            </td>
+
+
+                                                            <td>
+                                                                <div className="d-flex align-items-centet gap-2">
+                                                                    <div className="dropdown position-static">
+                                                                        <a
+
+                                                                            href="javascript:void(0)"
+                                                                            className="grid-dots-btn"
+                                                                            id="acticonMenu1"
+                                                                            data-bs-toggle="dropdown"
+                                                                            aria-expanded="false"
+                                                                        >
+                                                                            <TbGridDots />
+                                                                        </a>
+                                                                        <ul
+                                                                            className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                            aria-labelledby="acticonMenu1"
+                                                                        >
+                                                                            <li className="prescription-item">
+                                                                                <NavLink to={`/edit-sell/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                    View/Edit
+                                                                                </NavLink>
+                                                                            </li>
+                                                                            {/* <li className="prescription-item">
+                                                                            <NavLink to={`/customer-return/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                Return
+                                                                            </NavLink>
+                                                                        </li> */}
+                                                                            {/* <li className="prescription-item">
+                                                                            <a className=" prescription-nav" href="#">
+
+                                                                                Delete
+                                                                            </a>
+                                                                        </li> */}
+                                                                        </ul>
+                                                                    </div>
+
+                                                                </div>
+                                                            </td>
+                                                        </tr>) :
+
+                                                    <tr>
+                                                        <td colSpan="6" className="text-center py-4">
+                                                            No return found
+                                                        </td>
+                                                    </tr>}
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>}
 
 
 
@@ -383,7 +533,7 @@ function Sell() {
             </div>}
             {/*  Payment Status Popup End */}
 
-                 {/* data-bs-toggle="modal" data-bs-target="#add-Inventory" */}
+            {/* data-bs-toggle="modal" data-bs-target="#add-Inventory" */}
             <div className="modal step-modal fade" id="EOD-Sale" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-lg">
@@ -461,7 +611,7 @@ function Sell() {
                                                 value={eodData?.pendingAmount}
                                             />
                                         </div>
-                                    </div>                                                      
+                                    </div>
                                     <div className="col-lg-12">
                                         <div className="text-center mt-3">
                                             <button className="nw-thm-btn rounded-2 w-75" type="button" data-bs-dismiss="modal"

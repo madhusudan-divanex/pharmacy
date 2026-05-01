@@ -22,6 +22,7 @@ function AddEmployee() {
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [searchLoading, setSearchLoading] = useState(false);
     const { user, medicalLicense, allowEdit, aboutDoctor, } = useSelector(state => state.user)
 
     // Error states
@@ -249,6 +250,7 @@ function AddEmployee() {
 
     async function handleAddStaff() {
         try {
+            setSearchLoading(true);
             const result = await getSecureApiData(`api/staff/${staffNh12}`);
             if (result.success) {
                 setStaffId(result.staffData?.userId)
@@ -289,6 +291,8 @@ function AddEmployee() {
             }
         } catch (error) {
             toast.error(error?.response?.data?.message);
+        } finally{
+            setSearchLoading(false)
         }
     }
 
@@ -578,10 +582,10 @@ function AddEmployee() {
                                 value={staffNh12}
                                 onChange={(e) => setStaffNh12(e.target.value)}
                             />
-                            {loading && <small className="text-info">Checking...</small>}
+                            {searchLoading && <small className="text-info">Checking...</small>}
                         </div>
                         <div className="text-center mt-4">
-                            <button className="nw-thm-btn w-75" disabled={loading} onClick={handleAddStaff}>
+                            <button className="nw-thm-btn w-75" disabled={searchLoading} onClick={handleAddStaff}>
                                 Add
                             </button>
                         </div>

@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { postApiData } from '../../Services/api'
 import { toast } from 'react-toastify'
-import { clearProfiles, fetchUserDetail } from '../../redux/feature/userSlice'
+import { clearProfiles, fetchEmpDetail, fetchUserDetail } from '../../redux/feature/userSlice'
 import Loader from '../Layouts/Loader'
 function Login() {
   const navigate = useNavigate()
@@ -17,35 +17,35 @@ function Login() {
   const userId = localStorage.getItem('userId')
   const [formData, setFormData] = useState({
     contactNumber: "",
-    panelId:"",
+    panelId: "",
     email: "",
-    password: ""
+    password: "",withOtp:true
   });
   const [errors, setErrors] = useState({});
-    const validate = () => {
-        let temp = {};
+  const validate = () => {
+    let temp = {};
 
-        if (emailLogin) {
-            if (!formData?.email?.trim())
-                temp.email = "Email is required";
-            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-                temp.email = "Invalid email format";
-        } else {
-            if (!formData?.contactNumber?.trim())
-                temp.contactNumber = "Mobile number is required";
-            else if (formData.contactNumber.length !== 10)
-                temp.contactNumber = "Mobile number must be 10 digits";
-        }
-        if (!formData?.password?.trim())
-            temp.password = "Password is required";
-        if (loginAsEmployee && !formData?.panelId?.trim()) {
-            temp.panelId = "Panel id is required"
-        }
+    if (emailLogin) {
+      if (!formData?.email?.trim())
+        temp.email = "Email is required";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+        temp.email = "Invalid email format";
+    } else {
+      if (!formData?.contactNumber?.trim())
+        temp.contactNumber = "Mobile number is required";
+      else if (formData.contactNumber.length !== 10)
+        temp.contactNumber = "Mobile number must be 10 digits";
+    }
+    if (!formData?.password?.trim())
+      temp.password = "Password is required";
+    if (loginAsEmployee && !formData?.panelId?.trim()) {
+      temp.panelId = "Panel id is required"
+    }
 
 
-        setErrors(temp);
-        return Object.keys(temp).length === 0;
-    };
+    setErrors(temp);
+    return Object.keys(temp).length === 0;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -61,18 +61,43 @@ function Login() {
       if (loginAsEmployee) {
         const response = await postApiData('api/staff/login', formData)
         if (response.success) {
-          localStorage.setItem('staffId', response.staffId)
-          localStorage.setItem('panelId', formData.panelId)
-          toast.success(`Login Success`)
-          navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          if (formData?.withOtp) {
+            localStorage.setItem('staffId', response.staffId)
+            localStorage.setItem('panelId', formData.panelId)
+            toast.success(`Login Success`)
+            navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          } else {
+            localStorage.removeItem("panelId")
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('userId', response.userId);
+            dispatch(fetchEmpDetail(response.staffId));
+            // await saveFcmToken();
+            navigate('/dashboard');
+            dispatch(fetchUserDetail());
+          }
         } else {
           toast.error(response.message)
         }
       } else {
         const response = await postApiData('pharmacy/signin', data)
         if (response.success) {
-          navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          if (formData?.withOtp) {
+            navigate(`/otp?contact=${formData?.contactNumber || formData?.email}`)
+          } else {
+            localStorage.setItem('token', response.token)
+            localStorage.setItem('userId', response.userId)
 
+            if (response.nextStep) {
+              navigate(response.nextStep)
+            } else if (response.user.status == 'pending') {
+              navigate('/wating-for-approval')
+              return
+            } else {
+              navigate('/dashboard')
+            }
+
+            toast.success('Login successfully')
+          }
         } else {
           toast.error(response.message)
         }
@@ -123,7 +148,7 @@ function Login() {
                             <label htmlFor="">Enter Id</label>
                             <input type="number" name="panelId"
                               value={formData.panelId}
-                               onChange={(e) => setFormData({ ...formData, panelId: e.target.value })} className="form-control nw-frm-select" placeholder="Enter id" />
+                              onChange={(e) => setFormData({ ...formData, panelId: e.target.value })} className="form-control nw-frm-select" placeholder="Enter id" />
                             {/* <div className="contact-add-icon">
                               <span className="nw-contact-icon"> <FontAwesomeIcon icon={faIdCard} /> </span>
                             </div> */}
@@ -141,7 +166,7 @@ function Login() {
                               value={formData.email}
                               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
-                                {errors.email && <small className="text-danger">{errors.email}</small>}
+                            {errors.email && <small className="text-danger">{errors.email}</small>}
                           </div>
                           : <div className="custom-frm-bx admin-frm-bx">
                             <label htmlFor="">Mobile Number</label>
@@ -177,6 +202,11 @@ function Login() {
                         <div className='d-flex justify-content-between'>
                           <button type="button" onClick={() => setEmailLogin(!emailLogin)} className='lab-login-forgot-btn fs-6'>Login using {emailLogin ? 'mobile number' : 'email'}</button>
                           <NavLink to="/forgot-password" className='lab-login-forgot-btn fs-6'>Forgot Password</NavLink>
+                        </div>
+                        <div className="custom-radio-group my-3 d-flex flex-row">
+                          <label className="form-label me-3">Continue with Otp</label>
+                          <input type="checkbox" className="form-check-input" name="" checked={formData?.withOtp}
+                            onChange={(e) => setFormData({ ...formData, withOtp: e.target.checked })} id="" />
                         </div>
                         <div className='d-flex justify-content-between mt-4'>
                           <button className='lab-login-forgot-btn fs-6' type="button" onClick={() => setLoginAsEmployee(!loginAsEmployee)}>

@@ -17,6 +17,7 @@ import { fetchUserDetail, fetchUserProfile } from "../../redux/feature/userSlice
 import base_url from "../../baseUrl";
 import { QRCodeCanvas } from "qrcode.react";
 import Loader from "../Layouts/Loader";
+import { Pill } from "lucide-react";
 
 function Profile() {
   const navigate = useNavigate()
@@ -357,18 +358,23 @@ function Profile() {
                                 <div className="d-flex align-items-center justify-content-center gap-2 carding-bx">
                                   <div className="add-patients-clients" ref={cardRef}>
 
-                                    <div className="chip-card"></div>
-                                    <img src="/pharmacy-card.png" alt="" />
+                                    {/* <div className="chip-card"></div> */}
+                                    <div className="nw-chip-card">
+                                      {/* <Pill color="#fff" size={50}/> */}
+                                    </div>
+                                    <img src="/NeoCard.png" alt="" />
                                     <div className="patient-card-details">
-                                      <h4>{profiles?.name?.length > 14 ? profiles?.name?.slice(0, 14) + '..'
+                                      <h4>{profiles?.name?.length > 17 ? profiles?.name?.slice(0, 14) + '...'
                                         : profiles?.name}</h4>
-                                      <p>Pharmacy ID</p>
+                                      {/* <p>Pharmacy ID</p> */}
                                       <h6>{user?.nh12}</h6>
                                     </div>
                                     <QRCodeCanvas
                                       // readOnly value={String(userId)}
-                                      readOnly value="PAT-0001"
+                                      value={`https://neohealthcard.com/user/${user?.nh12}`}
                                       size={256}
+                                      bgColor="transparent"
+                                      fgColor="#ffffff"
                                       className="qr-code"
                                       style={{ height: "auto", maxWidth: "100%", width: "20%" }}
                                     />
