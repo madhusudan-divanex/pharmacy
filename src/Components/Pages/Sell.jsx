@@ -12,6 +12,7 @@ import {
     DecodeHintType,
 } from "@zxing/library";
 import Loader from "../Layouts/Loader";
+import PharmacyInvoice from "../Templates/PharmacyInvoice";
 
 
 
@@ -35,6 +36,8 @@ function Sell() {
     const [returnList, setReturnList] = useState([])
     const openScanner = () => setScannerOpen(true);
     const closeScanner = () => setScannerOpen(false);
+    const [pdfLoading, setPdfLoading] = useState(false)
+    const [selectedId, setSelectedId] = useState()
     const fetchSellData = async () => {
         setLoading(true)
         try {
@@ -354,6 +357,14 @@ function Sell() {
                                                                                 Return
                                                                             </NavLink>
                                                                         </li>
+                                                                        <li className="prescription-item">
+                                                                            <button className="prescription-nav" onClick={() => {
+                                                                                setSelectedId(item?._id)
+                                                                                setPdfLoading(true)
+                                                                            }} >
+                                                                                {(pdfLoading && item?._id === selectedId) ? 'Downloading' : 'Download'} Invoice
+                                                                            </button>
+                                                                        </li>
                                                                         {/* <li className="prescription-item">
                                                                             <a className=" prescription-nav" href="#">
 
@@ -490,6 +501,9 @@ function Sell() {
                 </div>
                 <div className="text-end mt-4">
                     <Link to={-1} className="nw-thm-btn outline">Go Back</Link>
+                </div>
+                <div className="d-none">
+                    <PharmacyInvoice sellId={selectedId} pdfLoading={pdfLoading} endLoading={()=>setPdfLoading(false)}/>
                 </div>
 
 

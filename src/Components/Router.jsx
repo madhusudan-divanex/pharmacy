@@ -59,6 +59,7 @@ import AccessControl from "./CMS/AccessControl";
 import CmsDynamic from "./CMS/CmsDynamic";
 import { useGlobalSocket } from "./Utils/useGlobalSocket";
 import MyPermission from "./Pages/MyPermission";
+import PharmacyInvoice from "./Templates/PharmacyInvoice";
 
 function Router() {
   const { socket, startCall } = useGlobalSocket();
@@ -93,6 +94,10 @@ function Router() {
         {
           path: "/page/:slug",
           element: <CmsDynamic />,
+        },
+        {
+          path: "/invoice/:id",
+          element: <PharmacyInvoice />,
         },
 
       ]
