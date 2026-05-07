@@ -20,7 +20,7 @@ function CustomerReturn() {
     const [ptData, setPtData] = useState({})
     const [medicineList, setMedicineList] = useState([])
     const [isLoading, setIsLoading] = useState(true)
-    const [haveReturns,setHaveReturns]=useState(false)
+    const [haveReturns, setHaveReturns] = useState(false)
     const [formData, setFormData] = useState({
         patientId: null,
         doctorId: null,
@@ -34,7 +34,10 @@ function CustomerReturn() {
         products: [
             { inventoryId: null, quantity: 1, medicineName: '', amount: 0, discountType: null, discountValue: 0, totalAmount: 0, rate: 0 },
         ],
-        returnProducts: []
+        returnProducts: [],
+        refundMode: '',
+        refundStatus: '',
+        returnDate: null,
     })
     const fetchPatient = async () => {
         setIsLoading(true)
@@ -92,12 +95,15 @@ function CustomerReturn() {
 
         data.sellId = id;
         data.returnProducts = formData.returnProducts;
+        data.refundMode = formData.refundMode;
+        data.refundStatus = formData.refundStatus;
+        data.returnDate = formData.returnDate;
         setIsLoading(true)
         try {
             const response = await securePostData(`pharmacy/customer-return`, data);
             if (response.success) {
                 toast.success(response.message)
-                navigate("/sell")
+                navigate("/sell?type=return")
             } else {
                 toast.error(response.message)
             }
@@ -126,8 +132,11 @@ function CustomerReturn() {
                 const returnProducts = data.returnProducts.map(prod => ({
                     inventoryId: prod.inventoryId?._id || prod.inventoryId,
                     quantity: prod.quantity,
+                    reason: prod.reason || '',
+                    condition: prod.condition || '',
+                    refundAmount: prod.refundAmount || null,
                 }));
-                if(returnProducts?.length>0){
+                if (returnProducts?.length > 0) {
                     setHaveReturns(true)
                 }
                 setFormData({
@@ -142,6 +151,11 @@ function CustomerReturn() {
                     products: products,
                     paymentStatus: data?.paymentStatus,
                     paymentMethod: data?.paymentMethod,
+                    refundMode: data?.refundMode || '',
+                    refundStatus: data?.refundStatus || '',
+                    returnDate: data?.returnDate
+                        ? new Date(data.returnDate).toISOString().split("T")[0]
+                        : '',
                     returnProducts
 
                 })
@@ -161,7 +175,12 @@ function CustomerReturn() {
     const handleAddReturn = () => {
         setFormData({
             ...formData,
-            returnProducts: [...(formData.returnProducts || []), { inventoryId: null, quantity: 1 }]
+            returnProducts: [...(formData.returnProducts || []), {
+                inventoryId: null, quantity: 1,
+                reason: '',
+                condition: '',
+                refundAmount: null,
+            }]
         })
     }
     useEffect(() => {
@@ -200,6 +219,21 @@ function CustomerReturn() {
         setFormData({ ...formData, returnProducts: updated });
     };
 
+    const handleReturnChange = (index, e) => {
+        const { name, value } = e.target;
+
+        const updated = [...formData.returnProducts];
+
+        updated[index] = {
+            ...updated[index],
+            [name]: value
+        };
+
+        setFormData({
+            ...formData,
+            returnProducts: updated
+        });
+    };
     return (
         <>
             {isLoading ? <Loader />
@@ -268,17 +302,17 @@ function CustomerReturn() {
                                     </div>}
                                 </div> */}
 
-                                   <div className="col-lg-3 col-md-6 col-sm-12 mb-2">
+                                <div className="col-lg-3 col-md-6 col-sm-12 mb-2">
                                     <div className="return-sell-content">
                                         <h5 className="mb-0">Patient:-</h5>
                                         <h6 className="mb-0">{formData?.ptName}</h6>
                                     </div>
-                                    
+
                                 </div>
 
                                 <div className="col-lg-3 col-md-6 col-sm-12 mb-2">
                                     <div className="return-sell-content">
-                                        <h5  className="mb-0">Patient Mobile Number:-</h5>
+                                        <h5 className="mb-0">Patient Mobile Number:-</h5>
                                         <h6 className="mb-0">{formData?.ptMob}</h6>
                                     </div>
 
@@ -293,7 +327,7 @@ function CustomerReturn() {
 
                                 <div className="col-lg-3 col-md-6 col-sm-12 mb-2">
                                     {formData?.paymentMethod && <div className="return-sell-content">
-                                        <h5  className="mb-0">Payment Method:-</h5>
+                                        <h5 className="mb-0">Payment Method:-</h5>
                                         <h6 className="text-black mb-0">{formData?.paymentMethod}</h6>
                                     </div>}
                                 </div>
@@ -317,7 +351,7 @@ function CustomerReturn() {
                                                                     (p, i) => p.inventoryId === item.value && i !== index
                                                                 )
                                                         )}
-                                                        disabled
+                                                        readOnly={haveReturns}
                                                         classNamePrefix="custom-select"
                                                         value={medicineList.find(item => item.value === product.inventoryId) || null}
                                                         placeholder="Select Product"
@@ -381,14 +415,14 @@ function CustomerReturn() {
 
                                 <div className="d-flex align-items-center justify-content-between">
                                     <h5 className="add-contact-title">Return Medicines</h5>
-                                    {formData?.products?.length> formData?.returnProducts?.length && 
-                                    <button className="text-end" type="button" disabled={haveReturns} onClick={() => handleAddReturn()}>
-                                        <FontAwesomeIcon className="reprting-name" icon={faPlusCircle} /></button>}
+                                    {formData?.products?.length > formData?.returnProducts?.length &&
+                                        <button className="text-end" type="button" disabled={haveReturns} onClick={() => handleAddReturn()}>
+                                            <FontAwesomeIcon className="reprting-name" icon={faPlusCircle} /></button>}
 
                                 </div>
                                 {formData.returnProducts?.map((product, index) => (
-                                    <div className="row mb-2" key={index}>
-                                        <div className="col-lg-6 col-md-6 col-sm-12">
+                                    <div className="row mb-2" key={index} >
+                                        <div className="col-lg-3 col-md-6 col-sm-12">
                                             <div class="custom-frm-bx">
                                                 <label>Medication</label>
                                                 <div class="select-wrapper">
@@ -404,30 +438,103 @@ function CustomerReturn() {
                                                         value={medicineList.find(item => item.value === product.inventoryId) || null}
                                                         onChange={(option) => handleReturnSelectChange(index, option)}
                                                         placeholder="Select Product"
+                                                        disabled={haveReturns}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="col-lg-6 col-md-6 col-sm-12">
+                                        <div className="col-lg-1 col-md-6 col-sm-12">
                                             <div className="custom-frm-bx">
                                                 <label htmlFor="">Quantity</label>
                                                 <input type="number"
                                                     value={product?.quantity}
                                                     name="quantity"
+                                                    disabled={haveReturns}
                                                     onChange={(e) => handleReturnQuantityChange(index, e)}
                                                     className="form-control nw-frm-select " placeholder="Enter Quantity" />
                                             </div>
                                         </div>
-                                        <div className="text-end">
+                                        <div className="col-lg-3 col-md-4 col-sm-12">
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Reason</label>
+                                                <input type="text"
+                                                    value={product?.reason}
+                                                    name="reason"
+                                                    disabled={haveReturns}
+                                                    onChange={(e) => handleReturnChange(index, e)}
+                                                    className="form-control nw-frm-select " placeholder="Enter Reason" />
+                                            </div>
+                                        </div>
+                                        <div className="col-lg-2 col-md-4 col-sm-12">
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Condition</label>
+                                                <input type="text"
+                                                    value={product?.condition}
+                                                    name="condition"
+                                                    disabled={haveReturns}
+                                                    onChange={(e) => handleReturnChange(index, e)}
+                                                    className="form-control nw-frm-select " placeholder="Enter Condition" />
+                                            </div>
+                                        </div>
+                                        <div className="col-lg-2 col-md-4 col-sm-12">
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Refund Amount</label>
+                                                <input type="number"
+                                                    value={product?.refundAmount}
+                                                    name="refundAmount"
+                                                    disabled={haveReturns}
+                                                    onChange={(e) => handleReturnChange(index, e)}
+                                                    className="form-control nw-frm-select " placeholder="Enter Refund Amount" />
+                                            </div>
+                                        </div>
+                                        {!haveReturns &&<div className="col-lg-1 col-md-4 col-sm-12 d-flex align-items-center justify-content-center">
                                             <button className="text-danger" disabled={haveReturns} type="button" onClick={() => handleRemoveReturn(index)}><FontAwesomeIcon icon={faTrash} /></button>
 
-                                        </div>
+                                        </div>}
                                     </div>))}
+                                <div className="row">
+                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Refund Status</label>
+                                            <div className="select-wrapper">
+                                                <select name="" id="" disabled={haveReturns} required className="form-select custom-select" value={formData?.refundStatus} onChange={(e) => setFormData({ ...formData, refundStatus: e.target.value })} >
+                                                    <option value="PENDING">PENDING</option>
+                                                    <option value="REFUNDED">REFUNDED</option>
+                                                    <option value="PARTIAL">PARTIAL</option>
+                                                    <option value="REJECTED">REJECTED</option>
+                                                </select>
+                                            </div>
 
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Refund Mode</label>
+                                            <div className="select-wrapper">
+                                                <select name="" id="" disabled={haveReturns} required className="form-select custom-select" value={formData?.refundMode} onChange={(e) => setFormData({ ...formData, refundMode: e.target.value })}  >
+                                                    <option value="">----Select----</option>
+                                                    <option value="CASH">CASH</option>
+                                                    <option value="CARD">CARD</option>
+                                                    <option value="ONLINE">ONLINE</option>
+                                                </select>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-4 col-md-6 col-sm-12">
+                                        <div className="custom-frm-bx">
+                                            <label htmlFor="">Return Date</label>
+                                            <input type="date" disabled={haveReturns} value={formData.returnDate} required max={new Date().toISOString().split("T")[0]} 
+                                            className="form-control nw-frm-select " name="returnDate" 
+                                            onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}  id="" />
+
+                                        </div>
+                                    </div>
+                                </div>
                                 <div className="mt-3 text-end">
                                     <div className="d-flex justify-content-between">
-                                        <Link className="nw-thm-btn  outline" to={-1}  >Go Back</Link>
-                                        {!haveReturns && <button className="nw-thm-btn rounded-3" type="submit"  aria-label="Close" >Submit</button>}
+                                        <Link className="nw-thm-btn  outline" to={`/sell?type=return`}  >Go Back</Link>
+                                        {!haveReturns && <button className="nw-thm-btn rounded-3" type="submit" aria-label="Close" >Submit</button>}
                                     </div>
                                 </div>
                             </div>

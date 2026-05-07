@@ -2,7 +2,7 @@ import { TbGridDots } from "react-icons/tb";
 
 import { faCircleXmark, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { deleteApiData, getSecureApiData } from "../../Services/api";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +13,7 @@ import {
 } from "@zxing/library";
 import Loader from "../Layouts/Loader";
 import PharmacyInvoice from "../Templates/PharmacyInvoice";
+import PharmacyReturnPdf from "../Templates/PharmacyReturnPdf";
 
 
 
@@ -38,6 +39,8 @@ function Sell() {
     const closeScanner = () => setScannerOpen(false);
     const [pdfLoading, setPdfLoading] = useState(false)
     const [selectedId, setSelectedId] = useState()
+    const [searchParams, setSearchParams] = useSearchParams()
+    const [returnLoading, setReturnLoading] = useState()
     const fetchSellData = async () => {
         setLoading(true)
         try {
@@ -110,6 +113,12 @@ function Sell() {
             toast.error(err?.response?.data?.message || "Something went wrong")
         }
     }
+    useEffect(() => {
+        if (searchParams.get('type') == "return") {
+            setTableView("return")
+            setSearchParams()
+        }
+    }, [searchParams])
     return (
         <>
             {loading ? <Loader /> : <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -205,34 +214,34 @@ function Sell() {
                             </div>
 
                             <>
-                            {tableView=="sell"&& totalPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
-                                <div>
-                                    <select
-                                        value={currentPage}
-                                        onChange={(e) => setCurrentPage(e.target.value)}
-                                        className="form-select custom-page-dropdown nw-custom-page ">
-                                        {Array.from({ length: totalPage }, (_, i) => (
-                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {tableView == "sell" && totalPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                                    <div>
+                                        <select
+                                            value={currentPage}
+                                            onChange={(e) => setCurrentPage(e.target.value)}
+                                            className="form-select custom-page-dropdown nw-custom-page ">
+                                            {Array.from({ length: totalPage }, (_, i) => (
+                                                <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                            ))}
+                                        </select>
+                                    </div>
 
 
-                            </div>}
-                            {tableView=="return"&& totalReturnPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
-                                <div>
-                                    <select
-                                        value={currentReturnPage}
-                                        onChange={(e) => setCurrentReturnPage(e.target.value)}
-                                        className="form-select custom-page-dropdown nw-custom-page ">
-                                        {Array.from({ length: totalReturnPage }, (_, i) => (
-                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                                </div>}
+                                {tableView == "return" && totalReturnPage > 1 && <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2">
+                                    <div>
+                                        <select
+                                            value={currentReturnPage}
+                                            onChange={(e) => setCurrentReturnPage(e.target.value)}
+                                            className="form-select custom-page-dropdown nw-custom-page ">
+                                            {Array.from({ length: totalReturnPage }, (_, i) => (
+                                                <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                            ))}
+                                        </select>
+                                    </div>
 
 
-                            </div>}
+                                </div>}
                             </>                        </div>
                     </div>
 
@@ -457,9 +466,14 @@ function Sell() {
                                                                             aria-labelledby="acticonMenu1"
                                                                         >
                                                                             <li className="prescription-item">
-                                                                                <NavLink to={`/edit-sell/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                <NavLink to={`/customer-return/${item?._id}`} className="prescription-nav" href="#" >
                                                                                     View/Edit
                                                                                 </NavLink>
+                                                                            </li>
+                                                                            <li className="prescription-item">
+                                                                                <button disabled={returnLoading} onClick={() => setReturnLoading(item?._id)} className="prescription-nav" href="#" >
+                                                                                    {returnLoading == item?._id ? 'Downloading...' : 'Download'} Return
+                                                                                </button>
                                                                             </li>
                                                                             {/* <li className="prescription-item">
                                                                             <NavLink to={`/customer-return/${item?._id}`} className="prescription-nav" href="#" >
@@ -503,7 +517,8 @@ function Sell() {
                     <Link to={-1} className="nw-thm-btn outline">Go Back</Link>
                 </div>
                 <div className="d-none">
-                    <PharmacyInvoice sellId={selectedId} pdfLoading={pdfLoading} endLoading={()=>setPdfLoading(false)}/>
+                    <PharmacyInvoice sellId={selectedId} pdfLoading={pdfLoading} endLoading={() => setPdfLoading(false)} />
+                    <PharmacyReturnPdf sellId={returnLoading} pdfLoading={returnLoading} endLoading={() => setReturnLoading()} />
                 </div>
 
 
