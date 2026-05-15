@@ -67,7 +67,6 @@ function Otp() {
     e.preventDefault();
     let data = {};
     if (isEmail) {
-      console.log(contact)
       data.email = contact
     } else {
       data.contactNumber = contact
@@ -124,115 +123,116 @@ function Otp() {
         }
         else {
           toast.error(response.message);
-        } }
-        else {
-          const response = await securePostData('pharmacy/verify-otp', data)
-          if (response.success) {
-            if (sessionStorage.getItem('forgotId')) {
-              localStorage.setItem('otoken', response.token)
-              return navigate('/set-password')
-            }
-            localStorage.setItem('token', response.token)
-            localStorage.setItem('userId', response.userId)
-         
-              if (response.nextStep) {
-                navigate(response.nextStep)
-              } else if (response.user.status == 'pending') {
-                navigate('/wating-for-approval')
-                return
-              } else {
-                navigate('/dashboard')
-              }
-            
-            toast.success('Login successfully')
-          } else {
-            toast.error(response.message)
-          }
-        
         }
-      } catch (err) {
-        console.error("Error creating pharmacy:", err);
-      } finally {
-        setLoading(false)
       }
-      setTimer(30); // reset timer after resend
+      else {
+        const response = await securePostData('pharmacy/verify-otp', data)
+        if (response.success) {
+          if (sessionStorage.getItem('forgotId')) {
+            localStorage.setItem('otoken', response.token)
+            return navigate('/set-password')
+          }
+          localStorage.setItem('token', response.token)
+          localStorage.setItem('userId', response.userId)
+
+          if (response.nextStep) {
+            navigate(response.nextStep)
+          } else if (response.user.status == 'pending') {
+            navigate('/wating-for-approval')
+            return
+          } else {
+            navigate('/dashboard')
+          }
+
+          toast.success('Login successfully')
+        } else {
+          toast.error(response.message)
+        }
+
+      }
+    } catch (err) {
+      console.error("Error creating pharmacy:", err);
+    } finally {
+      setLoading(false)
     }
+    setTimer(30); // reset timer after resend
+  }
   return (
-      <>
-        {loading ? <Loader />
-          : <section className="admin-login-section ">
-            <div className="container-fluid ">
-              <div className="row">
+    <>
+      {loading ? <Loader />
+        : <section className="admin-login-section ">
+          <div className="container-fluid ">
+            <div className="row">
 
-                <div className="col-lg-6 col-md-12 col-sm-12 px-0 mb-sm-3 mb-lg-0">
-                  <div className="admin-pisture-bx">
-                    <img src="pharmacy-login-bnnr.jpg" alt="" />
-                  </div>
+              <div className="col-lg-6 col-md-12 col-sm-12 px-0 mb-sm-3 mb-lg-0">
+                <div className="admin-pisture-bx">
+                  <img src="pharmacy-login-bnnr.jpg" alt="" />
                 </div>
+              </div>
 
 
-                <div className="col-lg-6 col-md-12 col-sm-12 d-flex flex-column justify-content-center">
-                  <div >
-                    <div className="admin-frm-vendor-bx">
-                      <div className="admin-lg-title">
-                        <h4 className="mb-0"><a href="javascript:void(0)" className="dash-hp-title">
-                          <img src="/logo.png" alt="" />
-                        </a></h4>
-                      </div>
-
-                      <div className="admin-vendor-login">
-                        <div className="admin-vndr-login">
-                          <h3 className='text-grad'>Verify OTP</h3>
-                          <p>We’ve sent a 6-digit code to your email. Please enter it below to reset your password.</p>
-                        </div>
-
-                        <form onSubmit={handleVerify}>
-                          <div className="custom-frm-bx admin-frm-bx lab-login-frm-bx" onPaste={handlePaste}>
-                            {otp.map((digit, index) => (
-                              <input
-                                key={index}
-                                type="text"
-                                inputMode="numeric"
-                                maxLength={1}
-                                className="form-control nw-frm-select lab-login-frm-control"
-                                placeholder="0"
-                                value={digit}
-                                onChange={(e) => handleChange(e, index)}
-                                onKeyDown={(e) => handleKeyDown(e, index)}
-                                ref={(el) => (inputsRef.current[index] = el)}
-                              />
-                            ))}
-                          </div>
-                          <div className='mt-3'>
-                            <button type="submit" className="admin-lg-btn">
-                              Verify
-                            </button>
-                          </div>
-                          <div className='text-center mt-3'>
-                            <p className='do-account-title text-black'>Didn’t receive any code?</p>
-                            <p className='do-account-title py-4'>
-                              Request new code in <span className="otp-timing">{timer}s</span>
-                            </p>
-                            <button
-                              className='lab-login-forgot-btn'
-                              onClick={handleResendCode}
-                              type="button"
-                              disabled={timer > 0} // prevent clicking before timer ends
-                            >
-                              Resend
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-
+              <div className="col-lg-6 col-md-12 col-sm-12 d-flex flex-column justify-content-center">
+                <div >
+                  <div className="admin-frm-vendor-bx">
+                    <div className="admin-lg-title">
+                      <h4 className="mb-0"><a href="javascript:void(0)" className="dash-hp-title">
+                        <img src="/logo.png" alt="" />
+                      </a></h4>
                     </div>
+
+                    <div className="admin-vendor-login">
+                      <div className="admin-vndr-login">
+                        <h3 className='text-grad'>Verify OTP</h3>
+                        <p>We’ve sent a 6-digit code to your email. Please enter it below to reset your password.</p>
+                      </div>
+
+                      <form onSubmit={handleVerify}>
+                        <div className="custom-frm-bx admin-frm-bx lab-login-frm-bx" onPaste={handlePaste}>
+                          {otp.map((digit, index) => (
+                            <input
+                              key={index}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              className="form-control nw-frm-select lab-login-frm-control"
+                              placeholder="0"
+                              value={digit}
+                              onChange={(e) => handleChange(e, index)}
+                              onKeyDown={(e) => handleKeyDown(e, index)}
+                              ref={(el) => (inputsRef.current[index] = el)}
+                            />
+                          ))}
+                        </div>
+                        <div className='mt-3'>
+                          <button type="submit" className="admin-lg-btn">
+                            Verify
+                          </button>
+                        </div>
+                        <div className='text-center mt-3'>
+                          <p className='do-account-title text-black'>Didn’t receive any code?</p>
+                          <p className='do-account-title py-4'>
+                            Request new code in <span className="otp-timing">{timer}s</span>
+                          </p>
+                          <button
+                            className='lab-login-forgot-btn'
+                            onClick={handleResendCode}
+                            type="button"
+                            disabled={timer > 0} // prevent clicking before timer ends
+                          >
+                            Resend
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
                   </div>
                 </div>
               </div>
             </div>
-          </section>}
-      </>
-    )
-  }
+          </div>
+        </section>}
+    </>
+  )
+}
 
-  export default Otp
+export default Otp

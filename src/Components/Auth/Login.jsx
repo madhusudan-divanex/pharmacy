@@ -19,7 +19,7 @@ function Login() {
     contactNumber: "",
     panelId: "",
     email: "",
-    password: "",withOtp:true
+    password: "", withOtp: true
   });
   const [errors, setErrors] = useState({});
   const validate = () => {
@@ -49,7 +49,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    let data = { password: formData.password }
+    let data = { password: formData.password, withOtp: formData.withOtp }
     if (formData.contactNumber) {
       data.contactNumber = formData.contactNumber
     }

@@ -1,4 +1,4 @@
-const base_url='https://api.neohealthcard.com:9100'
+const base_url = 'https://api.neohealthcard.com:9100'
 
 
 //  https://api.neohealthcard.com:9100 
