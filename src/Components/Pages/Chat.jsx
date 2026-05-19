@@ -39,7 +39,8 @@ function Chat({ socket, startCall }) {
     const [newUsers, setNewUsers] = useState([]);
     const [nameOrId, setNameOrId] = useState("");
     const navigate = useNavigate();
-
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [chatList, setChatList] = useState([]);
     const [messages, setMessages] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
@@ -170,23 +171,20 @@ function Chat({ socket, startCall }) {
 
     // ─── Load conversations ───────────────────────────────────────
     const fetchConversations = async () => {
-        const res = await getSecureApiData("pharmacy/conversations");
+        const res = await getSecureApiData(`pharmacy/conversations?page=${page}&limit=20`);
         if (res.success) {
-            setChatList(res.data);
+            setChatList(prev => [...prev, ...res.data]);
+            setTotalPages(res.totalPages);
         } else {
             toast.error(res.message);
             navigate(-1);
         }
     };
 
-    const fetchConversation = async () => {
-        const res = await getSecureApiData("pharmacy/conversations");
-        if (res.success) setChatList(res.data);
-    };
 
     useEffect(() => {
         fetchConversations();
-    }, []);
+    }, [page]);
 
     // ─── Open chat ────────────────────────────────────────────────
     const openChat = async (chat) => {
@@ -329,7 +327,7 @@ function Chat({ socket, startCall }) {
         try {
             const result = await securePostData("api/comman/create-group", formData);
             if (result.success) {
-                fetchConversation();
+                setPage(1);
                 toast.success("Group created successfully");
                 setGroupData({ name: "", participants: [], image: "", createdBy: myUserId });
                 document.getElementById("closeGroupModal").click();
@@ -433,7 +431,7 @@ function Chat({ socket, startCall }) {
                                             <div className="d-flex align-items-center justify-content-between">
                                                 <div className="chat-usr-avatr-crd">
                                                     <div className="chat-usr-avatr-bx">
-                                                        <img src={chat?.type == "group" ? `${base_url}/${chat?.image}` :
+                                                        <img src={chat?.image ||
                                                             "/profile.png"} alt="" />
                                                     </div>
                                                     <div className="chat-usr-info">
@@ -453,6 +451,17 @@ function Chat({ socket, startCall }) {
                                         </div>
                                     </a>
                                 ))}
+                                {totalPages > page && (
+                                    <div className="text-end">
+                                        <button
+                                            onClick={() => setPage(page + 1)}
+                                            style={{ color: "#00B4B5" }}
+                                        // className="nw-thm-btn"
+                                        >
+                                            Load More
+                                        </button>
+                                    </div>
+                                )}
 
 
 
@@ -479,7 +488,7 @@ function Chat({ socket, startCall }) {
                                     <div className="d-flex align-items-center justify-content-between">
                                         <div className="chat-usr-avatr-crd">
                                             <div className="chat-usr-avatr-bx nw-chat-add-live">
-                                                <img src={selectedChat?.type == "group" ? `${base_url}/${selectedChat?.image}` :
+                                                <img src={selectedChat?.image ||
                                                     "/profile.png"} alt="" />
                                             </div>
                                             <div className="chat-usr-info">

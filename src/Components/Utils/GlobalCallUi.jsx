@@ -4,7 +4,7 @@
 import React from "react";
 import { useGlobalSocket } from "./useGlobalSocket";
 import { faPhone, faVideo } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const formatTime = (sec) => {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
@@ -27,15 +27,17 @@ function GlobalCallUI() {
     callerName,
     callSeconds,
     acceptCall,
-    rejectCall,
+    rejectCall, callPartnerId,
     endCall,
     remoteAudioRef,
     remoteVideoRef,
     localVideoRef,
     ringtoneRef,
-    calling
+    calling,
+    callerPhoto,
+    isGroupCall,
   } = useGlobalSocket();
- 
+
 
   // Koi call nahi — kuch render mat karo
   if (!incomingCall && !callActive && !calling) return null;
@@ -89,7 +91,7 @@ function GlobalCallUI() {
               </>
             ) : (
               <div className="voice-call-ui">
-                <img src="/profile.png" className="caller-avatar" alt="caller" />
+                <img src={callerPhoto || "/profile.png"} className="caller-avatar" alt="caller" />
                 <div className="voice-wave"></div>
                 <p>{incomingCall ? "Ringing..." : "Call in progress"}</p>
               </div>
@@ -108,7 +110,7 @@ function GlobalCallUI() {
                 </button>
               </>
             ) : (
-              <button className="reject-call-btn" onClick={() => endCall()}>
+              <button className="reject-call-btn" onClick={() => endCall(callPartnerId)}>
                 End Call
               </button>
             )}

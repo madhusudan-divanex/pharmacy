@@ -18,9 +18,12 @@ export function GlobalSocketProvider({ children }) {
   const [callType, setCallType] = useState(null);
   const [callActive, setCallActive] = useState(false);
   const [callerName, setCallerName] = useState("");
+  const [callerPhoto, setCallerPhoto] = useState(null);   // ✅ NEW
+  const [isGroupCall, setIsGroupCall] = useState(false);
   const [callSeconds, setCallSeconds] = useState(0);
   const [calling, setCalling] = useState(false);
   const [socket, setSocket] = useState(null);
+  const [callPartnerId, setCallPartnerId] = useState(null);
 
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -53,6 +56,9 @@ export function GlobalSocketProvider({ children }) {
   const endCallCleanup = () => {
     stopTimer();
     setCalling(false);
+    setCallPartnerId(null);
+    setCallerPhoto(null);    // ✅ reset
+    setIsGroupCall(false);
     pcRef.current?.close();
     pcRef.current = null;
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -104,16 +110,21 @@ export function GlobalSocketProvider({ children }) {
     if (!listenersAttached) {
       listenersAttached = true;
 
-      globalSocket.on("incoming-call", ({ fromUserId, offer, callType }) => {
+      globalSocket.on("incoming-call", ({ fromUserId, offer, callType, name, photo }) => {
         console.log("📞 incoming-call", fromUserId);
         setIncomingCall({ fromUserId, offer });
         setCallType(callType);
+        setCallerName(name);
+        setIsGroupCall(false);  // ✅ NEW
+        setCallerPhoto(photo);   // NEW
       });
 
-      globalSocket.on("incoming-group-call", ({ fromUserId, offer, callType, name = "Group" }) => {
+      globalSocket.on("incoming-group-call", ({ fromUserId, offer, callType, name, photo }) => {
         console.log("📞 incoming-group-call", fromUserId);
         setIncomingCall({ fromUserId, offer });
         setCallerName(name);
+        setCallerPhoto(photo);
+        setIsGroupCall(true);
         setCallType(callType);
       });
 
@@ -155,6 +166,7 @@ export function GlobalSocketProvider({ children }) {
   // ─── Call actions ────────────────────────────────────────────
   const acceptCall = async () => {
     if (!incomingCall) return;
+    setCallPartnerId(incomingCall.fromUserId);
     if (ringtoneRef.current) {
       ringtoneRef.current.pause();
       ringtoneRef.current.currentTime = 0;
@@ -195,8 +207,20 @@ export function GlobalSocketProvider({ children }) {
 
   const startCall = async (type, selectedChat) => {
     if (!selectedChat || !globalSocket) return;
+    const toUserId = selectedChat.participants[0]._id;
+    setCallPartnerId(toUserId);
     setCallType(type);
     setCalling(true)
+    const isGroup = selectedChat?.type === "group";
+    setIsGroupCall(isGroup);
+    if (isGroup) {
+      setCallerName(selectedChat.name || "Group");
+      setCallerPhoto(selectedChat.image || null);
+    } else {
+      const participant = selectedChat.participants[0];
+      setCallerName(participant?.name || "User");
+      setCallerPhoto(selectedChat?.image || null);
+    }
     initPeerConnection(selectedChat.participants[0]._id);
 
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -231,12 +255,14 @@ export function GlobalSocketProvider({ children }) {
     acceptCall,
     rejectCall,
     endCall,
-    startCall,
+    startCall, callPartnerId,
     remoteAudioRef,
     remoteVideoRef,
     localVideoRef,
     ringtoneRef,
-    calling
+    calling,
+    callerPhoto,
+    isGroupCall,
   };
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
