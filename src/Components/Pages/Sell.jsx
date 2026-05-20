@@ -86,6 +86,7 @@ function Sell() {
             setScannerOpen(false);   // close modal
             return;
         }
+        navigate(`/prescriptions-bar/${code}`)
         setScannerOpen(false);
     };
     const deleteSellRecord = async (id) => {
@@ -713,19 +714,14 @@ function Scanner({ onDetected, open }) {
         reader.decodeFromVideoDevice(null, videoRef.current, (result, err) => {
             if (result) {
                 const text = result.getText();
-                setResult(text);
-                onDetected?.(text);
+
+                const id = text.replace(/\/$/, "").split("/").pop();
+
+                setResult(id);
+
+                onDetected?.(id);
 
                 stopScanner();
-
-                setTimeout(() => {
-                    if (text?.length < 24) {
-                        window.location.href = `https://neopha.divanex.in/prescriptions-bar/${text}`;
-                    } else {
-                        window.location.href = `https://neopha.divanex.in/prescriptions-detail/${text}`;
-
-                    }
-                }, 300);
             }
         });
     };

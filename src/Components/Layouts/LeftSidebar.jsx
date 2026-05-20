@@ -11,10 +11,10 @@ import Loader from "./Loader";
 function LeftSidebar() {
   const dispatch = useDispatch();
   const navigate = useNavigate()
-  const userId=localStorage.getItem('userId')
+  const userId = localStorage.getItem('userId')
   const { pathname } = useLocation();
   const {
-    profiles, isOwner, user,staffData,staffUser,permissions,
+    profiles, isOwner, user, staffData, staffUser, permissions,
     pharPerson, customId
   } = useSelector((state) => state.user);
   useEffect(() => {
@@ -26,7 +26,7 @@ function LeftSidebar() {
     }
   }, [dispatch]);
   const [scheduleList, setScheduleList] = useState([])
-  const [loading,setLoading]=useState(false)
+  const [loading, setLoading] = useState(false)
   const fetchSchedules = async () => {
     try {
       setLoading(true)
@@ -38,7 +38,7 @@ function LeftSidebar() {
       }
     } catch (err) {
       toast.error(err?.response?.data?.message || "Something went wrong")
-    }finally{
+    } finally {
       setLoading(false)
     }
   }
@@ -49,8 +49,7 @@ function LeftSidebar() {
 
   return (
     <>
-      {loading ? <Loader/>
-      :<div className="dashboard-left-side text-white min-vh-100 flex-shrink-0">
+      <div className="dashboard-left-side text-white min-vh-100 flex-shrink-0">
         <div className="text-end admn-mob-close-bx">
           <NavLink
             href="#"
@@ -137,12 +136,12 @@ function LeftSidebar() {
                 </NavLink>
 
                 <ul className=" product-submenu collapse" id="labReportsSubmenu" data-bs-parent=".nav">
-                  {scheduleList?.map(s=>
-                  <li className="nav-item">
-                    <NavLink to={`/medicine-list/${s?.details?.name}/${s?.scheduleId}`} className="nav-link submenu-link">{s?.details?.name}</NavLink>
-                  </li>)}
+                  {scheduleList?.map(s =>
+                    <li className="nav-item">
+                      <NavLink to={`/medicine-list/${s?.details?.name}/${s?.scheduleId}`} className="nav-link submenu-link">{s?.details?.name}</NavLink>
+                    </li>)}
 
-                  
+
 
                   <li className="nav-item">
                     <NavLink to="/medicine-request" className="nav-link submenu-link">H1 Medicine Request</NavLink>
@@ -224,39 +223,39 @@ function LeftSidebar() {
                 >
                   <FontAwesomeIcon icon={faUserAltSlash} /> Permissions
                 </NavLink>
-              </li>:
-              <li className="nav-item">
-                <NavLink
-                  to="/my-permission"
-                  className={({ isActive }) =>
-                    "nav-link " + (isActive ? "nw-pharmacy-active" : "")
-                  }
-                >
-                  <FontAwesomeIcon icon={faUserAltSlash} /> My Permissions
-                </NavLink>
-              </li>}
+              </li> :
+                <li className="nav-item">
+                  <NavLink
+                    to="/my-permission"
+                    className={({ isActive }) =>
+                      "nav-link " + (isActive ? "nw-pharmacy-active" : "")
+                    }
+                  >
+                    <FontAwesomeIcon icon={faUserAltSlash} /> My Permissions
+                  </NavLink>
+                </li>}
 
-              {isOwner?
-              <li className="nav-item">
-                <NavLink
-                  to="/profile"
-                  className={({ isActive }) =>
-                    "nav-link " + (isActive ? "nw-pharmacy-active" : "")
-                  }
-                >
-                  <FontAwesomeIcon icon={faUserCircle} /> Profile
-                </NavLink>
-              </li>
-              :<li className="nav-item">
-                <NavLink
-                  to={`/view-employee/${staffUser?.name}/${staffUser?.nh12}`}
-                  className={({ isActive }) =>
-                    "nav-link " + (isActive ? "nw-pharmacy-active" : "")
-                  }
-                >
-                  <FontAwesomeIcon icon={faUserCircle} /> Profile
-                </NavLink>
-              </li>}
+              {isOwner ?
+                <li className="nav-item">
+                  <NavLink
+                    to="/profile"
+                    className={({ isActive }) =>
+                      "nav-link " + (isActive ? "nw-pharmacy-active" : "")
+                    }
+                  >
+                    <FontAwesomeIcon icon={faUserCircle} /> Profile
+                  </NavLink>
+                </li>
+                : <li className="nav-item">
+                  <NavLink
+                    to={`/view-employee/${staffUser?.name}/${staffUser?.nh12}`}
+                    className={({ isActive }) =>
+                      "nav-link " + (isActive ? "nw-pharmacy-active" : "")
+                    }
+                  >
+                    <FontAwesomeIcon icon={faUserCircle} /> Profile
+                  </NavLink>
+                </li>}
               {(isOwner || permissions?.chat) && <li className="nav-item">
                 <NavLink
                   to="/chat"
@@ -312,7 +311,7 @@ function LeftSidebar() {
 
           </div>
         </div>
-      </div>}
+      </div>
 
 
 

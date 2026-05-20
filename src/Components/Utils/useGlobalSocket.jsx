@@ -155,6 +155,14 @@ export function GlobalSocketProvider({ children }) {
       globalSocket.on("call-ended", () => {
         endCallCleanup();
       });
+      globalSocket.on("call-user-offline", ({ message }) => {
+        endCallCleanup();
+        toast.error("User is currently offline");
+      });
+      globalSocket.on("call-busy", ({ message }) => {
+        endCallCleanup();
+        toast.error("User is busy on another call");
+      });
     }
 
     // ✅ Cleanup mein sirf timer — socket/listeners hata nahi

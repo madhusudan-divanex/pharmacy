@@ -371,7 +371,7 @@ function Profile() {
                                     </div>
                                     <QRCodeCanvas
                                       // readOnly value={String(userId)}
-                                      value={`https://neohealthcard.com/user/${user?.nh12}`}
+                                      value={`https://www.neohealthcard.com/user-profile/${user?.nh12}`}
                                       size={256}
                                       bgColor="transparent"
                                       fgColor="#ffffff"
