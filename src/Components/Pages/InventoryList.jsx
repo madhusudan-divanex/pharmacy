@@ -169,7 +169,7 @@ function InventoryList() {
     const [currentPage, setCurrentPage] = useState(1)
     const [schedule, setSchedule] = useState('all')
     const [name, setName] = useState('')
-    const [scheduleList,setScheduleList]=useState([])
+    const [scheduleList, setScheduleList] = useState([])
     const [list, setList] = useState([])
     const [totalPage, setTotalPage] = useState(1)
     const fetchInventory = async () => {
@@ -217,7 +217,7 @@ function InventoryList() {
             toast.error(err?.response?.data?.message || "Something went wrong")
         }
     }
-   
+
     const handleStorageChange = (index, value) => {
         const updatedStorage = [...formData.storage];
         updatedStorage[index] = value;
@@ -245,7 +245,7 @@ function InventoryList() {
         link.download = `qr-${key}.png`;
         link.click();
     };
-     const handlePrintQR = (key,item) => {
+    const handlePrintQR = (key, item) => {
         const canvas = qrRefs.current[key];
         if (!canvas) return;
 
@@ -265,7 +265,7 @@ function InventoryList() {
         const doc = iframe.contentWindow.document;
 
         doc.open();
-       doc.write(`
+        doc.write(`
 <html>
 <head>
     <style>
@@ -420,7 +420,7 @@ function InventoryList() {
                                             <label className="label">Schedule :</label>
                                             <select className="" value={schedule} onChange={(e) => setSchedule(e.target.value)}>
                                                 <option value='all'>All</option>
-                                                 {scheduleList?.map(s=>
+                                                {scheduleList?.map(s =>
                                                     <option value={s?._id}>{s?.name}</option>)}
 
                                             </select>
@@ -520,7 +520,7 @@ function InventoryList() {
                                                             <td>
                                                                 {item?.margin} %
                                                             </td>
-                                                            <td> {item?.storageType?.map(item=>item)}<br/> {item?.storage?.map(item=>item)}</td>
+                                                            <td> {item?.storageType?.map(item => item)}<br /> {item?.storage?.map(item => item)}</td>
                                                             <td>
                                                                 {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
                                                                 {showBarcode == key ?
@@ -528,9 +528,9 @@ function InventoryList() {
 
                                                                         {/* <Barcode value={item?.customId} width={1.3} displayValue={false}
                                                                             height={80} /> */}
-                                                                        <QRCodeCanvas color="#000" value={item?.batchNumber}  ref={(el) => (qrRefs.current[key] = el)}/>
+                                                                        <QRCodeCanvas color="#000" value={item?.customId} ref={(el) => (qrRefs.current[key] = el)} />
                                                                         {showBarcode == key &&
-                                                                            <button className="prescription-nav w-100" onClick={() => handlePrintQR(key,item)}>
+                                                                            <button className="prescription-nav w-100" onClick={() => handlePrintQR(key, item)}>
                                                                                 Print QR
                                                                             </button>
                                                                         }
@@ -573,7 +573,7 @@ function InventoryList() {
                                                                                             ...item,
                                                                                             mfgDate,
                                                                                             expDate,
-                                                                                            schedule:item?.schedule?._id,
+                                                                                            schedule: item?.schedule?._id,
                                                                                             storage: Array.isArray(item?.storage)
                                                                                                 ? item.storage
                                                                                                 : item?.storage
@@ -661,8 +661,8 @@ function InventoryList() {
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Select</option>
-                                                    {scheduleList?.map(s=>
-                                                    <option value={s?._id}>{s?.name}</option>)}
+                                                    {scheduleList?.map(s =>
+                                                        <option value={s?._id}>{s?.name}</option>)}
                                                 </select>
                                             </div>
                                         </div>
@@ -856,67 +856,67 @@ function InventoryList() {
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    
+
+
 
                                 </div>
 
                                 {formData?.storageType?.length > 0 && <div className="row">
-                                        {formData?.storage?.map((item, index) => (
-                                            <div className="col-lg-6 col-md-6 col-sm-12" key={index}>
-                                                <div className="d-flex align-items-center gap-2">
+                                    {formData?.storage?.map((item, index) => (
+                                        <div className="col-lg-6 col-md-6 col-sm-12" key={index}>
+                                            <div className="d-flex align-items-center gap-2">
 
-                                                    <div className="custom-frm-bx flex-grow-1">
-                                                        <label>
-                                                            Detail {index + 1}
-                                                        </label>
+                                                <div className="custom-frm-bx flex-grow-1">
+                                                    <label>
+                                                        Detail {index + 1}
+                                                    </label>
 
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select pe-5"
-                                                            value={item}
-                                                            onChange={(e) =>
-                                                                handleStorageChange(index, e.target.value)
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <button type="button" onClick={() => removeStorage(index)}>
-                                                        <FontAwesomeIcon className="text-danger" icon={faTrash} />
-                                                    </button>
-
+                                                    <input
+                                                        type="text"
+                                                        className="form-control nw-frm-select pe-5"
+                                                        value={item}
+                                                        onChange={(e) =>
+                                                            handleStorageChange(index, e.target.value)
+                                                        }
+                                                    />
                                                 </div>
+
+                                                <button type="button" onClick={() => removeStorage(index)}>
+                                                    <FontAwesomeIcon className="text-danger" icon={faTrash} />
+                                                </button>
+
                                             </div>
-                                        ))}
-                                    </div>}
-
-                                    {formData?.storageType?.length > 0 && 
-                                  <div className="text-end">
-                                      <button
-                                        type="button"
-                                        className="text-end"
-                                        onClick={() =>
-                                            setFormData({
-                                                ...formData,
-                                                storage: [
-                                                    ...formData.storage,
-                                                    ''
-                                                ],
-                                            })
-                                        }
-                                    >
-                                        <FontAwesomeIcon className="nw-thm-btn p-2 rounded-2" icon={faPlusCircle} />
-                                    </button>
-                                  </div>
-                                    }
-
-                                    <div className="col-lg-12">
-                                        <div className="text-center mt-3">
-                                            <button className="nw-thm-btn rounded-2 w-75" type="submit">
-                                                Submit
-                                            </button>
                                         </div>
+                                    ))}
+                                </div>}
+
+                                {formData?.storageType?.length > 0 &&
+                                    <div className="text-end">
+                                        <button
+                                            type="button"
+                                            className="text-end"
+                                            onClick={() =>
+                                                setFormData({
+                                                    ...formData,
+                                                    storage: [
+                                                        ...formData.storage,
+                                                        ''
+                                                    ],
+                                                })
+                                            }
+                                        >
+                                            <FontAwesomeIcon className="nw-thm-btn p-2 rounded-2" icon={faPlusCircle} />
+                                        </button>
                                     </div>
+                                }
+
+                                <div className="col-lg-12">
+                                    <div className="text-center mt-3">
+                                        <button className="nw-thm-btn rounded-2 w-75" type="submit">
+                                            Submit
+                                        </button>
+                                    </div>
+                                </div>
 
                             </form>
                         </div>
@@ -973,8 +973,8 @@ function InventoryList() {
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Select</option>
-                                                    {scheduleList?.map(s=>
-                                                    <option value={s?._id}>{s?.name}</option>)}
+                                                    {scheduleList?.map(s =>
+                                                        <option value={s?._id}>{s?.name}</option>)}
                                                 </select>
                                             </div>
                                         </div>
@@ -1172,63 +1172,63 @@ function InventoryList() {
                                 </div>
 
                                 {formData?.storageType?.length > 0 && <div className="row">
-                                        {formData?.storage?.map((item, index) => (
-                                            <div className="col-lg-6 col-md-6 col-sm-12" key={index}>
-                                                <div className="d-flex align-items-center gap-2">
+                                    {formData?.storage?.map((item, index) => (
+                                        <div className="col-lg-6 col-md-6 col-sm-12" key={index}>
+                                            <div className="d-flex align-items-center gap-2">
 
-                                                    <div className="custom-frm-bx flex-grow-1">
-                                                        <label>
-                                                            Detail {index + 1}
-                                                        </label>
+                                                <div className="custom-frm-bx flex-grow-1">
+                                                    <label>
+                                                        Detail {index + 1}
+                                                    </label>
 
-                                                        <input
-                                                            type="text"
-                                                            className="form-control nw-frm-select pe-5"
-                                                            value={item}
-                                                            onChange={(e) =>
-                                                                handleStorageChange(index, e.target.value)
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <button type="button" onClick={() => removeStorage(index)}>
-                                                        <FontAwesomeIcon className="text-danger" icon={faTrash} />
-                                                    </button>
-
+                                                    <input
+                                                        type="text"
+                                                        className="form-control nw-frm-select pe-5"
+                                                        value={item}
+                                                        onChange={(e) =>
+                                                            handleStorageChange(index, e.target.value)
+                                                        }
+                                                    />
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>}
 
-                                    {formData?.storageType?.length > 0 && 
+                                                <button type="button" onClick={() => removeStorage(index)}>
+                                                    <FontAwesomeIcon className="text-danger" icon={faTrash} />
+                                                </button>
+
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>}
+
+                                {formData?.storageType?.length > 0 &&
                                     <div className="text-end">
                                         <button
-                                        type="button"
-                                        className="text-end"
-                                        onClick={() =>
-                                            setFormData({
-                                                ...formData,
-                                                storage: [
-                                                    ...formData.storage,
-                                                    ''
-                                                ],
-                                            })
-                                        }
-                                    >
-                                        <FontAwesomeIcon className="nw-thm-btn p-2 rounded-2" icon={faPlusCircle} />
-                                    </button>
+                                            type="button"
+                                            className="text-end"
+                                            onClick={() =>
+                                                setFormData({
+                                                    ...formData,
+                                                    storage: [
+                                                        ...formData.storage,
+                                                        ''
+                                                    ],
+                                                })
+                                            }
+                                        >
+                                            <FontAwesomeIcon className="nw-thm-btn p-2 rounded-2" icon={faPlusCircle} />
+                                        </button>
                                     </div>
-                                    }
+                                }
 
 
-                                    <div className="col-lg-12">
-                                        <div className="text-center mt-3">
-                                            <button className="nw-thm-btn rounded-2 w-75" type="submit" data-bs-dismiss="modal"
-                                            >
-                                                Submit
-                                            </button>
-                                        </div>
+                                <div className="col-lg-12">
+                                    <div className="text-center mt-3">
+                                        <button className="nw-thm-btn rounded-2 w-75" type="submit" data-bs-dismiss="modal"
+                                        >
+                                            Submit
+                                        </button>
                                     </div>
+                                </div>
 
                             </form>
                         </div>

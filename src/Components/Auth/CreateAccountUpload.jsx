@@ -15,8 +15,8 @@ import { securePostData } from "../../Services/api";
 import { toast } from "react-toastify";
 
 function CreateAccountUpload() {
-    const navigate=useNavigate()
-    const dispatch=useDispatch()
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
     const [isShow, setIsShow] = useState(false)
     const userId = localStorage.getItem('userId')
     const { pharLicense } = useSelector(state => state.user)
@@ -26,9 +26,9 @@ function CreateAccountUpload() {
         pharCert: [{ certName: "", certFile: null }]
     });
 
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(fetchUserDetail())
-    },[dispatch])
+    }, [dispatch])
 
     // ⬆ Handle License Inputs
     const handleLicenseInput = (e) => {
@@ -72,7 +72,7 @@ function CreateAccountUpload() {
 
         // --- Basic Validation ---
         if (!formData.pharLicenseNumber) {
-            return alert("Please enter lab license number.");
+            return alert("Please enter Pharmacy License number.");
         }
 
         if (!formData.licenseFile) {
@@ -105,17 +105,17 @@ function CreateAccountUpload() {
         const result = await securePostData("pharmacy/license", dataToSend);
 
         if (result.success) {
-            toast.success("Lab license data saved successfully");
+            toast.success("Pharmacy License data saved successfully");
             setIsShow(true);
         } else {
             toast.error(result.message);
         }
     };
-    useEffect(()=>{
-        if(pharLicense){
+    useEffect(() => {
+        if (pharLicense) {
             // navigate('/')
         }
-    },[pharLicense])
+    }, [pharLicense])
     return (
         <>
             <section className="admin-login-section account-lg-section nw-create-account-section nw-login-frm-card">
@@ -123,49 +123,49 @@ function CreateAccountUpload() {
                     <div className="row justify-content-center mb-4">
                         <div className="col-lg-8">
                             <div className="account-step-main-bx">
-                                 <NavLink to="/create-account">
-                                <div className="account-step-crd account-step-one account-progress-done">
-                                    <div className="account-step-bx account-step-complete">
-                                        <FaFlask className="account-step-icon" />
+                                <NavLink to="/create-account">
+                                    <div className="account-step-crd account-step-one account-progress-done">
+                                        <div className="account-step-bx account-step-complete">
+                                            <FaFlask className="account-step-icon" />
+                                        </div>
+                                        <h6>Pharmacy Details</h6>
                                     </div>
-                                    <h6>Pharmacy Details</h6>
-                                </div>
                                 </NavLink>
 
-                                    <NavLink to="/create-account-image">
-                                <div className="account-step-crd account-step-one account-progress-done">
-                                    <div className="account-step-bx  account-step-complete">
-                                        <BsFillFileImageFill className="account-step-icon" />
+                                <NavLink to="/create-account-image">
+                                    <div className="account-step-crd account-step-one account-progress-done">
+                                        <div className="account-step-bx  account-step-complete">
+                                            <BsFillFileImageFill className="account-step-icon" />
+                                        </div>
+                                        <h6>Images</h6>
                                     </div>
-                                    <h6>Images</h6>
-                                </div>
                                 </NavLink>
 
                                 <NavLink to="/create-account-address">
-                                <div className="account-step-crd account-step-one account-progress-done">
-                                    <div className="account-step-bx  account-step-complete">
-                                        <FaMapMarkerAlt className="account-step-icon" />
+                                    <div className="account-step-crd account-step-one account-progress-done">
+                                        <div className="account-step-bx  account-step-complete">
+                                            <FaMapMarkerAlt className="account-step-icon" />
+                                        </div>
+                                        <h6>Address</h6>
                                     </div>
-                                    <h6>Address</h6>
-                                </div>
                                 </NavLink>
 
                                 <NavLink to="/create-account-person">
-                                <div className="account-step-crd account-step-one account-progress-done">
-                                    <div className="account-step-bx account-step-complete">
-                                        <FaUser className="account-step-icon" />
+                                    <div className="account-step-crd account-step-one account-progress-done">
+                                        <div className="account-step-bx account-step-complete">
+                                            <FaUser className="account-step-icon" />
+                                        </div>
+                                        <h6>Contact Person</h6>
                                     </div>
-                                    <h6>Contact Person</h6>
-                                </div>
                                 </NavLink>
 
                                 <NavLink to="/create-account-upload">
-                                <div className="account-step-crd">
-                                    <div className="account-step-bx ">
-                                        <FaCloudUploadAlt className="account-step-icon" />
+                                    <div className="account-step-crd">
+                                        <div className="account-step-bx ">
+                                            <FaCloudUploadAlt className="account-step-icon" />
+                                        </div>
+                                        <h6>Upload</h6>
                                     </div>
-                                    <h6>Upload</h6>
-                                </div>
                                 </NavLink>
                             </div>
 
@@ -195,8 +195,8 @@ function CreateAccountUpload() {
                                         <h6 className="fz-18 fw-700 text-black">License Details</h6>
                                         <div className="upload-account-bx">
                                             <div className="custom-frm-bx">
-                                                <label htmlFor="">Lab License Number</label>
-                                                <input type="text" className="form-control nw-frm-select" placeholder="Enter Lab License Number" value={formData.labLicenseNumber}
+                                                <label htmlFor="">Pharmacy License Number</label>
+                                                <input type="text" className="form-control nw-frm-select" placeholder="Enter Pharmacy License Number" value={formData.labLicenseNumber}
                                                     onChange={handleLicenseInput} />
                                             </div>
                                             <div className="custom-frm-bx">
@@ -292,7 +292,7 @@ function CreateAccountUpload() {
                             </form>
                         </div>
                     </div>
-                    
+
                     <div className="row">
                         <div className="col-lg-12 px-0">
                             <div>
@@ -313,7 +313,7 @@ function CreateAccountUpload() {
                 <div className="modal-dialog modal-dialog-centered modal-md">
                     <div className="modal-content edit-modal-content rounded-5 p-4">
                         <div className="text-end">
-                            <button type="button"  onClick={()=> navigate("/login")} data-bs-dismiss="modal" aria-label="Close"  className="fz-18"  style={{ color: "#FF0000" }}>
+                            <button type="button" onClick={() => navigate("/login")} data-bs-dismiss="modal" aria-label="Close" className="fz-18" style={{ color: "#FF0000" }}>
                                 Logout
                             </button>
 
@@ -345,7 +345,7 @@ function CreateAccountUpload() {
                 </div>
             </div>
             {/*  Edit Profile Popup End */}
-{isShow &&
+            {isShow &&
                 <div className="modal show fade step-modal" id="edit-Request" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1"
                     aria-labelledby="staticBackdropLabel" aria-hidden="true" style={{ display: "block" }}  >
                     <div className="modal-dialog modal-dialog-centered modal-md">

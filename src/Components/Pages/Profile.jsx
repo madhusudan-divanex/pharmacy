@@ -561,7 +561,7 @@ function Profile() {
                             <h5>License Details</h5>
                             <div className="col-lg-6">
                               <div className="custom-frm-bx">
-                                <label htmlFor="">Lab License Number</label>
+                                <label htmlFor="">Pharmacy License Number</label>
                                 <input
                                   type="text"
                                   className="form-control nw-frm-select"
@@ -573,7 +573,7 @@ function Profile() {
 
                             <div className="col-lg-6">
                               <div className="custom-frm-bx">
-                                <label htmlFor="">Lab License  Documents</label>
+                                <label htmlFor="">Pharmacy License  Documents</label>
                                 <div className="form-control lablcense-frm-control">
                                   <div className="lablcense-bx">
                                     <div>

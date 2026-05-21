@@ -28,7 +28,7 @@ function EditProfile() {
     const [loading, setLoading] = useState(false)
     const userId = localStorage.getItem("userId")
     const [catData, setCatData] = useState([])
-    const { profiles, pharPerson, pharAddress, pharImg, customId,user,
+    const { profiles, pharPerson, pharAddress, pharImg, customId, user,
         rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
 
     //   Lab Data 
@@ -306,7 +306,7 @@ function EditProfile() {
 
         // --- Basic Validation ---
         if (!licenseData.pharLicenseNumber) {
-            return alert("Please enter lab license number.");
+            return alert("Please enter Pharmacy License number.");
         }
 
         if (!licenseData.licenseFile) {
@@ -339,7 +339,7 @@ function EditProfile() {
         try {
             const result = await securePostData("pharmacy/license", dataToSend);
             if (result.success) {
-                toast.success("Lab license data saved successfully");
+                toast.success("Pharmacy License data saved successfully");
                 dispatch(fetchUserDetail())
                 setCertPreviews([])
             } else {
@@ -1040,7 +1040,7 @@ function EditProfile() {
 
                                                                 <div className="col-lg-5">
                                                                     <div className="custom-frm-bx">
-                                                                        <label htmlFor="">Lab License Number</label>
+                                                                        <label htmlFor="">Pharmacy License Number</label>
                                                                         <input
                                                                             type="text"
                                                                             className="form-control nw-frm-select"

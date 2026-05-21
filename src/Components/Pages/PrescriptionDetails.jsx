@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCircleXmark, faPlusCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { BsCapsule } from "react-icons/bs";
 import { IoMdQrScanner } from "react-icons/io";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 import { getSecureApiData, securePostData } from "../../Services/api";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
@@ -79,26 +79,47 @@ function PrescriptionDetails() {
         try {
             const response = await getSecureApiData(`pharmacy/inventory-data/${id}?expiry=No`);
             if (response.success) {
-                setMedicineList(response.data)
-                // setFormData(prev => {
-                //     const exists = prev.products.some(
-                //         p => p.inventoryId === id
-                //     );
+                const medicineData = response.data;
+                const data = {
+                    value: medicineData?._id,
+                    label: medicineData?.medicineName, // fixed typo
+                    price: medicineData?.salePrice || 0,
+                    storageType: medicineData?.storageType || [],
+                    storage: medicineData?.storage || [],
+                    stocks: medicineData?.quantity || [],
+                    quantity: medicineData?.quantity
+                };
+                setMedicineList(prev => [...prev, data])
+                setFormData(prev => {
+                    // duplicate avoid
+                    const exists = prev.products.some(
+                        p => p.inventoryId === medicineData.value
+                    );
 
-                //     if (exists) return prev;
+                    if (exists) {
+                        toast.warning("Medicine already added");
+                        return prev;
+                    }
 
-                //     return {
-                //         ...prev,
-                //         products: [
-                //             ...prev.products,
-                //             {
-                //                 inventoryId: id,
-                //                 quantity: 1,
-                //                 price: 0,
-                //             },
-                //         ],
-                //     };
-                // });
+                    return {
+                        ...prev,
+                        products: [
+                            ...prev.products,
+                            {
+                                inventoryId: medicineData?._id,
+                                medicineName: medicineData.medicineName,
+                                quantity: 1,
+                                rate: medicineData.salePrice || 0,
+                                storageType: medicineData?.storageType || [],
+                                storage: medicineData?.storage || [],
+                                stocks: medicineData?.quantity,
+                                discountType: null,   // 🆕
+                                discountValue: 0,
+                                totalAmount: medicineData.salePrice || 0
+                            }
+                        ]
+                    };
+                });
                 // setMedicneData(prev => {
                 //     const exists = prev.some(item => item.id === response.data.id);
                 //     return exists ? prev : [...prev, response.data];
@@ -618,7 +639,8 @@ function PrescriptionDetails() {
 
                             </div>
 
-                            <div>
+                            <div className="d-flex justify-content-between">
+                                <Link to={-1} className="nw-thm-btn outline ">Go Back</Link>
                                 <button onClick={handleSubmit} className="nw-thm-btn disabled-thm-btn">Save & Continue</button>
                             </div>
                         </div>

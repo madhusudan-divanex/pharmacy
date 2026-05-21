@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faDroplet, faEnvelope, faEye, faLocationDot, faPerson, faPhone, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { TbGridDots, TbHelpHexagon } from "react-icons/tb";
-import { NavLink, useParams } from "react-router-dom";
+import { Link, NavLink, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSecureApiData } from "../../Services/api";
 import { toast } from "react-toastify";
@@ -9,6 +9,7 @@ import base_url from "../../baseUrl";
 import Barcode from "react-barcode";
 import { faCircleXmark } from "@fortawesome/free-regular-svg-icons";
 import { BsCapsule } from "react-icons/bs";
+import MedicalPrescription from "../Templates/MedicalPresciptions";
 
 function PrescriptionsBar() {
     const params = useParams()
@@ -17,16 +18,21 @@ function PrescriptionsBar() {
     const [medicalHistory, setMedicalHistory] = useState()
     const [demographicData, setDemographicData] = useState()
     const [prescriptionData, setPrescriptionData] = useState([])
-    const [presData,setPresData]=useState()
+    const [presData, setPresData] = useState()
     const [patientPrescription, setPatientPrescription] = useState([])
+    const [showBarcode, setShowBarcode] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPage, setTotalPage] = useState()
     async function fetchPrescriptionDetails() {
         try {
-            const response = await getSecureApiData(`pharmacy/patient-prescription/${patientId}`);
+            const response = await getSecureApiData(`pharmacy/patient-prescription/${patientId}?page=${currentPage}&limit=5`);
             if (response.success) {
                 setPtData(response.user)
                 setMedicalHistory(response.medicalHistory)
                 setDemographicData(response.demographic)
                 setPrescriptionData(response.prescription)
+                setTotalPage(response.pagination.totalPages)
                 setPatientPrescription(response.patientPrescription.prescriptions)
             } else {
                 toast.error("Failed to fetch sell details");
@@ -38,7 +44,7 @@ function PrescriptionsBar() {
     }
     useEffect(() => {
         fetchPrescriptionDetails();
-    }, [patientId]);
+    }, [patientId, currentPage]);
     const calculateAge = (dob) => {
         if (!dob) return "";
 
@@ -153,6 +159,14 @@ function PrescriptionsBar() {
                                                 <div>
                                                     <p className="vw-info-title">Address</p>
                                                     <p className="vw-info-value">{demographicData?.address}</p>
+                                                    <p className="vw-info-value"> {[
+                                                        demographicData?.cityId?.name,
+                                                        demographicData?.stateId?.name,
+                                                        demographicData?.countryId?.name,
+                                                        demographicData?.pinCode
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(", ")}</p>
                                                 </div>
                                             </li>
 
@@ -208,7 +222,7 @@ function PrescriptionsBar() {
                                                                     <div className="admin-table-bx d-flex align-items-center justify-content-between new-prescription-bars">
                                                                         <div className="">
                                                                             <div className="admin-table-sub-details d-flex align-items-center gap-2">
-                                                                                <img src={item?.status!=='Inactive' ? "/prescriptions.png" : "/in-active.png"} alt="" />
+                                                                                <img src={item?.status !== 'Inactive' ? "/prescriptions.png" : "/in-active.png"} alt="" />
                                                                                 <div>
                                                                                     <h6 className="fs-16 fw-600 text-black">Prescriptions</h6>
                                                                                     <p className="fs-14 fw-500">{new Date(item?.createdAt).toLocaleDateString('en-GB', {
@@ -233,21 +247,30 @@ function PrescriptionsBar() {
                                                                         </div>
                                                                         <div className="d-flex align-items gap-2">
                                                                             <div>
-                                                                                <span className={`approved rounded-5 py-1 ${item?.status=='Inactive'&&'in-active'}`}>{item?.status!=='Inactive' ? 'Active' : 'Inactive'}</span>
+                                                                                <span className={`approved rounded-5 py-1 ${item?.status == 'Inactive' && 'in-active'}`}>{item?.status !== 'Inactive' ? 'Active' : 'Inactive'}</span>
                                                                             </div>
-                                                                            <button type="button" className="card-sw-btn"><FontAwesomeIcon icon={faPrint} /></button>
-                                                                            <button type="button" className="card-sw-btn" data-bs-toggle="modal" data-bs-target="#prescription-Data" onClick={()=>setPresData(item)}><FontAwesomeIcon icon={faEye} /></button>
+                                                                            <button type="button" className="card-sw-btn" disabled={pdfLoading == item?.customId} onClick={() => setPdfLoading(item?.customId)}><FontAwesomeIcon icon={faPrint} /></button>
+                                                                            <button type="button" className="card-sw-btn" data-bs-toggle="modal" data-bs-target="#prescription-Data" onClick={() => setPresData(item)}><FontAwesomeIcon icon={faEye} /></button>
                                                                         </div>
                                                                     </div>
                                                                     <div className="prescription-check-bx w-100">
                                                                         <div className="mt-3 flex-grow-1 
                                                                         ">
                                                                             <div className="barcd-scannr barcde-scnnr-card ms-0">
-                                                                                <div className="barcd-content">
+                                                                                <div className="barcd-content d-flex justify-content-between align-items-center mb-3">
                                                                                     <h4>{item?.customId}</h4>
 
-                                                                                    <Barcode value={item?.customId} width={2} displayValue={false}
-                                                                                        height={80} className="dynamic-barcode"/>
+                                                                                    <button className="btn btn-primary"
+                                                                                        onClick={() => {
+                                                                                            setShowBarcode(`https://www.neohealthcard.com/medical-prescription/${item?.customId}`)
+                                                                                        }}
+                                                                                        aria-label="Close"
+                                                                                    >
+                                                                                        Show Barcode
+                                                                                    </button>
+
+                                                                                    {/* <Barcode value={item?.customId} width={2} displayValue={false}
+                                                                                        height={80} className="dynamic-barcode"/> */}
                                                                                 </div>
                                                                                 <div className="barcode-id-details">
                                                                                     <div>
@@ -261,7 +284,7 @@ function PrescriptionsBar() {
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                        {item?.status!=='Inactive' && <NavLink to={`/prescriptions-detail/${item?._id}`} className="text-decoration-none">
+                                                                        {item?.status !== 'Inactive' && <NavLink to={`/prescriptions-detail/${item?._id}`} className="text-decoration-none">
                                                                             <div className="form-check custom-check nw-thm-btn ps-5">
                                                                                 <input className="form-check-input bg-transparent" type="checkbox" value="" id="addTests" />
                                                                                 <label className="form-check-label text-white fw-700" for="addTests" >
@@ -272,6 +295,10 @@ function PrescriptionsBar() {
                                                                     </div>
                                                                 </div>
                                                             </div>)}
+                                                    {totalPage > 1 && <div className="d-flex justify-content-between mt-3">
+                                                        <button className="nw-thm-btn outline" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>Prev</button>
+                                                        <button className="nw-thm-btn" disabled={currentPage === totalPage} onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                                                    </div>}
                                                 </div>
                                             </div>
                                             <div className="tab-pane fade" id="contact" role="tabpanel">
@@ -441,7 +468,7 @@ function PrescriptionsBar() {
 
                                                 {presData?.note && <div className="diagnosis-bx mb-3">
                                                     <h5>Note</h5>
-                                                    <p>{presData?.note }</p>
+                                                    <p>{presData?.note}</p>
                                                 </div>}
                                             </div>
                                         </div>
@@ -452,6 +479,44 @@ function PrescriptionsBar() {
                             </div>
                         </div>
                     </div>
+                </div>
+                <div className="text-end">
+                    <Link to={-1} className="nw-thm-btn outline ">Go Back</Link>
+                </div>
+                {showBarcode && (
+                    <div className="modal fade show step-modal"
+                        id="scanner-Request"
+                        style={{ display: "block", background: "#00000080" }}
+                        data-bs-backdrop="static"
+                        data-bs-keyboard="false">
+
+                        <div className="modal-dialog modal-dialog-centered modal-lg">
+                            <div className="modal-content rounded-5">
+                                <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
+                                    <h6 className="lg_title mb-0">Prescription Barcode </h6>
+
+                                    <button
+                                        className="fz-18"
+                                        onClick={() => setShowBarcode(false)}     // <-- closes modal
+                                        aria-label="Close"
+                                        style={{ color: "#00000040" }}>
+                                        <FontAwesomeIcon icon={faCircleXmark} />
+                                    </button>
+                                </div>
+
+                                <div className="modal-body px-4">
+
+                                    <Barcode value={showBarcode} width={1} displayValue={false}
+                                        height={60} className="dynamic-barcode" />
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                )}
+                <div className="d-none">
+                    <MedicalPrescription presId={pdfLoading} pdfLoading={pdfLoading} endLoading={() => setPdfLoading(false)} />
                 </div>
 
             </div>
