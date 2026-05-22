@@ -152,7 +152,7 @@ function Router() {
             { path: "/new-analysis", element: <NewAnalysis /> },
 
             { path: "/inventory", element: <InventoryList /> },
-            { path: "/chat", element: <Chat socket={socket} startCall={startCall}/> },
+            { path: "/chat", element: <Chat socket={socket} startCall={startCall} /> },
 
             { path: "/profile", element: <Profile /> },
             { path: "/approve-profile", element: <ApproveProfile /> },
@@ -168,6 +168,7 @@ function Router() {
 
             { path: "/change-password", element: <ChangePassword /> },
             { path: "/notification", element: <Notification /> },
+            { path: "/audit-logs", element: <AuditLog /> },
 
             { path: "/medicine-request", element: <MedicineRequest /> },
             { path: "/wating-for-approval", element: <Wating /> },

@@ -70,6 +70,7 @@ function Login() {
             localStorage.removeItem("panelId")
             localStorage.setItem('token', response.token);
             localStorage.setItem('userId', response.userId);
+            localStorage.setItem('staffId', response.staffId)
             dispatch(fetchEmpDetail(response.staffId));
             // await saveFcmToken();
             navigate('/dashboard');

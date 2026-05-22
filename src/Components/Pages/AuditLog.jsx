@@ -9,18 +9,20 @@ import { getSecureApiData } from "../../Services/api";
 import Loader from "../Layouts/Loader";
 
 function AuditLog() {
+    const userId = localStorage.getItem("userId")
     const [history, setHistory] = useState([]);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [totalPages, setTotalPages] = useState(0)
     const [activeHistory, setActiveHistory] = useState()
+    const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
     const fetchHistory = async () => {
         try {
             setLoading(true)
-            const res = await getSecureApiData(`pharmacy/audit-log?page=${page}`);
+            const res = await getSecureApiData(`api/comman/audit-log?page=${page}&search=${search}`);
             if (res.success) {
                 setHistory(res.data)
                 setTotalPages(res.pagination.totalPages)
@@ -64,27 +66,57 @@ function AuditLog() {
                                     </nav>
                                 </div>
                             </div>
-                            {totalPages > 1 && <div className="row">
-                                <div className="d-flex align-items-center justify-content-between mb-3 gap-2 nw-box ">
-
-                                    {<div className="page-selector">
-                                        <div className="filters">
-                                            <select className="form-select custom-page-dropdown nw-custom-page "
-                                                value={page}
-                                                onChange={(e) => setPage(e.target.value)}>
-                                                {Array.from({ length: totalPages }, (_, i) => (
-                                                    <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>}
-                                </div>
-                            </div>}
 
                         </div>
                     </div>
 
-                    <div className='new-panel-card'>
+                    <div className='new-mega-card'>
+                        <div className="row">
+                            <div className="d-flex align-items-center justify-content-between mb-3 gap-2 nw-box mobile-hospital-box">
+                                <div className="d-flex align-items-center gap-2 ">
+                                    <div className="custom-frm-bx mb-0">
+                                        <input
+                                            type="text"
+                                            className="form-control  search-table-frm pe-5"
+                                            placeholder="Enter staff id"
+                                            value={search}
+                                            onChange={(e) => {
+                                                setPage(1);
+                                                setSearch(e.target.value);
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                    fetchHistory();
+                                                }
+                                            }}
+                                        />
+                                        <div className="adm-search-bx">
+                                            <button className="text-secondary" onClick={fetchHistory}>
+                                                <FontAwesomeIcon icon={faSearch} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                {totalPages > 1 && <div className="row">
+                                    <div className="d-flex align-items-center justify-content-between mb-3 gap-2 nw-box ">
+
+                                        {<div className="page-selector">
+                                            <div className="filters">
+                                                <select className="form-select custom-page-dropdown nw-custom-page "
+                                                    value={page}
+                                                    onChange={(e) => setPage(e.target.value)}>
+                                                    {Array.from({ length: totalPages }, (_, i) => (
+                                                        <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>}
+                                    </div>
+                                </div>}
+                            </div>
+                        </div>
+
                         <div className="row">
                             <div className="col-lg-12 col-md-12 col-sm-12">
                                 <div className="table-section">
@@ -94,14 +126,12 @@ function AuditLog() {
                                                 <tr>
                                                     <th>#</th>
                                                     <th>User Name</th>
-                                                    {/* <th>Role</th> */}
                                                     <th>Note</th>
-                                                    {/* <th>Experience</th> */}
+                                                    <th>Description</th>
                                                     <th>Date & Time</th>
-                                                    <th>Action</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>{console.log(history)}
+                                            <tbody>
                                                 {history?.length === 0 ? (
                                                     <tr>
                                                         <td colSpan="8" className="text-center">
@@ -112,18 +142,17 @@ function AuditLog() {
                                                     history?.map((item, index) => (
                                                         <tr key={item._id}>
                                                             <td>{(page - 1) * limit + index + 1}.</td>
-                                                            <td>{item?.actionUser?.name || "Self"}</td>
-                                                            {/* <td>{item?.actionUser?.role || "-"}</td> */}
-                                                            {/* <td>{item?.professionalInfo?.experience ? `${item?.professionalInfo?.experience} years` : "-"}</td> */}
-
-                                                            <td>{item?.note}
-                                                            </td>
+                                                            <td>{item?.actorId?._id == userId ? "Self" : item?.actorId?.name || "-"}</td>
+                                                            <td>{item?.shortDesc}</td>
+                                                            <td>{item?.description}</td>
                                                             <td>{new Date(item?.createdAt)?.toLocaleString('en-GB')}
                                                             </td>
-                                                            <td>
-                                                                {item?.actionUser ? <Link to={`/view-employee/${item?.actionUser?.name}/${item?.actionUser?._id}`} className="nw-thm-btn">View</Link>
-                                                                : <span className="text-muted">N/A</span>}
-                                                            </td>
+                                                            {/* <td>
+                                                                {item?.actorId?._id !== userId ? <Link to={item?.actorId?.role === "doctor" ?
+                                                                    `/doctor-view/${item?.actorId?._id}` :
+                                                                    `/staff-info-view/${item?.actorId?.nh12}`} className="nw-thm-btn">View</Link>
+                                                                    : <span className="text-muted">N/A</span>}
+                                                            </td> */}
                                                         </tr>
                                                     ))
                                                 )}

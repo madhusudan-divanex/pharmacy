@@ -165,7 +165,7 @@ function Employee() {
                                             <div className="employee-tp-header d-flex align-items-center justify-content-between">
                                                 <div className="admin-table-bx">
                                                     <div className="admin-table-sub-bx">
-                                                        <img src={item?.userId?.staffId?.profileImage ? `${base_url}/${item?.userId?.staffId?.profileImage}` : "/view-avatr.png"} alt="" />
+                                                        <img src={item?.userId?.staffId?.profileImage ? `${base_url}/${item?.userId?.staffId?.profileImage}` : "/profile.png"} alt="" />
                                                         <div className="admin-table-sub-details">
                                                             <h6 className="text-black fz-16 fw-600">{item?.userId?.name?.slice(0, 10)}</h6>
                                                             <p className="text-capitalzie">{item?.role}</p>

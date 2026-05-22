@@ -73,11 +73,22 @@ function Otp() {
     }
 
     try {
-      const response = await postApiData('pharmacy/resend-otp', data)
-      if (response.success) {
-        toast.success('Otp sent successfully')
-      } else {
-        toast.error(response.message)
+      if (localStorage.getItem("panelId")) {
+        const response = await postApiData('api/staff/resend-otp', data)
+        if (response.success) {
+          toast.success('Otp sent successfully')
+        } else {
+          toast.error(response.message)
+        }
+      }
+      else {
+
+        const response = await postApiData('pharmacy/resend-otp', data)
+        if (response.success) {
+          toast.success('Otp sent successfully')
+        } else {
+          toast.error(response.message)
+        }
       }
     } catch (err) {
       console.error("Error creating pharmacy:", err);

@@ -74,7 +74,8 @@ function LeftSidebar() {
           <div className="task-vendor-profile-crd">
             <NavLink to="#">
               <div className="task-vendor-profile-bx">
-                <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt="" />
+                <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt=""
+                  onError={(e) => { e.target.src = '/profile.png'; }} />
                 <div>
                   <h6 className="new_title fw-500 mb-0 fz-18">{isOwner ? profiles?.name : staffData?.name}</h6>
                   <p>#{isOwner ? user?.nh12 : staffUser?.nh12}</p>
@@ -289,7 +290,7 @@ function LeftSidebar() {
                   </NavLink>
                 </li>
                   <li className="nav-item">
-                    <NavLink to="/audit-log" className="nav-link ">
+                    <NavLink to="/audit-logs" className="nav-link ">
                       <FontAwesomeIcon icon={faHistory} /> Audit Logs
                     </NavLink>
                   </li>
