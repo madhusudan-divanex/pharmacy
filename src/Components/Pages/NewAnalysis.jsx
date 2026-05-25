@@ -286,10 +286,8 @@ function NewAnalysis() {
                                                     <th>Exp Date</th>
                                                     <th>Quantity/Stock</th>
                                                     <th>Purchase Price</th>
-                                                    <th>Avg Margin</th>
-                                                    <th>Low Margin</th>
-                                                    <th>High Margin</th>
-                                                    <th>Action</th>
+                                                    <th>Margin</th>
+                                                    {/* <th>Action</th> */}
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -301,7 +299,7 @@ function NewAnalysis() {
                                                             <td>
                                                                 {item?.medicineName}
                                                             </td>
-                                                            <td> {item?.schedule}</td>
+                                                            <td> {item?.schedule?.name}</td>
                                                             <td>
                                                                 {item?.batchNumber}
                                                             </td>
@@ -330,18 +328,13 @@ function NewAnalysis() {
                                                                 {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
                                                             </td>
                                                             <td>
-                                                                ${item?.purchasePrice}
+                                                                &#8377;  {item?.purchasePrice}
                                                             </td>
                                                             <td>
-                                                                {item?.avgMargin} {item?.marginType == 'Percentage' && '%'}
+                                                                {item?.margin} %
                                                             </td>
-                                                            <td>
-                                                                {item?.lowMargin} {item?.marginType == 'Percentage' && '%'}
-                                                            </td>
-                                                            <td>
-                                                                {item?.highMargin} {item?.marginType == 'Percentage' && '%'}
-                                                            </td>
-                                                            <td>
+
+                                                            {/* <td>
                                                                 <div className="d-flex align-items-center gap-2">
                                                                     <a href="javascript:void(0)" className="text-secondary" onClick={() => {
                                                                         const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
@@ -351,7 +344,7 @@ function NewAnalysis() {
                                                                     } data-bs-toggle="modal" data-bs-target="#edit-Inventory"><FontAwesomeIcon icon={faPen} /></a>
                                                                     <button onClick={() => deleteInventory(item?._id)} className="text-secondary"><FontAwesomeIcon icon={faTrash} /></button>
                                                                 </div>
-                                                            </td>
+                                                            </td> */}
                                                         </tr>)}
                                             </tbody>
                                         </table>
