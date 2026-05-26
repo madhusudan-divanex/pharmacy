@@ -60,6 +60,7 @@ import CmsDynamic from "./CMS/CmsDynamic";
 import { useGlobalSocket } from "./Utils/useGlobalSocket";
 import MyPermission from "./Pages/MyPermission";
 import PharmacyInvoice from "./Templates/PharmacyInvoice";
+import Departments from "./Pages/Department";
 
 function Router() {
   const { socket, startCall } = useGlobalSocket();
@@ -174,6 +175,7 @@ function Router() {
             { path: "/wating-for-approval", element: <Wating /> },
 
             { path: "/medicine-list/:scheduleName/:id", element: <H1Medicine /> },
+            { path: "/departments", element: <Departments /> },
 
             { path: "/create-account-image", element: <CreateAccountImage /> },
             { path: "/create-account-address", element: <CreateAccountAddress /> },

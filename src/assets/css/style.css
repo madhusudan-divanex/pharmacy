@@ -3579,7 +3579,7 @@ min-height: 100vh; */
     font-size: 14px;
 }
 
-.grid-dots-btn:hover{
+.grid-dots-btn:hover {
     background-color: #052F59;
     color: #fff;
 }
@@ -3707,6 +3707,7 @@ min-height: 100vh; */
     width: 50px;
     height: 50px;
 }
+
 .patient-card-details {
     position: absolute;
     bottom: 15px;
@@ -5786,4 +5787,14 @@ min-height: 100vh; */
     font-weight: 600;
     color: #000;
     line-height: 100%;
+}
+
+.add-deprtment-pic {
+    text-align: center;
+}
+
+.add-deprtment-pic img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
 }

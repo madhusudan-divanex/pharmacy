@@ -217,7 +217,7 @@ function Permission() {
                         <div className="d-flex align-items-center justify-content-between pharmacy-mb-box">
                             <div className="custom-frm-bx">
                                 <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-                                    className="form-control nw-form-select pe-5" placeholder="Search " />
+                                    className="form-control admin-table-search-frm search-table-frm pe-5" placeholder="Search " />
 
                                 <div className="search-item-bx">
                                     <button className="search-item-btn" onClick={() => fetchPharPermission()}><FontAwesomeIcon icon={faSearch} /></button>

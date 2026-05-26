@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightFromBracket, faArrowsTurnRight, faBorderAll, faBoxArchive, faChartBar, faChevronRight, faClose, faFileAlt, faHistory, faKitMedical, faLock, faMessage, faMoneyBill, faPersonArrowDownToLine, faRobot, faUserAltSlash, faUserCircle, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightFromBracket, faArrowsTurnRight, faBorderAll, faBoxArchive, faBuilding, faChartBar, faChevronRight, faClose, faFileAlt, faHistory, faKitMedical, faLock, faMessage, faMoneyBill, faPersonArrowDownToLine, faRobot, faUserAltSlash, faUserCircle, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchEmpDetail, fetchUserDetail } from "../../redux/feature/userSlice";
@@ -203,6 +203,16 @@ function LeftSidebar() {
                   <FontAwesomeIcon icon={faChartBar} /> Analysis
                 </NavLink>
               </li>
+              {isOwner && <li className="nav-item">
+                <NavLink
+                  to="/departments"
+                  className={({ isActive }) =>
+                    "nav-link " + (isActive ? "nw-pharmacy-active" : "")
+                  }
+                >
+                  <FontAwesomeIcon icon={faBuilding} /> Departments
+                </NavLink>
+              </li>}
 
               {isOwner && <li className="nav-item">
                 <NavLink

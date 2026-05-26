@@ -701,7 +701,7 @@ function EditProfile() {
                                                         </div>
 
                                                         <div className="d-flex justify-content-end gap-3">
-                                                            <button type="button" onClick={() => navigate('/approve-profile')} className="nw-filtr-thm-btn outline">
+                                                            <button type="button" onClick={() => navigate('/profile')} className="nw-filtr-thm-btn outline">
                                                                 Cancel
                                                             </button>
                                                             <button type="submit" className="nw-filtr-thm-btn">

@@ -37,11 +37,11 @@ function ApproveProfile() {
                 </nav>
               </div>
             </div>
-            <div className="add-nw-bx">
+            {/* <div className="add-nw-bx">
               <a href="javascript:void(0)" className="add-nw-btn nw-thm-btn " data-bs-toggle="modal" data-bs-target="#edit-Request" >
                 Send Profile Edit Request
               </a>
-            </div>
+            </div> */}
           </div>
         </div>
 

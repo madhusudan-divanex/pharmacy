@@ -77,7 +77,7 @@ function AuditLog() {
                                     <div className="custom-frm-bx mb-0">
                                         <input
                                             type="text"
-                                            className="form-control  search-table-frm pe-5"
+                                            className="form-control admin-table-search-frm search-table-frm pe-5"
                                             placeholder="Enter staff id"
                                             value={search}
                                             onChange={(e) => {
