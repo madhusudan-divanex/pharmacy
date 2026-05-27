@@ -113,7 +113,7 @@ function CreateAccountUpload() {
     };
     useEffect(() => {
         if (pharLicense) {
-            // navigate('/')
+            navigate('/dashboard')
         }
     }, [pharLicense])
     return (

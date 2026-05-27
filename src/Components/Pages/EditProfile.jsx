@@ -17,6 +17,7 @@ import { getApiData, postApiData, securePostData } from "../../Services/api";
 import base_url from "../../baseUrl";
 import Loader from "../Layouts/Loader";
 import Select from 'react-select'
+import AdvancedMapPicker from "../Utils/MapPicker";
 
 function EditProfile() {
     const dispatch = useDispatch()
@@ -28,6 +29,8 @@ function EditProfile() {
     const [loading, setLoading] = useState(false)
     const userId = localStorage.getItem("userId")
     const [catData, setCatData] = useState([])
+    const [position, setPosition] = useState(null);
+    const [mapKey, setMapKey] = useState(0)
     const { profiles, pharPerson, pharAddress, pharImg, customId, user,
         rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
 
@@ -230,9 +233,9 @@ function EditProfile() {
     };
     const addressSubmit = async (e) => {
         e.preventDefault();
-
+        let data = { ...addressData, lat: position?.lat || null, long: position?.lng || null }
         try {
-            const response = await securePostData('pharmacy/about', addressData)
+            const response = await securePostData('pharmacy/about', data)
             if (response.success) {
                 toast.success('Address saved successfully')
                 // navigate('/create-account-person')
@@ -363,7 +366,7 @@ function EditProfile() {
             fetchStates(pharAddress?.countryId?.isoCode)
             fetchCities(pharAddress?.stateId?.isoCode)
             setAddressData({ ...pharAddress, stateId: pharAddress?.stateId?._id, cityId: pharAddress?.cityId?._id, countryId: pharAddress?.countryId?._id })
-
+            setPosition({ lat: pharAddress?.lat || null, lng: pharAddress?.long || null })
         }
         if (pharImg) {
             setPharImages(pharImg)
@@ -532,6 +535,7 @@ function EditProfile() {
                                                 id="contact-tab"
                                                 data-bs-toggle="tab"
                                                 href="#contact"
+                                                onClick={() => setMapKey(prev => prev + 1)}
                                                 role="tab"
                                             >
                                                 Pharmacy Address
@@ -1017,6 +1021,16 @@ function EditProfile() {
                                                                     name="pinCode"
                                                                     onChange={addressChange}
                                                                     value={addressData?.pinCode}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-12">
+                                                            <div className="custom-frm-bx">
+                                                                {/* <label htmlFor="">Pin Code</label> */}
+                                                                <AdvancedMapPicker
+                                                                    key={mapKey}
+                                                                    position={position}
+                                                                    setPosition={setPosition}
                                                                 />
                                                             </div>
                                                         </div>

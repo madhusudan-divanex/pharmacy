@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUserDetail } from "../../redux/feature/userSlice";
 import { getApiData, securePostData } from "../../Services/api";
 import Loader from '../Layouts/Loader'
+import AdvancedMapPicker from "../Utils/MapPicker";
 function CreateAccountAddress() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -18,6 +19,7 @@ function CreateAccountAddress() {
     const [countries, setCountries] = useState([])
     const [states, setStates] = useState([])
     const [cities, setCities] = useState([])
+    const [position, setPosition] = useState();
     const { pharAddress } = useSelector(state => state.user)
     const [formData, setFormData] = useState({
         fullAddress: "",
@@ -25,8 +27,8 @@ function CreateAccountAddress() {
         stateId: "",
         cityId: "",
         pinCode: "",
-        lat:null,
-        long:null,
+        lat: null,
+        long: null,
         userId
     });
     const handleChange = (e) => {
@@ -92,9 +94,9 @@ function CreateAccountAddress() {
     }
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        let data = { ...formData, lat: position?.lat || null, long: position?.lng || null }
         try {
-            const response = await securePostData('pharmacy/about', formData)
+            const response = await securePostData('pharmacy/about', data)
             if (response.success) {
                 toast.success('Address saved successfully')
                 navigate('/create-account-person')
@@ -113,22 +115,22 @@ function CreateAccountAddress() {
             navigate('/create-account-person')
         }
     }, [pharAddress])
-    useEffect(() => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setFormData(prev => ({
-                        ...prev,
-                        lat: position.coords.latitude,
-                        long: position.coords.longitude
-                    }));
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
-        }
-    }, []);
+    // useEffect(() => {
+    //     if (navigator.geolocation) {
+    //         navigator.geolocation.getCurrentPosition(
+    //             (position) => {
+    //                 setFormData(prev => ({
+    //                     ...prev,
+    //                     lat: position.coords.latitude,
+    //                     long: position.coords.longitude
+    //                 }));
+    //             },
+    //             (error) => {
+    //                 console.log(error);
+    //             }
+    //         );
+    //     }
+    // }, []);
     return (
         <>
             {loading ? <Loader />
@@ -241,6 +243,14 @@ function CreateAccountAddress() {
                                             <div className="custom-frm-bx">
                                                 <label htmlFor="">Pin Code</label>
                                                 <input type="text" name="pinCode" value={formData.pinCode} onChange={handleChange} className="form-control nw-frm-select" placeholder="Enter Pin code" />
+                                            </div>
+                                            <div className="custom-frm-bx">
+                                                <label htmlFor="">Location</label>
+                                                <AdvancedMapPicker
+                                                    position={position}
+                                                    setPosition={setPosition}
+                                                />
+                                                {/* <input type="text" name="pinCode" value={formData.pinCode} onChange={handleChange} className="form-control nw-frm-select" placeholder="Enter Pin code" /> */}
                                             </div>
 
 

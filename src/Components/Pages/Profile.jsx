@@ -18,12 +18,15 @@ import base_url from "../../baseUrl";
 import { QRCodeCanvas } from "qrcode.react";
 import Loader from "../Layouts/Loader";
 import { Pill } from "lucide-react";
+import AdvancedMapPicker from "../Utils/MapPicker";
 
 function Profile() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
   const userId = localStorage.getItem("userId")
+  const [position, setPosition] = useState()
+  const [mapKey, setMapKey] = useState(0)
   const { profiles, allowEdit, pharPerson, pharAddress, pharImg, customId, user, paymentInfo,
     rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
   const [message, setMessage] = useState('')
@@ -278,6 +281,7 @@ function Profile() {
                         id="contact-tab"
                         data-bs-toggle="tab"
                         href="#contact"
+                        onClick={() => setMapKey(prev => prev + 1)}
                         role="tab"
                       >
                         Pharmacy Address
@@ -545,6 +549,20 @@ function Profile() {
                                   className="form-control nw-frm-select"
                                   placeholder=""
                                   readOnly value={pharAddress?.pinCode}
+                                />
+                              </div>
+                            </div>
+                            <div className="col-12">
+                              <div className="custom-frm-bx">
+                                {/* <label htmlFor="">Pin Code</label> */}
+                                <AdvancedMapPicker
+                                  key={mapKey}
+                                  position={{
+                                    lat: pharAddress?.lat,
+                                    lng: pharAddress?.long
+                                  }}
+                                  setPosition={setPosition}
+                                  readOnly={true}
                                 />
                               </div>
                             </div>

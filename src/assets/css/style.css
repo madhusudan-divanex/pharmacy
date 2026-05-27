@@ -5798,3 +5798,7 @@ min-height: 100vh; */
     height: 100px;
     object-fit: cover;
 }
+
+.leaflet-bottom.leaflet-right {
+    display: none;
+}
