@@ -15,7 +15,7 @@ function TopHeader() {
   const [isOpen, setIsOpen] = useState(true);
   const [patientId, setPatientId] = useState()
   const [loading, setLoading] = useState(false)
-  const {unRead,user}=useSelector((state)=>state.user)
+  const { unRead, user } = useSelector((state) => state.user)
   const navigate = useNavigate()
   useEffect(() => {
     let overlay = document.querySelector('.mobile-overlay');
@@ -57,7 +57,7 @@ function TopHeader() {
   const dispatch = useDispatch();
 
   const {
-    profiles, isOwner, customId,staffData,staffUser,employment,
+    profiles, isOwner, customId, staffData, staffUser, employment,
     pharPerson
   } = useSelector((state) => state.user);
   const handleSearch = async () => {
@@ -80,9 +80,9 @@ function TopHeader() {
       setLoading(false)
     }
   }
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(fetchEmpDetail(localStorage.getItem('staffId')))
-  },[])
+  }, [])
   return (
     <>
       {loading ? <Loader />
@@ -136,7 +136,7 @@ function TopHeader() {
               <div className="position-relative">
                 <NavLink to="/notification" className="tp-bell-icon">
                   <FontAwesomeIcon icon={faBell} className="text-black" />
-                  {unRead>0 &&<div className="bell-nw-icon-alrt">
+                  {unRead > 0 && <div className="bell-nw-icon-alrt">
                     <span className="bell-title">{unRead}</span>
                   </div>}
                 </NavLink>
@@ -150,7 +150,10 @@ function TopHeader() {
                   aria-expanded="false"
                 >
                   <div className="admn-icon me-2">
-                    <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt="" />
+                    <img src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`} alt=""
+                      onError={(e) => {
+                        e.target.src = "/profile.png"
+                      }} />
                   </div>
                 </a>
                 <ul
@@ -161,6 +164,9 @@ function TopHeader() {
                     <div className="profile-top-section">
                       <img
                         src={isOwner ? `${base_url}/${profiles?.logo}` : `${base_url}/${staffData?.profileImage}`}
+                        onError={(e) => {
+                          e.target.src = "/profile.png"
+                        }}
                         alt="Profile"
                         className="profile-image"
                       />

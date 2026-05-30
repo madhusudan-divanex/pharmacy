@@ -65,6 +65,7 @@ function EditReturn() {
             const response = await updateApiData('pharmacy/return', data)
             if (response.success) {
                 toast.success('Return updated')
+                navigate('/returns')
             } else {
                 toast.error(response.message)
             }
@@ -207,7 +208,7 @@ function EditReturn() {
                                         required
                                         value={formData.status}
                                         onChange={handleChange}
-                                        
+
                                     >
                                         <option value="">Select Status</option>
                                         <option value="Pending">Pending</option>
@@ -230,18 +231,18 @@ function EditReturn() {
                                         <div className="custom-frm-bx">
                                             <label>Product Name</label>
                                             <div className="select-wrapper">
-                                            <Select
-                                                options={inventoryList.filter(
-                                                    item =>
-                                                        !formData.products.some(
-                                                            (p, i) => p.inventoryId === item.value && i !== index
-                                                        )
-                                                )}
-                                                classNamePrefix="custom-select"
-                                                value={inventoryList.find(opt => opt.value === product.inventoryId) || null}
-                                                readOnly
-                                                placeholder="Select Product"
-                                            />
+                                                <Select
+                                                    options={inventoryList.filter(
+                                                        item =>
+                                                            !formData.products.some(
+                                                                (p, i) => p.inventoryId === item.value && i !== index
+                                                            )
+                                                    )}
+                                                    classNamePrefix="custom-select"
+                                                    value={inventoryList.find(opt => opt.value === product.inventoryId) || null}
+                                                    readOnly
+                                                    placeholder="Select Product"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -258,7 +259,7 @@ function EditReturn() {
                                                     readOnly
                                                 />
                                             </div>
-                                            
+
                                         </div>
                                     </div>
                                 </div>

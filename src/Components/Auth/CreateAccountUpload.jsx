@@ -168,13 +168,7 @@ function CreateAccountUpload() {
                                     </div>
                                 </NavLink>
                             </div>
-
-
-
-
-
                         </div>
-
                         <div className="col-lg-12">
                             <div>
                                 {/* <img src="/footer-bnner.png" alt="" /> */}

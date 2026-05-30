@@ -328,6 +328,8 @@ function Chat({ socket, startCall }) {
             const result = await securePostData("api/comman/create-group", formData);
             if (result.success) {
                 setPage(1);
+                setChatList([])
+                await fetchConversations()
                 toast.success("Group created successfully");
                 setGroupData({ name: "", participants: [], image: "", createdBy: myUserId });
                 document.getElementById("closeGroupModal").click();
@@ -773,8 +775,8 @@ function Chat({ socket, startCall }) {
                                             className="form-control"
                                             value={newUser}
                                             onChange={(e) => handleUserSearch(e.target.value)}
-                                            placeholder="Enter 6 digit unique id"
-                                            maxLength={6}
+                                            placeholder="Enter 12 digit unique id"
+                                            maxLength={12}
                                         />
                                     </div>
 

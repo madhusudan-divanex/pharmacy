@@ -11,7 +11,7 @@ function GenerateList() {
     const navigate = useNavigate();
     const userId = localStorage?.getItem('userId')
     const [list, setList] = useState([])
-    const [status, setStatus] = useState()
+    const [status, setStatus] = useState('')
     const [loading, setLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [name, setName] = useState('')
@@ -31,12 +31,9 @@ function GenerateList() {
         } finally { setLoading(false) }
     }
     useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchPo()
-        }, 800)
+        fetchPo()
 
-        return () => clearTimeout(timer)
-    }, [userId, currentPage, status, name])
+    }, [userId, currentPage, status,])
 
     const deletePo = async (id) => {
         try {
@@ -97,10 +94,11 @@ function GenerateList() {
                                                 className="form-control search-table-frm pe-5 admin-table-search-frm"
                                                 id="email"
                                                 placeholder="Search"
+                                                onKeyDown={(e) => { if (e.key === 'Enter') fetchPo() }}
                                                 required
                                             />
                                             <div className="adm-search-bx">
-                                                <button className="tp-search-btn text-secondary">
+                                                <button className="tp-search-btn text-secondary" onClick={() => fetchPo()}>
                                                     <FontAwesomeIcon icon={faSearch} />
                                                 </button>
                                             </div>
@@ -166,7 +164,7 @@ function GenerateList() {
                                                                             <li className="admin-appoint-item"><span className="admin-appoint-id">{p?.productName}</span></li>
                                                                             <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">{p?.quantity}</span></li>
                                                                             <li className="admin-appoint-item">Batch Number:  <span className="admin-appoint-id">{p?.batchNumber}</span></li>
-                                                                            <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">{p?.schedule}</span></li>
+                                                                            <li className="admin-appoint-item">Schedule: <span className="admin-appoint-id">{p?.schedule?.name}</span></li>
                                                                             <li className="admin-appoint-item">Expert Date: <span className="admin-appoint-id">{new Date(p?.expDate)?.toLocaleDateString('en-US', {
                                                                                 day: '2-digit',
                                                                                 month: 'short', // short month name like Jan, Feb

@@ -118,23 +118,28 @@ function EditProfile() {
     };
 
     const imageSubmit = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
         if (!thumbnail) return alert('Thumbnail required!');
+
         const formData = new FormData();
         formData.append('thumbnail', thumbnail);
-        pharImages.forEach(file => formData.append('pharImg', file));
+
+        // pharImages ek object hai, isliye pharImages.pharImg use karo
+        if (pharImages?.pharImg && Array.isArray(pharImages.pharImg)) {
+            pharImages.pharImg.forEach(file => formData.append('pharImg', file));
+        }
+
         formData.append('userId', localStorage.getItem('userId'));
 
         try {
             const res = await securePostData('pharmacy/image', formData);
             if (res.success) {
-                setPreviewPharImages([])
-                setPreviewThumb(null)
-                dispatch(fetchUserDetail())
-                toast.success("Images saved successfully")
-                // navigate('/create-account-address')
+                setPreviewPharImages([]);
+                setPreviewThumb(null);
+                dispatch(fetchUserDetail());
+                toast.success("Images saved successfully");
             } else {
-                toast.error(res.message)
+                toast.error(res.message);
             }
         } catch (error) {
             console.error(error);
@@ -1116,9 +1121,9 @@ function EditProfile() {
                                                                                 <div>
                                                                                     <h6 ><FontAwesomeIcon icon={faImage} /> {pharLicense?.licenseFile.split("\\").pop().split("-").slice(1).join("-")}</h6>
                                                                                 </div>
-                                                                                <div className="">
+                                                                                {/* <div className="">
                                                                                     <a href="javascript:void(0)" className="text-black"><FontAwesomeIcon icon={faTrash} /></a>
-                                                                                </div>
+                                                                                </div> */}
                                                                             </div>
                                                                         </div>
                                                                     </div>}
@@ -1208,9 +1213,9 @@ function EditProfile() {
                                                                                                 {item?.certFile instanceof File ? item?.certFile.name
                                                                                                     : item?.certFile?.split("\\").pop().split("-").slice(1).join("-")}</h6>
                                                                                         </div>
-                                                                                        <div className="">
+                                                                                        {/* <div className="">
                                                                                             <a href="javascript:void(0)" className="text-black"><FontAwesomeIcon icon={faTrash} /></a>
-                                                                                        </div>
+                                                                                        </div> */}
                                                                                     </div>
                                                                                 </div>
                                                                             </div>}

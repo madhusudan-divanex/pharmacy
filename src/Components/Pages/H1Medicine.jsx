@@ -1,22 +1,25 @@
 import { TbGridDots } from "react-icons/tb";
-import { faCircleXmark, faDollar, faPen, faSearch, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCircleXmark, faDollar, faPen, faPlusCircle, faSearch, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Scanner from "./Scanner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
-import { deleteApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
+import { deleteApiData, getApiData, getSecureApiData, securePostData, updateApiData } from "../../Services/api";
 import { toast } from "react-toastify";
 import Barcode from "react-barcode"
 import Loader from "../Layouts/Loader";
+import { QRCodeCanvas } from "qrcode.react";
 
 function H1Medicine() {
-    const {scheduleName ,id}=useParams()
+    const { scheduleName, id } = useParams()
     const handleDetected = (code) => {
         alert("Scanned barcode: " + code);
     };
     const userId = localStorage.getItem('userId')
-    const [loading,setLoading]=useState(false)
+    const qrRefs = useRef({});
+    const [loading, setLoading] = useState(false)
     const [showBarcode, setShowBarcode] = useState(false);
+    const [scheduleList, setScheduleList] = useState([])
     const [formData, setFormData] = useState({
         medicineName: "",
         schedule: "",
@@ -69,7 +72,7 @@ function H1Medicine() {
         } catch (error) {
             console.error(error);
             toast.error("Something went wrong");
-        }finally{
+        } finally {
             setLoading(false)
         }
     };
@@ -90,13 +93,28 @@ function H1Medicine() {
             }
         } catch (err) {
             toast.error(err?.response?.data?.message || "Something went wrong")
-        }finally{
+        } finally {
             setLoading(false)
         }
     }
+    const fetchSchedules = async () => {
+        try {
+            const response = await getApiData(`admin/schedule-medicines`);
+            if (response.success) {
+                setScheduleList(response.data)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Something went wrong")
+        }
+    }
+    useEffect(() => {
+        fetchSchedules()
+    }, [])
     useEffect(() => {
         fetchInventory()
-    }, [userId, currentPage,id])
+    }, [userId, currentPage, id])
 
     const deleteInventory = async (id) => {
         try {
@@ -111,64 +129,188 @@ function H1Medicine() {
             toast.error(err?.response?.data?.message || "Something went wrong")
         }
     }
+
+    const handleStorageChange = (index, value) => {
+        const updatedStorage = [...formData.storage];
+        updatedStorage[index] = value;
+
+        setFormData({
+            ...formData,
+            storage: updatedStorage
+        });
+    };
+    const removeStorage = (index) => {
+        const updatedStorage = formData.storage.filter((_, i) => i !== index);
+
+        setFormData({
+            ...formData,
+            storage: updatedStorage
+        });
+    };
+    const handlePrintQR = (key, item) => {
+        const canvas = qrRefs.current[key];
+        if (!canvas) return;
+
+        const dataUrl = canvas.toDataURL("image/png");
+
+        // create iframe
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "fixed";
+        iframe.style.right = "0";
+        iframe.style.bottom = "0";
+        iframe.style.width = "0";
+        iframe.style.height = "0";
+        iframe.style.border = "0";
+
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow.document;
+
+        doc.open();
+        doc.write(`
+<html>
+<head>
+    <style>
+        @page {
+            size: 80mm 100mm;
+            margin: 5mm;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #000;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .text {
+            width: 60%;
+            font-size: 12px;
+        }
+
+        .title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .info {
+            margin: 3px 0;
+        }
+
+        .qr {
+            width: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr img {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        
+        <div class="text">
+            <div class="title">${item?.medicineName || ""}</div>
+
+            <div class="info">MFG: ${item?.mfgDate ? new Date(item.mfgDate).toLocaleDateString('en-GB') : ""}</div>
+            <div class="info">EXP: ${item?.expDate ? new Date(item.expDate).toLocaleDateString('en-GB') : ""}</div>
+            <div class="info">Batch: ${item?.batchNumber || ""}</div>
+        </div>
+
+        <div class="qr">
+            <img src="${dataUrl}" />
+        </div>
+
+    </div>
+</body>
+</html>
+`);
+        doc.close();
+
+        // wait a bit for rendering
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+
+            // cleanup
+            document.body.removeChild(iframe);
+        }, 500);
+    };
     return (
         <>
-            {loading?<Loader/>
-            :<div className="main-content flex-grow-1 p-3 overflow-auto">
-                <div className="row mb-3">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h3 className="innr-title mb-2 gradient-text">Schedule Medicine</h3>
-                            <div className="admin-breadcrumb">
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb custom-breadcrumb justify-content-start">
-                                        <li className="breadcrumb-item">
-                                            <NavLink to="/dashboard" className="breadcrumb-link">
-                                                Dashboard
-                                            </NavLink>
-                                        </li>
-                                        <li
-                                            className="breadcrumb-item active"
-                                            aria-current="page"
-                                        >
-                                            {scheduleName}
-                                        </li>
-                                    </ol>
-                                </nav>
+            {loading ? <Loader />
+                : <div className="main-content flex-grow-1 p-3 overflow-auto">
+                    <div className="row mb-3">
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h3 className="innr-title mb-2 gradient-text">Schedule Medicine</h3>
+                                <div className="admin-breadcrumb">
+                                    <nav aria-label="breadcrumb">
+                                        <ol className="breadcrumb custom-breadcrumb justify-content-start">
+                                            <li className="breadcrumb-item">
+                                                <NavLink to="/dashboard" className="breadcrumb-link">
+                                                    Dashboard
+                                                </NavLink>
+                                            </li>
+                                            <li
+                                                className="breadcrumb-item active"
+                                                aria-current="page"
+                                            >
+                                                {scheduleName}
+                                            </li>
+                                        </ol>
+                                    </nav>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* <div className="d-flex gap-2">
+                            {/* <div className="d-flex gap-2">
                             <button className="thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#scanner-Request" >Scan</button>
                             <button className="nw-thm-btn rounded-3" data-bs-toggle="modal" data-bs-target="#add-Inventory" aria-label="Close" >Add Manually</button>
                         </div> */}
 
 
+                        </div>
                     </div>
-                </div>
 
-                <div className='new-mega-card'>
-                    <div className="row">
-                        <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details pharmacy-mb-box">
-                            <div className="d-flex align-items-center gap-2 nw-box">
-                                <div className="custom-frm-bx mb-0">
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="form-control admin-table-search-frm search-table-frm pe-5"
-                                        id="email"
-                                        placeholder="Search"
-                                        required
-                                    />
-                                    <div className="adm-search-bx">
-                                        <button className="tp-search-btn text-secondary">
-                                            <FontAwesomeIcon icon={faSearch} />
-                                        </button>
+                    <div className='new-mega-card'>
+                        <div className="row">
+                            <div className="d-flex align-items-center justify-content-between mb-3 nw-pharmacy-details pharmacy-mb-box">
+                                <div className="d-flex align-items-center gap-2 nw-box">
+                                    <div className="custom-frm-bx mb-0">
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className="form-control admin-table-search-frm search-table-frm pe-5"
+                                            id="email"
+                                            placeholder="Search"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    fetchInventory()
+                                                }
+                                            }}
+                                            required
+                                        />
+                                        <div className="adm-search-bx">
+                                            <button className="tp-search-btn text-secondary" onClick={() => fetchInventory()}>
+                                                <FontAwesomeIcon icon={faSearch} />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* <div className="filters">
+                                    {/* <div className="filters">
                                         <div className="field custom-frm-bx mb-0 custom-select admin-table-search-frm ">
                                             <label className="label">Schedule :</label>
                                             <select className="" value={schedule} onChange={(e) => setSchedule(e.target.value)}>
@@ -178,385 +320,179 @@ function H1Medicine() {
                                             </select>
                                         </div>
                                     </div> */}
-                                <div>
-                                    <button onClick={() => fetchInventory()} className="nw-thm-btn rounded-2">
-                                        Filter
-                                    </button>
+                                    {/* <div>
+                                        <button onClick={() => fetchInventory()} className="nw-thm-btn rounded-2">
+                                            Filter
+                                        </button>
+                                    </div> */}
                                 </div>
+
+                                {totalPage &&
+                                    <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2 pharmacy-page-selector">
+                                        <div className="phmarcy-pagination">
+                                            <select
+                                                value={currentPage}
+                                                onChange={(e) => setCurrentPage(e.target.value)}
+                                                className="form-select custom-page-dropdown nw-custom-page ">
+                                                {Array.from({ length: totalPage }, (_, i) => (
+                                                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>}
+
+
                             </div>
-
-                            {totalPage &&
-                                <div className="page-selector d-flex align-items-center mb-2 mb-md-0 gap-2 pharmacy-page-selector">
-                                    <div className="phmarcy-pagination">
-                                        <select
-                                            value={currentPage}
-                                            onChange={(e) => setCurrentPage(e.target.value)}
-                                            className="form-select custom-page-dropdown nw-custom-page ">
-                                            {Array.from({ length: totalPage }, (_, i) => (
-                                                <option key={i + 1} value={i + 1}>{i + 1}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>}
-
-
                         </div>
-                    </div>
 
 
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <div className="table-section">
-                                <div className="table table-responsive mb-0">
-                                    <table className="table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>S.no.</th>
-                                                <th>Medicine Name</th>
-                                                <th>Batch Number</th>
-                                                <th>Schedule</th>
-                                                <th>MFG Date</th>
-                                                <th>Exp Date</th>
-                                                <th>Quantity/Stock</th>
-                                                <th>Purchase Price</th>
-                                                <th>Sale Price</th>
-                                                <th>Margin</th>
-                                                <th>Bar Code </th>
-                                                <th>Action</th>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="table-section">
+                                    <div className="table table-responsive mb-0">
+                                        <table className="table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>S.no.</th>
+                                                    <th>Medicine Name</th>
+                                                    <th>Batch Number</th>
+                                                    <th>Schedule</th>
+                                                    <th>MFG Date</th>
+                                                    <th>Exp Date</th>
+                                                    <th>Quantity/Stock</th>
+                                                    <th>Purchase Price</th>
+                                                    <th>Sale Price</th>
+                                                    <th>Margin</th>
+                                                    <th>Bar Code </th>
+                                                    <th>Action</th>
 
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
 
-                                            {list?.length > 0 ?
-                                                list?.map((item, key) =>
-                                                    <tr key={key}>
-                                                        <td>{(currentPage - 1) * 10 + key + 1}</td>
+                                                {list?.length > 0 ?
+                                                    list?.map((item, key) =>
+                                                        <tr key={key}>
+                                                            <td>{(currentPage - 1) * 10 + key + 1}</td>
 
-                                                        <td>
-                                                            {item?.medicineName}
-                                                        </td>
+                                                            <td>
+                                                                {item?.medicineName}
+                                                            </td>
 
-                                                        <td>
-                                                            {item?.batchNumber}
-                                                        </td>
+                                                            <td>
+                                                                {item?.batchNumber}
+                                                            </td>
 
-                                                        <td> {item?.schedule?.name}</td>
-                                                        <td>
-                                                            {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric'
-                                                            })}
-                                                        </td>
-                                                        <td>
-                                                            {new Date(item?.expDate) > new Date() ?
-                                                                new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                            <td> {item?.schedule?.name}</td>
+                                                            <td>
+                                                                {new Date(item?.mfgDate)?.toLocaleDateString('en-GB', {
                                                                     day: '2-digit',
                                                                     month: 'short',
                                                                     year: 'numeric'
-                                                                })
-                                                                : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
-                                                                    day: '2-digit',
-                                                                    month: 'short',
-                                                                    year: 'numeric'
-                                                                })}</span>
-                                                            }
-                                                        </td>
+                                                                })}
+                                                            </td>
+                                                            <td>
+                                                                {new Date(item?.expDate) > new Date() ?
+                                                                    new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                        day: '2-digit',
+                                                                        month: 'short',
+                                                                        year: 'numeric'
+                                                                    })
+                                                                    : <span className="reject-title">{new Date(item?.expDate)?.toLocaleDateString('en-GB', {
+                                                                        day: '2-digit',
+                                                                        month: 'short',
+                                                                        year: 'numeric'
+                                                                    })}</span>
+                                                                }
+                                                            </td>
 
-                                                        <td>
-                                                            {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
-                                                        </td>
-                                                        <td>
-                                                            ${item?.purchasePrice}
-                                                        </td>
-                                                        <td>
-                                                            {item?.salePrice}
-                                                        </td>
-                                                        <td>
-                                                            {item?.margin} %
-                                                        </td>
-                                                        <td>
-                                                            {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
-                                                            {showBarcode == key ?
-                                                                <div className="inventory-barcd">
+                                                            <td>
+                                                                {item?.sellCount}/ <span className="stock-title">{item?.quantity}</span>
+                                                            </td>
+                                                            <td>
+                                                                ${item?.purchasePrice}
+                                                            </td>
+                                                            <td>
+                                                                {item?.salePrice}
+                                                            </td>
+                                                            <td>
+                                                                {item?.margin} %
+                                                            </td>
+                                                            <td>
+                                                                {/* <a href="javascript:void(0)" className="thm-btn rounded-3">Generate</a> */}
+                                                                {showBarcode == key ?
+                                                                    <div className="inventory-barcd">
 
-                                                                    <Barcode value={item?.customId} width={1.3} displayValue={false}
-                                                                        height={80} />
-                                                                </div>
-                                                                :
-                                                                <button
-                                                                    className="thm-btn rounded-3"
-                                                                    onClick={() => setShowBarcode(key)}
-                                                                >
-                                                                    Generate
-                                                                </button>
-                                                            }
-                                                        </td>
-
-                                                        <td>
-                                                            <div className="d-flex align-items-center gap-2">
-                                                                <div className="d-flex align-items-centet gap-2">
-                                                                    <div className="dropdown">
-                                                                        <a
-
-                                                                            href="javascript:void(0)"
-                                                                            className="text-secondary"
-                                                                            id="acticonMenu1"
-                                                                            onClick={() => {
-                                                                                const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
-                                                                                const expDate = new Date(item?.expDate).toISOString().split("T")[0]
-                                                                                setFormData({ ...item, mfgDate: mfgDate, expDate: expDate })
-                                                                            }
-
-                                                                            } data-bs-toggle="modal" data-bs-target="#edit-Inventory"
-                                                                        >
-                                                                            <FontAwesomeIcon icon={faPen} />
-                                                                        </a>
-                                                                        
+                                                                        {/* <Barcode value={item?.customId} width={1.3} displayValue={false}
+                                                                            height={80} /> */}
+                                                                        <QRCodeCanvas color="#000" value={item?.customId} ref={(el) => (qrRefs.current[key] = el)} />
+                                                                        {showBarcode == key &&
+                                                                            <button className="prescription-nav w-100" onClick={() => handlePrintQR(key, item)}>
+                                                                                Print QR
+                                                                            </button>
+                                                                        }
                                                                     </div>
+                                                                    :
+                                                                    <button
+                                                                        className="thm-btn rounded-3"
+                                                                        onClick={() => setShowBarcode(key)}
+                                                                    >
+                                                                        Generate
+                                                                    </button>
+                                                                }
+                                                            </td>
+
+                                                            <td>
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    <div className="d-flex align-items-centet gap-2">
+                                                                        <div className="dropdown">
+                                                                            <a
+
+                                                                                href="javascript:void(0)"
+                                                                                className="text-secondary"
+                                                                                id="acticonMenu1"
+                                                                                onClick={() => {
+                                                                                    const mfgDate = new Date(item?.mfgDate).toISOString().split("T")[0]
+                                                                                    const expDate = new Date(item?.expDate).toISOString().split("T")[0]
+                                                                                    setFormData({ ...item, mfgDate: mfgDate, expDate: expDate, schedule: item?.schedule?._id })
+                                                                                }
+
+                                                                                } data-bs-toggle="modal" data-bs-target="#edit-Inventory"
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faPen} />
+                                                                            </a>
+
+                                                                        </div>
+                                                                    </div>
+                                                                    {/* <button className="text-secondary" onClick={() => deleteInventory(item?._id)}><FontAwesomeIcon icon={faTrash} /></button> */}
                                                                 </div>
-                                                                {/* <button className="text-secondary" onClick={() => deleteInventory(item?._id)}><FontAwesomeIcon icon={faTrash} /></button> */}
-                                                            </div>
-                                                        </td>
-                                                    </tr>)
-                                                :
-                                                <>
-                                                    <tr>
-                                                        <td colSpan={12}>
-                                                            <span className="text-center">No data found</span>
-                                                        </td>
-                                                    </tr>
-                                                </>
+                                                            </td>
+                                                        </tr>)
+                                                    :
+                                                    <>
+                                                        <tr>
+                                                            <td colSpan={12}>
+                                                                <span className="text-center">No data found</span>
+                                                            </td>
+                                                        </tr>
+                                                    </>
 
-                                            }
+                                                }
 
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="text-end mt-4">
-                    <Link to={-1} className="nw-thm-btn outline">Go Back</Link>
-                </div>
-            </div>}
-
-            {/*Add Inventroy Popup Start  */}
-            {/* data-bs-toggle="modal" data-bs-target="#add-Inventory" */}
-            <div className="modal step-modal fade" id="add-Inventory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div className="modal-dialog modal-dialog-centered modal-lg">
-                    <div className="modal-content rounded-5">
-                        <div className="d-flex align-items-center justify-content-between popup-nw-brd px-4 py-3">
-                            <div>
-                                <h6 className="lg_title mb-0">Add Inventory</h6>
-                            </div>
-                            <div>
-                                <button type="button" className="" data-bs-dismiss="modal" aria-label="Close">
-                                    <FontAwesomeIcon icon={faCircleXmark} />
-                                </button>
-                            </div>
-                        </div>
-                        <div className="modal-body px-4">
-                            <form onSubmit={handleSubmit}>
-                                <div className="row">
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Medicine Name</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter Medicine Name"
-                                                name="medicineName"
-                                                value={formData.medicineName}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Schedule</label>
-                                            <div className="select-wrapper">
-                                                <select
-                                                    className="form-select custom-select"
-                                                    name="schedule"
-                                                    value={formData.schedule}
-                                                    onChange={handleChange}
-                                                >
-                                                    <option value="">Select</option>
-                                                    <option value="H1">H1</option>
-                                                    <option value="H">H</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Batch Number</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter Batch Number"
-                                                name="batchNumber"
-                                                value={formData.batchNumber}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>MFG Date</label>
-                                            <input
-                                                type="date"
-                                                className="form-control nw-frm-select"
-
-                                                name="mfgDate"
-                                                value={formData.mfgDate}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>EXP Date</label>
-                                            <input
-                                                type="date"
-                                                className="form-control nw-frm-select"
-
-                                                name="expDate"
-                                                value={formData.expDate}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Quantity</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter Quantity"
-                                                name="quantity"
-                                                value={formData.quantity}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Total Stock Price</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select pe-5"
-                                                placeholder="Enter Total Stock Price"
-                                                name="totalStockPrice"
-                                                value={formData.totalStockPrice}
-                                                onChange={handleChange}
-                                            />
-                                            <div className="stock-bx"></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Purchase Price</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter Purchase Price"
-                                                name="purchasePrice"
-                                                value={formData.purchasePrice}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Margin Type</label>
-                                            <div className="select-wrapper">
-                                                <select
-                                                    className="form-select custom-select"
-                                                    name="marginType"
-                                                    value={formData.marginType}
-                                                    onChange={handleChange}
-                                                >
-                                                    <option value="">Margin Type</option>
-                                                    <option value="percentage">Percentage</option>
-                                                    <option value="fixed">Fixed</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>High Margin</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter High Margin"
-                                                name="highMargin"
-                                                value={formData.highMargin}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Low Margin</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter Low Margin"
-                                                name="lowMargin"
-                                                value={formData.lowMargin}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-6 col-md-6 col-sm-12">
-                                        <div className="custom-frm-bx">
-                                            <label>Avg Margin</label>
-                                            <input
-                                                type="text"
-                                                className="form-control nw-frm-select"
-                                                placeholder="Enter Avg Margin"
-                                                name="avgMargin"
-                                                value={formData.avgMargin}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-12">
-                                        <div className="text-center mt-3">
-                                            <button className="nw-thm-btn rounded-2 w-75" type="submit" data-bs-dismiss="modal"
-                                            >
-                                                Submit
-                                            </button>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
 
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            {/*  Add Inventroy Popup End */}
+                    <div className="text-end mt-4">
+                        <Link to={-1} className="nw-thm-btn outline">Go Back</Link>
+                    </div>
+                </div>}
+
+
 
 
             {/*Edit Inventroy Popup Start  */}
@@ -584,6 +520,7 @@ function H1Medicine() {
                                             <label>Medicine Name</label>
                                             <input
                                                 type="text"
+                                                required
                                                 className="form-control nw-frm-select"
                                                 placeholder="Enter Medicine Name"
                                                 name="medicineName"
@@ -600,12 +537,13 @@ function H1Medicine() {
                                                 <select
                                                     className="form-select custom-select"
                                                     name="schedule"
+                                                    required
                                                     value={formData.schedule}
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Select</option>
-                                                    <option value="H1">H1</option>
-                                                    <option value="H">H</option>
+                                                    {scheduleList?.map(s =>
+                                                        <option value={s?._id}>{s?.name}</option>)}
                                                 </select>
                                             </div>
                                         </div>
@@ -616,6 +554,7 @@ function H1Medicine() {
                                             <label>Batch Number</label>
                                             <input
                                                 type="text"
+                                                required
                                                 className="form-control nw-frm-select"
                                                 placeholder="Enter Batch Number"
                                                 name="batchNumber"
@@ -631,10 +570,11 @@ function H1Medicine() {
                                             <input
                                                 type="date"
                                                 className="form-control nw-frm-select"
-
+                                                required
                                                 name="mfgDate"
                                                 value={formData.mfgDate}
                                                 onChange={handleChange}
+                                                max={new Date().toISOString().split("T")[0]}
                                             />
                                         </div>
                                     </div>
@@ -648,6 +588,8 @@ function H1Medicine() {
                                                 name="expDate"
                                                 value={formData.expDate}
                                                 onChange={handleChange}
+                                                required
+                                                min={formData.mfgDate || undefined}
                                             />
                                         </div>
                                     </div>
@@ -656,11 +598,12 @@ function H1Medicine() {
                                         <div className="custom-frm-bx">
                                             <label>Quantity</label>
                                             <input
-                                                type="text"
+                                                type="number"
                                                 className="form-control nw-frm-select"
                                                 placeholder="Enter Quantity"
                                                 name="quantity"
                                                 value={formData.quantity}
+                                                required
                                                 onChange={handleChange}
                                             />
                                         </div>
@@ -670,12 +613,13 @@ function H1Medicine() {
                                         <div className="custom-frm-bx">
                                             <label>Total Stock Price</label>
                                             <input
-                                                type="text"
+                                                type="number"
                                                 className="form-control nw-frm-select pe-5"
                                                 placeholder="Enter Total Stock Price"
                                                 name="totalStockPrice"
                                                 value={formData.totalStockPrice}
                                                 onChange={handleChange}
+                                                required
                                             />
                                             <div className="stock-bx"></div>
                                         </div>
@@ -685,12 +629,13 @@ function H1Medicine() {
                                         <div className="custom-frm-bx">
                                             <label>Purchase Price</label>
                                             <input
-                                                type="text"
+                                                type="number"
                                                 className="form-control nw-frm-select"
                                                 placeholder="Enter Purchase Price"
                                                 name="purchasePrice"
                                                 value={formData.purchasePrice}
                                                 onChange={handleChange}
+                                                required
                                             />
                                         </div>
                                     </div>
@@ -710,6 +655,7 @@ function H1Medicine() {
                                             />
                                         </div>
                                     </div>
+
                                     <div className="col-lg-6 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
                                             <label>Margin</label>
@@ -725,16 +671,134 @@ function H1Medicine() {
                                         </div>
                                     </div>
 
-                                    <div className="col-lg-12">
-                                        <div className="text-center mt-3">
-                                            <button className="nw-thm-btn rounded-2 w-75" type="submit" data-bs-dismiss="modal"
-                                            >
-                                                Submit
-                                            </button>
+                                    <div className="col-12">
+                                        <div className="custom-frm-bx">
+                                            <label>Storage Type</label>
+                                            <div className="d-flex justify-content-between gap-3">
+                                                <div className="form-check custom-check py-0">
+                                                    <label className="form-check-label" htmlFor="Rack">Rack</label>
+                                                    <input type="checkbox" name="storageType" id="Rack" checked={formData?.storageType?.includes("Rack")}
+                                                        onChange={(e) => {
+                                                            const { checked, id } = e.target;
+
+                                                            let updatedTypes = [...formData.storageType || []];
+
+                                                            if (checked) {
+                                                                updatedTypes.push(id);
+                                                            } else {
+                                                                updatedTypes = updatedTypes.filter(type => type !== id);
+                                                            }
+
+                                                            setFormData({
+                                                                ...formData,
+                                                                storageType: updatedTypes
+                                                            });
+                                                        }} className="form-check-input" />
+                                                </div>
+                                                <div className="form-check custom-check py-0">
+                                                    <label className="form-check-label" htmlFor="Fridge">Fridge</label>
+                                                    <input type="checkbox" name="storageType" className="form-check-input" id="Fridge" checked={formData?.storageType?.includes("Fridge")}
+                                                        onChange={(e) => {
+                                                            const { checked, id } = e.target;
+
+                                                            let updatedTypes = [...formData.storageType || []];
+
+                                                            if (checked) {
+                                                                updatedTypes.push(id);
+                                                            } else {
+                                                                updatedTypes = updatedTypes.filter(type => type !== id);
+                                                            }
+
+                                                            setFormData({
+                                                                ...formData,
+                                                                storageType: updatedTypes
+                                                            });
+                                                        }} />
+                                                </div>
+                                                <div className="form-check custom-check py-0">
+                                                    <label className="form-check-label" htmlFor="ControlledDrugLocker">Controlled Drug Locker</label>
+                                                    <input type="checkbox" name="storageType" className="form-check-input" id="ControlledDrugLocker" checked={formData?.storageType?.includes("ControlledDrugLocker")}
+                                                        onChange={(e) => {
+                                                            const { checked, id } = e.target;
+
+                                                            let updatedTypes = [...formData.storageType || []];
+
+                                                            if (checked) {
+                                                                updatedTypes.push(id);
+                                                            } else {
+                                                                updatedTypes = updatedTypes.filter(type => type !== id);
+                                                            }
+
+                                                            setFormData({
+                                                                ...formData,
+                                                                storageType: updatedTypes
+                                                            });
+                                                        }} />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-
                                 </div>
+
+                                {formData?.storageType?.length > 0 && <div className="row">
+                                    {formData?.storage?.map((item, index) => (
+                                        <div className="col-lg-6 col-md-6 col-sm-12" key={index}>
+                                            <div className="d-flex align-items-center gap-2">
+
+                                                <div className="custom-frm-bx flex-grow-1">
+                                                    <label>
+                                                        Detail {index + 1}
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        className="form-control nw-frm-select pe-5"
+                                                        value={item}
+                                                        onChange={(e) =>
+                                                            handleStorageChange(index, e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+
+                                                <button type="button" onClick={() => removeStorage(index)}>
+                                                    <FontAwesomeIcon className="text-danger" icon={faTrash} />
+                                                </button>
+
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>}
+
+                                {formData?.storageType?.length > 0 &&
+                                    <div className="text-end">
+                                        <button
+                                            type="button"
+                                            className="text-end"
+                                            onClick={() =>
+                                                setFormData({
+                                                    ...formData,
+                                                    storage: [
+                                                        ...formData.storage,
+                                                        ''
+                                                    ],
+                                                })
+                                            }
+                                        >
+                                            <FontAwesomeIcon className="nw-thm-btn p-2 rounded-2" icon={faPlusCircle} />
+                                        </button>
+                                    </div>
+                                }
+
+
+                                <div className="col-lg-12">
+                                    <div className="text-center mt-3">
+                                        <button className="nw-thm-btn rounded-2 w-75" type="submit" data-bs-dismiss="modal"
+                                        >
+                                            Submit
+                                        </button>
+                                    </div>
+                                </div>
+
                             </form>
                         </div>
                     </div>

@@ -26,23 +26,17 @@ function MedicineRequest() {
     })
 
     const fetchSchedules = async () => {
-        
+
         setLoading(true)
         try {
-            const response = await getApiData(`admin/schedule-medicines?name=H1`);
-            if (response.success) {
-                const data=response.data[0]
-                setSchedule(data)
-                const res = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=${data?._id}&limit=10000&status=Pending`);
-                if (res.success) {
-                    setMedicineList(res.data)
-                    setLoading(false)
-                } else {
-                    toast.error(res.message)
-                }
+            const res = await getSecureApiData(`pharmacy/requestable-medicine/${userId}`);
+            if (res.success) {
+                setMedicineList(res.data)
+                setLoading(false)
             } else {
-                toast.error(response.message)
+                toast.error(res.message)
             }
+
         } catch (err) {
             toast.error(err?.response?.data?.message || "Something went wrong");
         } finally {
@@ -50,12 +44,12 @@ function MedicineRequest() {
         }
     }
     const fetchInventory = async () => {
-        if(!schedule) return
+        if (!schedule) return
         setLoading(true)
         try {
             const response = await getSecureApiData(`pharmacy/inventory/${userId}?schedule=${schedule?._id}&limit=10&status=${status}`);
             if (response.success) {
-                setFormData({...formData,schedule:schedule?._id})
+                setFormData({ ...formData, schedule: schedule?._id })
                 setMedicineList(response.data)
 
             } else {
@@ -125,10 +119,10 @@ function MedicineRequest() {
             setLoading(false)
         }
     }
-    useEffect(()=>{
-        const quantity=medicineList.find(item=>item?._id==formData?.medicineId)?.quantity || 0
-        setFormData({...formData,quantity})
-    },[formData.medicineId])
+    useEffect(() => {
+        const quantity = medicineList.find(item => item?._id == formData?.medicineId)?.quantity || 0
+        setFormData({ ...formData, quantity })
+    }, [formData.medicineId])
     return (
 
         <>

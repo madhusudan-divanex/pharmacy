@@ -10,6 +10,7 @@ import base_url from "../../baseUrl";
 import html2canvas from "html2canvas"
 import html2pdf from "html2pdf.js";
 import Loader from "../Layouts/Loader";
+import PharmacyInvoice from "../Templates/PharmacyInvoice";
 
 function ScanPrescriptionDetails() {
     const params = useParams();
@@ -17,7 +18,8 @@ function ScanPrescriptionDetails() {
     const [sellData, setSellData] = useState({});
     const [prescriptionData, setPrescriptionData] = useState()
     const [loading, setLoading] = useState(false)
-    const navigate=useNavigate()
+    const [pdfLoading, setPdfLoading] = useState(false)
+    const navigate = useNavigate()
     const { profiles, pharPerson, pharAddress, pharImg,
         rating, avgRating, pharLicense, isRequest } = useSelector(state => state.user)
     async function fetchSellDetails() {
@@ -28,7 +30,7 @@ function ScanPrescriptionDetails() {
                 setSellData(response.sell)
             } else {
                 toast.error(response.message);
-                if(response.message=="Permission denied"){
+                if (response.message == "Permission denied") {
                     navigate(-1)
                 }
             }
@@ -63,7 +65,7 @@ function ScanPrescriptionDetails() {
         fetchSellDetails();
     }, [sellId]);
     const invoiceRef = useRef()
-    
+
     const handleDownload = () => {
         const element = invoiceRef.current;
         document.body.classList.add("hide-buttons");
@@ -71,7 +73,7 @@ function ScanPrescriptionDetails() {
         const opt = {
             margin: 0.5,
             filename: "invoice.pdf",
-            html2canvas: { scale: 2 , useCORS: true },
+            html2canvas: { scale: 2, useCORS: true },
             jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
         };
 
@@ -83,7 +85,7 @@ function ScanPrescriptionDetails() {
     const subtotal = sellData?.products
         ?.reduce((acc, item) => acc + Number(item?.totalAmount || 0), 0) || 0;
     const gst = subtotal * 0.05;
-    const total = subtotal ;
+    const total = subtotal;
 
 
     return (
@@ -122,12 +124,12 @@ function ScanPrescriptionDetails() {
 
                     <div className='new-mega-card'>
                         <div className="row">
-                            {(sellData?.prescriptionFile || sellData?.prescriptionId) &&<div className="col-lg-6 col-md-12 col-sm-12 mb-3">
+                            {(sellData?.prescriptionFile || sellData?.prescriptionId) && <div className="col-lg-6 col-md-12 col-sm-12 mb-3">
                                 {sellData?.prescriptionFile &&
                                     <div className="view-report-card ">
                                         <img src={`${base_url}/${sellData?.prescriptionFile}`} className="w-100 rounded-3" />
                                     </div>}
-                                    {sellData?.prescriptionId && 
+                                {sellData?.prescriptionId &&
                                     <div className="view-report-card">
                                         <div className="">
                                             <div className="view-report-header d-flex align-items-center justify-content-between">
@@ -192,80 +194,81 @@ function ScanPrescriptionDetails() {
 
 
                             </div>}
-                            <div className="col-lg-6 col-md-12 col-sm-12">                                
-                                <div  ref={invoiceRef}>
+                            <div className="col-lg-6 col-md-12 col-sm-12">
+                                <div ref={invoiceRef}>
                                     <div className="new-invoice-card mobile-prescription">
-                                            <div className="d-flex align-items-center justify-content-between mb-3 pharmacy-bill">
-                                                <div className="mobile-title">
-                                                    <h5 className="no-print first_para fw-700 fz-20 mb-0">Generate Bill</h5>
-                                                </div>
-                                                <div className="d-flex align-items-center gap-2 flex-wrap mobile-print">
-                                                    <button className="no-print print-btn " onClick={handleDownload}> <FontAwesomeIcon icon={faDownload} /> Download Bill</button>
-                                                    {/* <button className="no-print print-btn"> <FontAwesomeIcon icon={faPrint} /> Print</button> */}
-                                                </div>
+                                        <div className="d-flex align-items-center justify-content-between mb-3 pharmacy-bill">
+                                            <div className="mobile-title">
+                                                <h5 className="no-print first_para fw-700 fz-20 mb-0"> Bill</h5>
                                             </div>
-
-                                            <div className="laboratory-header align-items-start mb-3">
-                                                <div className="laboratory-name">
-                                                    <h5>{profiles?.name || 'World Pharmacy'}</h5>
-                                                    <p><span className="laboratory-title">GSTIN : </span> {profiles?.gstNumber}</p>
-                                                    <p><span className="laboratory-title">Bank : </span> {sellData?.paymentInfoId?.bankName }</p>
-                                                    <p><span className="laboratory-title">Account Number : </span> {sellData?.paymentInfoId?.accountNumber }</p>
-                                                    <p><span className="laboratory-invoice laboratory-title">Account Holder Name :</span> {sellData?.paymentInfoId?.accountHolderName}</p>
-                                                </div>
-                                                <div className="invoice-details">
-                                                    <p><span className="laboratory-invoice">Invoice :</span> {sellData?._id?.slice(-10)}</p>
-                                                    <p><span className="laboratory-invoice">Date :</span> {new Date().toLocaleDateString('en-GB', {
-                                                        day: '2-digit',
-                                                        month: 'short',
-                                                        year: 'numeric'
-                                                    })}</p>
-                                                    <p><span className="laboratory-invoice">IFSC :</span> {sellData?.paymentInfoId?.ifscCode}</p>
-                                                    <p className="mb-0"><span className="laboratory-invoice">QR :</span> <img width={100} height={100} src={`${base_url}/${sellData?.paymentInfoId?.qr}`} alt="" srcset="" crossOrigin="anonymous"/></p>
-                                                </div>
-                                            </div>
-
-                                            <div className="nw-laboratory-bill-crd">
-                                                <div className="nw-laboratory-bill-bx h-100">
-                                                    <h6>Bill To</h6>
-                                                    <h4>{sellData?.patientId?.name}</h4>
-                                                    <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.patientId?.contactNumber}</p>
-                                                </div>
-                                                <div className="nw-laboratory-bill-bx h-100">
-                                                    <h6>Order</h6>
-                                                    <h4>{sellData?.patientId?.name}</h4>
-                                                    <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.patientId?.contactNumber}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="laboratory-report-bx mb-0">
-                                                <ul className="laboratory-report-list mb-0">
-                                                    <li className="laboratory-item pb-3">
-                                                        <span className="price-title">Medicine</span>
-                                                        <span className="price-title">Quantity</span>
-                                                         <span className="price-title">Rate</span>
-                                                        <span className="price-title">Discount</span>
-                                                        <span className="price-title">Value</span></li>
-                                                    {sellData?.products?.map((item, index) =>
-                                                        <li className="laboratory-item pt-3 border-0">
-                                                            <span>{item?.medicineName}</span>
-                                                            <span>{item?.quantity}</span>
-                                                            <span className="">₹ {item?.rate}</span>
-                                                            <span>{item?.discountType ? `${item?.discountType} ${item?.discountValue}` : '-'}</span> 
-                                                            <span className="">₹ {item?.totalAmount}</span>
-                                                            </li>
-                                                        )}
-                                                </ul>
-
-                                                <div className="lab-amount-bx mt-0">
-                                                    <ul className="lab-amount-list mb-0">
-                                                        {/* <li className="lab-amount-item">Subtotal : <span className="price-title">{subtotal?.toFixed(2)}</span></li>
-                                                        <li className="lab-amount-item lab-divider">GST (5%) :  <span className="price-title">{gst?.toFixed(2)}</span></li> */}
-                                                        <li className="lab-amount-item">Total :  <span className="price-title fw-700">₹ {total?.toFixed(2)}</span></li>
-                                                    </ul>
-                                                </div>
+                                            <div className="d-flex align-items-center gap-2 flex-wrap mobile-print">
+                                                <button className="no-print print-btn " disabled={pdfLoading} onClick={() => setPdfLoading(sellId)}> <FontAwesomeIcon icon={faDownload} />
+                                                    {pdfLoading ? 'Downloading...' : 'Download Bill'}</button>
+                                                {/* <button className="no-print print-btn"> <FontAwesomeIcon icon={faPrint} /> Print</button> */}
                                             </div>
                                         </div>
+
+                                        <div className="laboratory-header align-items-start mb-3">
+                                            <div className="laboratory-name">
+                                                <h5>{profiles?.name || 'World Pharmacy'}</h5>
+                                                <p><span className="laboratory-title">GSTIN : </span> {profiles?.gstNumber}</p>
+                                                <p><span className="laboratory-title">Bank : </span> {sellData?.paymentInfoId?.bankName}</p>
+                                                <p><span className="laboratory-title">Account Number : </span> {sellData?.paymentInfoId?.accountNumber}</p>
+                                                <p><span className="laboratory-invoice laboratory-title">Account Holder Name :</span> {sellData?.paymentInfoId?.accountHolderName}</p>
+                                            </div>
+                                            <div className="invoice-details">
+                                                <p><span className="laboratory-invoice">Invoice :</span> {sellData?._id?.slice(-10)}</p>
+                                                <p><span className="laboratory-invoice">Date :</span> {new Date().toLocaleDateString('en-GB', {
+                                                    day: '2-digit',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })}</p>
+                                                <p><span className="laboratory-invoice">IFSC :</span> {sellData?.paymentInfoId?.ifscCode}</p>
+                                                <p className="mb-0"><span className="laboratory-invoice">QR :</span> <img width={100} height={100} src={`${base_url}/${sellData?.paymentInfoId?.qr}`} alt="" srcset="" crossOrigin="anonymous" /></p>
+                                            </div>
+                                        </div>
+
+                                        <div className="nw-laboratory-bill-crd">
+                                            <div className="nw-laboratory-bill-bx h-100">
+                                                <h6>Bill To</h6>
+                                                <h4>{sellData?.patientId?.name}</h4>
+                                                <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.patientId?.contactNumber}</p>
+                                            </div>
+                                            <div className="nw-laboratory-bill-bx h-100">
+                                                <h6>Order</h6>
+                                                <h4>{sellData?.patientId?.name}</h4>
+                                                <p><span className="laboratory-phne">Phone :</span> {sellData?.patientId?.patientId?.contactNumber}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="laboratory-report-bx mb-0">
+                                            <ul className="laboratory-report-list mb-0">
+                                                <li className="laboratory-item pb-3">
+                                                    <span className="price-title">Medicine</span>
+                                                    <span className="price-title">Quantity</span>
+                                                    <span className="price-title">Rate</span>
+                                                    <span className="price-title">Discount</span>
+                                                    <span className="price-title">Value</span></li>
+                                                {sellData?.products?.map((item, index) =>
+                                                    <li className="laboratory-item pt-3 border-0">
+                                                        <span>{item?.medicineName}</span>
+                                                        <span>{item?.quantity}</span>
+                                                        <span className="">₹ {item?.rate}</span>
+                                                        <span>{item?.discountType ? `${item?.discountType} ${item?.discountValue}` : '-'}</span>
+                                                        <span className="">₹ {item?.totalAmount}</span>
+                                                    </li>
+                                                )}
+                                            </ul>
+
+                                            <div className="lab-amount-bx mt-0">
+                                                <ul className="lab-amount-list mb-0">
+                                                    {/* <li className="lab-amount-item">Subtotal : <span className="price-title">{subtotal?.toFixed(2)}</span></li>
+                                                        <li className="lab-amount-item lab-divider">GST (5%) :  <span className="price-title">{gst?.toFixed(2)}</span></li> */}
+                                                    <li className="lab-amount-item">Total :  <span className="price-title fw-700">₹ {total?.toFixed(2)}</span></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 {/* <div className="custom-frm-bx mt-3">
                                 <label htmlFor="">Note</label>
@@ -289,7 +292,9 @@ function ScanPrescriptionDetails() {
                     </div>
                     <div className="text-end mt-4"> <Link to={-1} className="nw-thm-btn outline">Go Back</Link> </div>
                 </div>}
-
+            <div className="d-none">
+                <PharmacyInvoice sellId={pdfLoading} pdfLoading={pdfLoading} endLoading={() => setPdfLoading(false)} />
+            </div>
 
 
 

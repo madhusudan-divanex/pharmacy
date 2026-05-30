@@ -386,6 +386,7 @@ function InventoryList() {
                                         purchasePrice: "",
                                         salePrice: "",
                                         totalStockPrice: "",
+                                        storageType: [],
                                         storage: [""],
                                         margin: "",
                                     })} data-bs-toggle="modal"

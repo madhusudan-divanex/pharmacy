@@ -139,6 +139,15 @@ function CustomerReturn() {
                 if (returnProducts?.length > 0) {
                     setHaveReturns(true)
                 }
+                const initialReturnProducts = returnProducts.length > 0
+                    ? returnProducts
+                    : [{
+                        inventoryId: null,
+                        quantity: 1,
+                        reason: '',
+                        condition: '',
+                        refundAmount: null,
+                    }];
                 setFormData({
                     ...formData,
                     patientId: data?.patientId?._id,
@@ -156,7 +165,7 @@ function CustomerReturn() {
                     returnDate: data?.returnDate
                         ? new Date(data.returnDate).toISOString().split("T")[0]
                         : '',
-                    returnProducts
+                    returnProducts: initialReturnProducts
 
                 })
 
@@ -274,33 +283,8 @@ function CustomerReturn() {
                                 <div className="">
                                     <h5 className="add-contact-title text-black fz-24">Details</h5>
                                 </div>
-                                {/* <div className="col-lg-4 col-md-4 col-sm-12">
-                                    <div className="custom-frm-bx">
-                                        <label htmlFor="">Patient Id</label>
-                                        <input type="number" disabled={id} value={patientId} onChange={(e) => setPatientId(e.target.value)} className="form-control nw-frm-select " placeholder="Enter Patient Id" />
-                                    </div>
-                                </div> */}
 
-                                {/* <div className="col-lg-6 col-md-6 col-sm-12">
-                                    <div className="d-flex align-items-center gap-3 ">
-                                        <label htmlFor="">Patient</label>
-                                        <h6>{formData?.ptName}</h6>
-                                    </div>
-                                    <div className="d-flex align-items-center gap-3 ">
-                                        <label htmlFor="">Patient Mobile Number</label>
-                                        <h6>{formData?.ptMob}</h6>
-                                    </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12">
-                                    <div className="d-flex align-items-center gap-3 ">
-                                        <label htmlFor="">Delivery Type</label>
-                                        <h6>{formData?.deliveryType}</h6>
-                                    </div>
-                                    {formData?.paymentMethod && <div className="d-flex align-items-center gap-3 ">
-                                        <label htmlFor="">Payment Method</label>
-                                        <h6>{formData?.paymentMethod}</h6>
-                                    </div>}
-                                </div> */}
+
 
                                 <div className="col-lg-3 col-md-6 col-sm-12 mb-2">
                                     <div className="return-sell-content">
@@ -369,38 +353,7 @@ function CustomerReturn() {
                                                     className="form-control nw-frm-select " placeholder="Enter Quantity" />
                                             </div>
                                         </div>
-                                        {/* <div className="col-lg-2 col-md-4 col-sm-12">
-                                            <div className="custom-frm-bx">
-                                                <label htmlFor="">Amount</label>
-                                                <input type="number"
-                                                    value={product?.amount}
-                                                    name="amount"
-                                                    className="form-control nw-frm-select " placeholder="Enter Amount" />
-                                            </div>
-                                        </div> */}
-                                        {/* <div className="col-lg-2 col-md-4 col-sm-12">
-                                            <div className="custom-frm-bx">
-                                                <label htmlFor="">Discount Type</label>
-                                                <select className="form-control nw-frm-select "
-                                                    value={product?.discountType}
-                                                    disabled={id}>
-                                                    <option value="">Select</option>
-                                                    <option value="Percentage">Percentage</option>
-                                                    <option value="Fixed">Fixed</option>
-                                                </select>
 
-                                            </div>
-                                        </div> */}
-                                        {/* <div className="col-lg-2 col-md-4 col-sm-12">
-                                            <div className="custom-frm-bx">
-                                                <label htmlFor="">Discount</label>
-                                                <input type="number"
-                                                    value={product?.discountValue}
-                                                    disabled={id}
-                                                    name="discountValue"
-                                                    className="form-control nw-frm-select " placeholder="Enter Discount" />
-                                            </div>
-                                        </div> */}
                                         <div className="col-lg-4 col-md-4 col-sm-12">
                                             <div className="custom-frm-bx">
                                                 <label htmlFor=""> Amount</label>
@@ -487,7 +440,7 @@ function CustomerReturn() {
                                                     className="form-control nw-frm-select " placeholder="Enter Refund Amount" />
                                             </div>
                                         </div>
-                                        {!haveReturns &&<div className="col-lg-1 col-md-4 col-sm-12 d-flex align-items-center justify-content-center">
+                                        {!haveReturns && <div className="col-lg-1 col-md-4 col-sm-12 d-flex align-items-center justify-content-center">
                                             <button className="text-danger" disabled={haveReturns} type="button" onClick={() => handleRemoveReturn(index)}><FontAwesomeIcon icon={faTrash} /></button>
 
                                         </div>}
@@ -524,9 +477,9 @@ function CustomerReturn() {
                                     <div className="col-lg-4 col-md-6 col-sm-12">
                                         <div className="custom-frm-bx">
                                             <label htmlFor="">Return Date</label>
-                                            <input type="date" disabled={haveReturns} value={formData.returnDate} required max={new Date().toISOString().split("T")[0]} 
-                                            className="form-control nw-frm-select " name="returnDate" 
-                                            onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}  id="" />
+                                            <input type="date" disabled={haveReturns} value={formData.returnDate} required max={new Date().toISOString().split("T")[0]}
+                                                className="form-control nw-frm-select " name="returnDate"
+                                                onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })} id="" />
 
                                         </div>
                                     </div>

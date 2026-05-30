@@ -810,7 +810,7 @@ function Profile() {
                           </div>
 
                           <div className="d-flex justify-content-end gap-3 mt-3">
-                            <button type="button" className="nw-filtr-thm-btn outline" onClick={() => loadProfile()}>Cancel</button>
+                            {/* <button type="button" className="nw-filtr-thm-btn outline" onClick={() => loadProfile()}>Cancel</button> */}
                             <button type="submit" className="nw-filtr-thm-btn" disabled={saving}>{saving ? "Saving..." : "Save"}</button>
                           </div>
                         </form>

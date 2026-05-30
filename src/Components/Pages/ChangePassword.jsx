@@ -8,9 +8,9 @@ import { Link, NavLink } from "react-router-dom";
 function ChangePassword() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [isConf, setIsConf] = useState(false)
-  const [isPass, setIsPass] = useState(false)
-  const [isOld, setIsOld] = useState(false)
+  const [isConf, setIsConf] = useState(true)
+  const [isPass, setIsPass] = useState(true)
+  const [isOld, setIsOld] = useState(true)
   const [oldPassword, setOldPassword] = useState('')
   const userId = localStorage.getItem('userId')
   const token = localStorage.getItem('otoken')
@@ -19,6 +19,10 @@ function ChangePassword() {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast.error("Password and confirm password was not match")
+      return
+    }
+    if (oldPassword === password) {
+      toast.error("New password and old password should not be same")
       return
     }
     const data = { userId, oldPassword, newPassword: password }

@@ -34,8 +34,8 @@ export const fetchEmpDetail = createAsyncThunk(
     "empDetail/fetch",
     async (id, { rejectWithValue }) => {
         try {
-            const response =id && await getSecureApiData(`api/staff/data/${id}`);
-            console.log("res",response)
+            const response = id && await getSecureApiData(`api/staff/data/${id}`);
+            console.log("res", response)
             if (response.success) {
                 return response;
             }
@@ -54,19 +54,19 @@ const userSlice = createSlice({
         rating: null,
         avgRating: null,
         pharLicense: null,
-        user:null,
-        customId:null,
-        unRead:0,
+        user: null,
+        customId: null,
+        unRead: 0,
         isRequest: null,
-        paymentInfo:null,
-        allowEdit:null,
+        paymentInfo: null,
+        allowEdit: null,
         loading: false,
         error: null,
         staffData: null,
-        staffUser:null,
-        employment:null,
+        staffUser: null,
+        employment: null,
         isOwner: true,
-        permissions:null
+        permissions: null
     },
     reducers: {
         clearProfiles: (state) => {
@@ -96,7 +96,7 @@ const userSlice = createSlice({
             .addCase(fetchUserDetail.fulfilled, (state, action) => {
                 state.loading = false;
                 state.profiles = action.payload.data
-                state.user=action.payload.user
+                state.user = action.payload.user
                 state.pharAddress = action.payload.pharAddress;
                 state.pharImg = action.payload.pharImg;
                 state.rating = action.payload.rating;
@@ -108,7 +108,7 @@ const userSlice = createSlice({
                 state.allowEdit = action.payload.allowEdit
                 state.customId = action.payload.customId
                 state.pharLicense = action.payload.pharLicense;
-                state.isOwner= localStorage.getItem('staffId')  ?false:true;
+                state.isOwner = localStorage.getItem('staffId') ? false : true;
                 // state.permissions= JSON.parse(localStorage.getItem('permissions')) || null;
             })
             .addCase(fetchUserDetail.rejected, (state, action) => {
@@ -118,12 +118,13 @@ const userSlice = createSlice({
             .addCase(fetchEmpDetail.fulfilled, (state, action) => {
                 state.loading = false;
                 state.staffData = action.payload.staffData;
-                state.employment=action.payload.employment
-                state.staffUser=action.payload.user
-                state.isOwner =  false ;
+                state.employment = action.payload.employment
+                state.staffUser = action.payload.user
+                state.isOwner = false;
+                console.log("dafsdf", action.payload.employment)
                 state.permissions = action.payload.employment.permissionId?.pharmacy || null;
             });
-          
+
     },
 });
 

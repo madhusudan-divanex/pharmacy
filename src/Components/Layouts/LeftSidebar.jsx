@@ -17,6 +17,7 @@ function LeftSidebar() {
     profiles, isOwner, user, staffData, staffUser, permissions,
     pharPerson, customId
   } = useSelector((state) => state.user);
+  console.log(permissions)
   useEffect(() => {
 
     if (isOwner) {

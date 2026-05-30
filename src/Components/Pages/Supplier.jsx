@@ -43,6 +43,7 @@ function Supplier() {
                 const payload = { ...formData, pharId: userId, supplierId: formData?._id };
                 const response = await updateApiData("pharmacy/supplier", payload); // adjust API URL
                 if (response.success) {
+                    toast.success("Supplier updated successfully!")
                     document.getElementById("editSupplier")?.click()
                     setSuccess("Supplier updated successfully!");
                     setFormData({
@@ -272,7 +273,7 @@ function Supplier() {
                                                     {/* <th>Score</th>
                                                     <th>On-time delivery</th> */}
                                                     {/* <th>Price</th> */}
-                                                    <th>Quality</th>
+                                                    <th>Quantity</th>
                                                     <th>Action</th>
                                                 </tr>
                                             </thead>
