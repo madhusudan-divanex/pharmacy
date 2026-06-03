@@ -502,7 +502,7 @@ function Chat({ socket, startCall }) {
                                     </div>
                                 </div>
 
-                                <div className="add-nw-bx d-flex gap-3">
+                                {selectedChat && selectedChat?.type !== "group" && <div className="add-nw-bx d-flex gap-3">
                                     <button onClick={() => startCall("voice", selectedChat)} className="text-black calling-btn">
                                         <FontAwesomeIcon icon={faPhone} style={{ color: "#00b5b5" }} />
                                     </button>
@@ -511,7 +511,7 @@ function Chat({ socket, startCall }) {
                                         <FontAwesomeIcon icon={faVideo} style={{ color: "#00b5b5" }} />
                                     </button>
 
-                                </div>
+                                </div>}
 
                             </div>
 
@@ -614,7 +614,7 @@ function Chat({ socket, startCall }) {
 
                                     }
 
-                                    <div className="custom-frm-bx mb-0">
+                                    {selectedChat && <div className="custom-frm-bx mb-0">
                                         <input
                                             type="text"
                                             style={{ paddingLeft: '70px', paddingRight: '70px' }}
@@ -696,7 +696,7 @@ function Chat({ socket, startCall }) {
 
 
 
-                                    </div>
+                                    </div>}
                                 </div>
                             </div>
 
