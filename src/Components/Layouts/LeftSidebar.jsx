@@ -194,7 +194,7 @@ function LeftSidebar() {
                 </NavLink>
               </li>
 
-              <li className="nav-item">
+              {isOwner && <li className="nav-item">
                 <NavLink
                   to="/new-analysis"
                   className={({ isActive }) =>
@@ -203,7 +203,7 @@ function LeftSidebar() {
                 >
                   <FontAwesomeIcon icon={faChartBar} /> Analysis
                 </NavLink>
-              </li>
+              </li>}
               {isOwner && <li className="nav-item">
                 <NavLink
                   to="/departments"

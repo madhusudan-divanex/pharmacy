@@ -76,6 +76,7 @@ function Employee() {
             return
         }
     }, [isOwner])
+
     return (
         <>
             {loading ? <Loader />
@@ -207,6 +208,11 @@ function Employee() {
                                                                 <NavLink to={`/employee-data?id=${item?.userId?.nh12}`} className="prescription-nav" href="#" >
                                                                     Edit
                                                                 </NavLink>
+                                                            </li>
+                                                            <li className="prescription-item">
+                                                                <button className="d-inline-block w-100 text-start prescription-nav" onClick={(e) => staffAction(e, item?._id, item?.status == "active" ? "inactive" : "active")}>
+                                                                    {item?.status == "active" ? "Inactive" : "active"}
+                                                                </button>
                                                             </li>
 
                                                             {/* <li className="prescription-item">

@@ -17,12 +17,13 @@ function AuditLog() {
     const [activeHistory, setActiveHistory] = useState()
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(false)
+    const [dates, setDates] = useState({ fromDate: "", toDate: "" })
     const navigate = useNavigate()
 
     const fetchHistory = async () => {
         try {
             setLoading(true)
-            const res = await getSecureApiData(`api/comman/audit-log?page=${page}&search=${search}`);
+            const res = await getSecureApiData(`api/comman/audit-log?page=${page}&search=${search}&fromDate=${dates.fromDate}&toDate=${dates.toDate}`);
             if (res.success) {
                 setHistory(res.data)
                 setTotalPages(res.pagination.totalPages)
@@ -73,7 +74,7 @@ function AuditLog() {
                     <div className='new-mega-card'>
                         <div className="row">
                             <div className="d-flex align-items-center justify-content-between mb-3 gap-2 nw-box mobile-hospital-box">
-                                <div className="d-flex align-items-center gap-2 ">
+                                <div className="d-flex align-items-center justify-content-between gap-2 ">
                                     <div className="custom-frm-bx mb-0">
                                         <input
                                             type="text"
@@ -95,6 +96,41 @@ function AuditLog() {
                                                 <FontAwesomeIcon icon={faSearch} />
                                             </button>
                                         </div>
+                                    </div>
+                                    <div className="field mb-0 custom-frm-bx custom-select admin-table-search-frm date-range-wrapper">
+
+                                        <div className="date-range-box" >
+                                            <label className="label">From Date</label>
+                                            <input
+                                                type="date"
+                                                className="date-input"
+                                                value={dates.fromDate}
+                                                onChange={(e) => {
+                                                    setDates((prev) => ({
+                                                        ...prev,
+                                                        fromDate: e.target.value
+                                                    }));
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="date-range-box new-date-rage" >
+                                            <label className="label">To Date</label>
+                                            <input
+                                                type="date"
+                                                className="date-input"
+                                                value={dates.toDate}
+                                                min={new Date(dates?.fromDate || 0)?.toISOString()?.split("T")[0]}
+                                                onChange={(e) => {
+                                                    setDates((prev) => ({
+                                                        ...prev,
+                                                        toDate: e.target.value
+                                                    }));
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button className="nw-thm-btn" onClick={fetchHistory}>Filter</button>
                                     </div>
 
                                 </div>
