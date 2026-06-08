@@ -24,6 +24,9 @@ function PrescriptionsBar() {
     const [pdfLoading, setPdfLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPage, setTotalPage] = useState()
+    const [list, setList] = useState([])
+    const [currentHistory, setCurrentHistory] = useState(1)
+    const [totalHistory, setTotalHistory] = useState([])
     async function fetchPrescriptionDetails() {
         try {
             const response = await getSecureApiData(`pharmacy/patient-prescription/${patientId}?page=${currentPage}&limit=5`);
@@ -59,6 +62,23 @@ function PrescriptionsBar() {
         }
         return age;
     };
+    const fetchHistorySellData = async () => {
+        try {
+            const response = await getSecureApiData(`pharmacy/patient-sell-history/${patientId}?page=${currentHistory}`);
+            if (response.success) {
+                setList(response.data)
+                setTotalHistory(response.pagination.totalPages)
+            } else {
+                toast.error(response.message)
+            }
+        } catch (err) {
+            console.log(err)
+            toast.error(err?.response?.data?.message || "Something went wrong")
+        }
+    }
+    useEffect(() => {
+        fetchHistorySellData()
+    }, [patientId, currentHistory])
     return (
         <>
             <div className="main-content flex-grow-1 p-3 overflow-auto">
@@ -85,13 +105,8 @@ function PrescriptionsBar() {
                                 </nav>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
-
-
-
                 <div className="view-employee-bx patient-view-bx">
                     <div className="row">
                         <div className="col-lg-3 col-md-12 col-sm-12 mb-3">
@@ -202,6 +217,17 @@ function PrescriptionsBar() {
                                                 role="tab"
                                             >
                                                 Medical Records
+                                            </a>
+                                        </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a
+                                                className="nav-link"
+                                                id="history-tab"
+                                                data-bs-toggle="tab"
+                                                href="#history"
+                                                role="tab"
+                                            >
+                                                Prescription History
                                             </a>
                                         </li>
                                     </ul>
@@ -400,7 +426,167 @@ function PrescriptionsBar() {
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div
+                                                className="tab-pane fade"
+                                                id="history"
+                                                role="tabpanel"
+                                            >
+                                                <div className="row">
+                                                    <div className="col-lg-12">
+                                                        <div className="table-section">
+                                                            <div className="table table-responsive mb-0">
+                                                                <table className="table mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>S.no.</th>
+                                                                            <th>Date</th>
+                                                                            <th>Prescriber Name</th>
+                                                                            <th>Medicine Name</th>
+                                                                            <th>Prescription</th>
+                                                                            <th>Action</th>
 
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+
+                                                                        {list?.length > 0 ?
+                                                                            list?.map((item, key) =>
+                                                                                <tr key={key}>
+                                                                                    <td>{(currentPage - 1) * 10 + key + 1}</td>
+                                                                                    <td>{new Date(item?.createdAt).toLocaleDateString('en-GB', {
+                                                                                        day: '2-digit',
+                                                                                        month: 'short',
+                                                                                        year: 'numeric'
+                                                                                    })}</td>
+                                                                                    <td>
+                                                                                        <div className="d-flex flex-column gap-2"><span>{item?.doctorId?.name} </span>
+                                                                                            <span className="">{item?.doctorId?.nh12} </span>
+                                                                                        </div></td>
+
+                                                                                    <td>
+                                                                                        <ul className="admin-appointment-list">
+                                                                                            {item?.products?.map((product, index) => (
+                                                                                                <>
+                                                                                                    <li className="admin-appoint-item"><span className="admin-appoint-id">{product?.medicineName}</span></li>
+                                                                                                    <li className="admin-appoint-item">Qty.: <span className="admin-appoint-id">{product?.quantity}</span></li>
+                                                                                                    {/* <li className="admin-appoint-item mb-2">Schedule: <span className="admin-appoint-id">{product?.inventoryDetail?.schedule}</span></li> */}
+                                                                                                </>))}
+
+
+                                                                                        </ul>
+                                                                                    </td>
+
+
+
+
+                                                                                    <td>
+                                                                                        <div className="d-flex align-items-centet gap-2">
+                                                                                            <div className="dropdown">
+                                                                                                <Link
+                                                                                                    to={`/scan-prescriptions-detail/${item?._id}`}
+                                                                                                    className="admin-sub-dropdown"
+                                                                                                >
+                                                                                                    View
+                                                                                                </Link>
+                                                                                                <ul
+                                                                                                    className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                                                    aria-labelledby="acticonMenu1"
+                                                                                                >
+                                                                                                    <li className="prescription-item">
+                                                                                                        <NavLink to={`/scan-prescriptions-detail/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                                            View
+                                                                                                        </NavLink>
+                                                                                                    </li>
+
+                                                                                                    <li className="prescription-item">
+                                                                                                        <NavLink to={`/prescriptions-detail/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                                            Edit
+                                                                                                        </NavLink>
+                                                                                                    </li>
+
+                                                                                                    <li className="prescription-item">
+                                                                                                        <button className=" prescription-nav" onClick={() => deleteSellRecord(item?._id)}>
+
+                                                                                                            Delete
+                                                                                                        </button>
+                                                                                                    </li>
+                                                                                                </ul>
+                                                                                            </div>
+
+                                                                                        </div>
+                                                                                    </td>
+
+
+                                                                                    <td>
+                                                                                        <div className="d-flex align-items-centet gap-2">
+                                                                                            <div className="dropdown position-static">
+                                                                                                <a
+
+                                                                                                    href="javascript:void(0)"
+                                                                                                    className="grid-dots-btn"
+                                                                                                    id="acticonMenu1"
+                                                                                                    data-bs-toggle="dropdown"
+                                                                                                    aria-expanded="false"
+                                                                                                >
+                                                                                                    <TbGridDots />
+                                                                                                </a>
+                                                                                                <ul
+                                                                                                    className="dropdown-menu dropdown-menu-end  tble-action-menu admin-dropdown-card"
+                                                                                                    aria-labelledby="acticonMenu1"
+                                                                                                >
+                                                                                                    <li className="prescription-item">
+                                                                                                        <NavLink to={`/edit-sell/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                                            View/Edit
+                                                                                                        </NavLink>
+                                                                                                    </li>
+                                                                                                    <li className="prescription-item">
+                                                                                                        <NavLink to={`/customer-return/${item?._id}`} className="prescription-nav" href="#" >
+                                                                                                            Return
+                                                                                                        </NavLink>
+                                                                                                    </li>
+                                                                                                    <li className="prescription-item">
+                                                                                                        <button className="prescription-nav" onClick={() => {
+                                                                                                            setSelectedId(item?._id)
+                                                                                                            setPdfLoading(true)
+                                                                                                        }} >
+                                                                                                            {(pdfLoading && item?._id === selectedId) ? 'Downloading' : 'Download'} Invoice
+                                                                                                        </button>
+                                                                                                    </li>
+                                                                                                    {/* <li className="prescription-item">
+                                                                            <a className=" prescription-nav" href="#">
+
+                                                                                Delete
+                                                                            </a>
+                                                                        </li> */}
+                                                                                                </ul>
+                                                                                            </div>
+
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </tr>) :
+
+                                                                            <tr>
+                                                                                <td colSpan="6" className="text-center py-4">
+                                                                                    No history found
+                                                                                </td>
+                                                                            </tr>}
+
+
+
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                    {totalHistory > 1 && <div className="d-flex align-items-center justify-content-between">
+                                                        <button onClick={() => setCurrentHistory((prev) => prev - 1)} disabled={currentHistory === 1} className="nw-thm-btn outline">Prev</button>
+                                                        <button onClick={() => setCurrentHistory((prev) => prev + 1)} disabled={currentHistory === totalHistory} className="nw-thm-btn">Next</button>
+                                                    </div>}
+                                                </div>
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
