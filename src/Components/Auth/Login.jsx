@@ -7,6 +7,7 @@ import { postApiData } from '../../Services/api'
 import { toast } from 'react-toastify'
 import { clearProfiles, fetchEmpDetail, fetchUserDetail } from '../../redux/feature/userSlice'
 import Loader from '../Layouts/Loader'
+import { saveFcmToken } from '../../Services/globalFunction'
 function Login() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -96,6 +97,7 @@ function Login() {
             } else {
               navigate('/dashboard')
             }
+            await saveFcmToken()
 
             toast.success('Login successfully')
           }

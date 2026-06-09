@@ -112,7 +112,7 @@ function TopHeader() {
                         handleSearch()
                       }
                     }}
-                    placeholder="Search"
+                    placeholder="Enter patient id"
                     required
                   />
                   <div className="tp-search-bx">

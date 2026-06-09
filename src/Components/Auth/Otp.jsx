@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { clearProfiles, fetchEmpDetail, fetchUserDetail } from "../../redux/feature/userSlice";
 import { useDispatch } from "react-redux";
 import Loader from "../Layouts/Loader";
+import { saveFcmToken } from "../../Services/globalFunction";
 
 function Otp() {
   const navigate = useNavigate()
@@ -154,6 +155,7 @@ function Otp() {
           } else {
             navigate('/dashboard')
           }
+          await saveFcmToken()
 
           toast.success('Login successfully')
         } else {
