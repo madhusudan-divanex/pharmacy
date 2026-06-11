@@ -86,8 +86,14 @@ function Sell() {
             setScannerOpen(false);   // close modal
             return;
         }
-        navigate(`/prescriptions-bar/${code}`)
+
         setScannerOpen(false);
+        const id = code.replace(/\/$/, "").split("/").pop();
+        if (code?.includes('medical-prescription')) {
+            navigate(`/prescriptions-detail/${id}`)
+        } else {
+            navigate(`/prescriptions-bar/${id}`)
+        }
     };
     const deleteSellRecord = async (id) => {
         try {
@@ -719,7 +725,7 @@ function Scanner({ onDetected, open }) {
 
                 setResult(id);
 
-                onDetected?.(id);
+                onDetected?.(text);
 
                 stopScanner();
             }
